@@ -1,0 +1,49 @@
+.bookmarks-header {
+  margin-bottom: 24px;
+}
+
+.bookmarks-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.bookmarks-header p {
+  color: #6B7280;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  background: #F9FAFB;
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+.empty-state p {
+  color: #6B7280;
+  margin-bottom: 16px;
+}
+
+.browse-btn {
+  background: #8B5CF6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.browse-btn:hover {
+  background: #7C3AED;
+}
+
+/* Reuse grid and card styles from MyLuma or define here if needed */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}

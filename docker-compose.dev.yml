@@ -1,0 +1,74 @@
+services:
+  # PostgreSQL Database (Development)
+  postgres:
+    image: postgres:17-alpine
+    container_name: luma-postgres-dev
+    environment:
+      POSTGRES_USER: luma
+      POSTGRES_PASSWORD: luma_dev_password
+      POSTGRES_DB: luma_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U luma" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Backend API (Development with hot reload)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: luma-backend-dev
+    environment:
+      DATABASE_URL: postgresql://luma:luma_dev_password@postgres:5432/luma_db
+      JWT_SECRET: dev-secret-key-not-for-production
+      JWT_EXPIRES_IN: 7d
+      PORT: 3000
+      NODE_ENV: development
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma migrate deploy && npm run dev"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+  # Frontend (Development with hot reload)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: luma-frontend-dev
+    environment:
+      VITE_API_URL: http://localhost:3000/api
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    command: npm run dev -- --host
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/dist
+
+volumes:
+  postgres_dev_data:
+    driver: local

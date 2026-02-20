@@ -1,0 +1,111 @@
+{
+    "realm": "luma-realm",
+    "enabled": true,
+    "roles": {
+        "realm": [
+            {
+                "name": "app-user",
+                "description": "Standard user role"
+            },
+            {
+                "name": "app-premium",
+                "description": "Premium subscriber role"
+            },
+            {
+                "name": "app-contributor",
+                "description": "Content creator role"
+            },
+            {
+                "name": "app-admin",
+                "description": "Administrator role"
+            }
+        ]
+    },
+    "clients": [
+        {
+            "clientId": "luma-web",
+            "enabled": true,
+            "publicClient": true,
+            "directAccessGrantsEnabled": true,
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "rootUrl": "http://localhost:5173",
+            "redirectUris": [
+                "http://localhost:5173/*"
+            ],
+            "webOrigins": [
+                "http://localhost:5173"
+            ],
+            "defaultClientScopes": [
+                "web-origins",
+                "acr",
+                "profile",
+                "roles",
+                "email"
+            ],
+            "protocolMappers": [
+                {
+                    "name": "username",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "username",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "preferred_username",
+                        "jsonType.label": "String"
+                    }
+                },
+                {
+                    "name": "sub",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-sub-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "access.token.claim": "true",
+                        "id.token.claim": "true"
+                    }
+                }
+            ]
+        }
+    ],
+    "users": [
+        {
+            "username": "admin",
+            "enabled": true,
+            "email": "admin@example.com",
+            "firstName": "Admin",
+            "lastName": "User",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "admin",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "app-admin",
+                "app-user"
+            ]
+        },
+        {
+            "username": "user",
+            "enabled": true,
+            "email": "user@example.com",
+            "firstName": "Normal",
+            "lastName": "User",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "user",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "app-user"
+            ]
+        }
+    ]
+}

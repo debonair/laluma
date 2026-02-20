@@ -1,0 +1,335 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  keycloakId      String?  @unique @map("keycloak_id")
+  username        String   @unique
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  displayName     String?  @map("display_name")
+  aboutMe         String?  @map("about_me")
+  motherhoodStage String?  @map("motherhood_stage")
+  profileImageUrl String?  @map("profile_image_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  preferences      UserPreference?
+  createdGroups    Group[]         @relation("GroupCreator")
+  groupMemberships GroupMember[]
+  posts            Post[]
+  comments         Comment[]
+  postLikes        PostLike[]
+
+  // My Luma content relations
+  contentAuthored        Content[]           @relation("ContentAuthor")
+  contentComments        ContentComment[]    @relation("ContentCommentAuthor")
+  contentLikes           ContentLike[]       @relation("ContentLikes")
+  contentBookmarks       ContentBookmark[]   @relation("ContentBookmarks")
+  subscription           Subscription?
+  contentSubmissions     ContentSubmission[] @relation("ContentSubmissions")
+  notifications          Notification[]      @relation("UserNotifications")
+  notificationsTriggered Notification[]      @relation("NotificationActor")
+
+  // Real-time Messaging Relations
+  conversations ConversationParticipant[]
+  messagesSent  Message[]                 @relation("MessageSender")
+
+  @@map("users")
+}
+
+model UserPreference {
+  id               String   @id @default(uuid())
+  userId           String   @unique @map("user_id")
+  lookingFor       String[] @map("looking_for")
+  locationRadius   Int      @default(10) @map("location_radius")
+  locationAnywhere Boolean  @default(false) @map("location_anywhere")
+  latitude         Float?
+  longitude        Float?
+  city             String?
+  country          String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Group {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  imageEmoji  String?  @map("image_emoji")
+  imageUrl    String?  @map("image_url")
+  createdById String?  @map("created_by_id")
+  memberCount Int      @default(0) @map("member_count")
+  isPrivate   Boolean  @default(false) @map("is_private")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy User?         @relation("GroupCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  members   GroupMember[]
+  posts     Post[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String   @id @default(uuid())
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  role     String   @default("member") // 'admin', 'moderator', 'member'
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+model Post {
+  id            String   @id @default(uuid())
+  groupId       String   @map("group_id")
+  authorId      String?  @map("author_id")
+  content       String
+  likesCount    Int      @default(0) @map("likes_count")
+  commentsCount Int      @default(0) @map("comments_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author   User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  likes    PostLike[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  authorId  String?  @map("author_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post   Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@map("comments")
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+}
+
+// My Luma Content System Models
+
+model Content {
+  id             String    @id @default(uuid())
+  title          String
+  body           String    @db.Text
+  excerpt        String?   @db.Text
+  category       String
+  authorName     String?   @map("author_name")
+  authorId       String?   @map("author_id")
+  thumbnailUrl   String?   @map("thumbnail_url")
+  videoUrl       String?   @map("video_url")
+  videoDuration  Int?      @map("video_duration")
+  videoThumbnail String?   @map("video_thumbnail")
+  contentType    String    @default("article") @map("content_type")
+  sponsorName    String?   @map("sponsor_name")
+  sponsorLogoUrl String?   @map("sponsor_logo_url")
+  sponsorLink    String?   @map("sponsor_link")
+  isPremium      Boolean   @default(false) @map("is_premium")
+  premiumTier    String?   @map("premium_tier")
+  isFeatured     Boolean   @default(false) @map("is_featured")
+  isActive       Boolean   @default(true) @map("is_active")
+  status         String    @default("draft")
+  viewCount      Int       @default(0) @map("view_count")
+  likesCount     Int       @default(0) @map("likes_count")
+  commentsCount  Int       @default(0) @map("comments_count")
+  bookmarksCount Int       @default(0) @map("bookmarks_count")
+  publishedAt    DateTime? @map("published_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  author    User?             @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  comments  ContentComment[]
+  likes     ContentLike[]
+  bookmarks ContentBookmark[]
+
+  @@index([category])
+  @@index([isPremium])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([isFeatured])
+  @@map("content")
+}
+
+model ContentComment {
+  id          String   @id @default(uuid())
+  contentId   String   @map("content_id")
+  authorId    String?  @map("author_id")
+  commentText String   @map("comment_text") @db.Text
+  status      String   @default("visible") // visible, hidden, flagged
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  author  User?   @relation("ContentCommentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([contentId])
+  @@map("content_comments")
+}
+
+model ContentLike {
+  id        String   @id @default(uuid())
+  contentId String   @map("content_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user    User    @relation("ContentLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, userId])
+  @@index([userId])
+  @@map("content_likes")
+}
+
+model ContentBookmark {
+  id        String   @id @default(uuid())
+  contentId String   @map("content_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user    User    @relation("ContentBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, userId])
+  @@index([userId])
+  @@map("content_bookmarks")
+}
+
+model Subscription {
+  id                   String    @id @default(uuid())
+  userId               String    @unique @map("user_id")
+  tier                 String    @default("free")
+  status               String    @default("active")
+  platform             String?
+  stripeCustomerId     String?   @map("stripe_customer_id")
+  stripeSubscriptionId String?   @map("stripe_subscription_id")
+  currentPeriodStart   DateTime? @map("current_period_start")
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tier])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model ContentSubmission {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  title             String
+  body              String   @db.Text
+  category          String
+  status            String   @default("pending")
+  rejectionReason   String?  @map("rejection_reason") @db.Text
+  approvedContentId String?  @map("approved_content_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User @relation("ContentSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("content_submissions")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id") // Recipient
+  actorId   String?  @map("actor_id") // Who triggered it
+  type      String // 'like', 'comment', 'system', 'reply'
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  metadata  Json? // For storing related IDs like contentId, etc.
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ─── Real-time Messaging System ───────────────────────────────────────────────
+
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String    @id @default(uuid())
+  conversationId String    @map("conversation_id")
+  userId         String    @map("user_id")
+  joinedAt       DateTime  @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  isRead    Boolean  @default(false) @map("is_read")
+
+  senderId       String @map("sender_id")
+  conversationId String @map("conversation_id")
+
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("messages")
+}
