@@ -1,6 +1,26 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
+import { emitNotification } from '../utils/notify';
+
+// Helper: create notification in DB and emit via socket
+export async function createAndEmitNotification(data: {
+    userId: string;
+    actorId?: string;
+    type: string;
+    message: string;
+    metadata?: any;
+}) {
+    const notification = await prisma.notification.create({ data });
+    emitNotification(data.userId, {
+        id: notification.id,
+        type: notification.type,
+        message: notification.message,
+        metadata: notification.metadata,
+        createdAt: notification.createdAt.toISOString()
+    });
+    return notification;
+}
 
 // Get user notifications
 export const getNotifications = async (

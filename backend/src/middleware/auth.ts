@@ -71,6 +71,9 @@ export const authenticate = async (
             const realmAccess = decoded.realm_access || {};
             const roles = realmAccess.roles || [];
 
+            // Derive local role from Keycloak realm roles
+            const localRole = roles.includes('app-admin') ? 'admin' : 'user';
+
             // JIT Provisioning: Sync user to local DB
             let user = await prisma.user.findUnique({
                 where: { keycloakId }
@@ -83,10 +86,10 @@ export const authenticate = async (
                 });
 
                 if (existingUser) {
-                    // Link existing user to this Keycloak ID
+                    // Link existing user to this Keycloak ID and sync role
                     user = await prisma.user.update({
                         where: { id: existingUser.id },
-                        data: { keycloakId }
+                        data: { keycloakId, role: localRole }
                     });
                 } else {
                     // Create new user via JIT provisioning
@@ -95,17 +98,24 @@ export const authenticate = async (
                             keycloakId,
                             username,
                             email: email || `${username}@placeholder.com`,
-                            passwordHash: 'oauth_managed', // Placeholder for Keycloak-managed users
-                            displayName: decoded.name || username
+                            passwordHash: 'oauth_managed',
+                            displayName: decoded.name || username,
+                            role: localRole
                         }
                     });
                 }
+            } else if (user.role !== localRole) {
+                // Sync role if it changed in Keycloak
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { role: localRole }
+                });
             }
 
             req.user = {
-                userId: user.id, // This is now guaranteed to exist
+                userId: user.id,
                 username: user.username,
-                roles
+                roles: roles // Use the latest roles from JWT
             };
 
             next();
@@ -135,6 +145,10 @@ export const optionalAuthenticate = async (
             try {
                 const keycloakId = decoded.sub || decoded.jti;
                 if (keycloakId) {
+                    const realmAccess = decoded.realm_access || {};
+                    const roles = realmAccess.roles || [];
+                    const localRole = roles.includes('app-admin') ? 'admin' : 'user';
+
                     let user = await prisma.user.findUnique({
                         where: { keycloakId }
                     });
@@ -149,7 +163,7 @@ export const optionalAuthenticate = async (
                         if (existingUser) {
                             user = await prisma.user.update({
                                 where: { id: existingUser.id },
-                                data: { keycloakId }
+                                data: { keycloakId, role: localRole }
                             });
                         } else {
                             user = await prisma.user.create({
@@ -158,19 +172,23 @@ export const optionalAuthenticate = async (
                                     username,
                                     email: email || `${username}@placeholder.com`,
                                     passwordHash: 'oauth_managed',
-                                    displayName: decoded.name || username
+                                    displayName: decoded.name || username,
+                                    role: localRole
                                 }
                             });
                         }
+                    } else if (user.role !== localRole) {
+                        user = await prisma.user.update({
+                            where: { id: user.id },
+                            data: { role: localRole }
+                        });
                     }
 
                     if (user) {
-                        const realmAccess = decoded.realm_access || {};
-                        const roles = realmAccess.roles || [];
                         req.user = {
                             userId: user.id,
                             username: user.username,
-                            roles
+                            roles: roles // Use the latest roles from JWT
                         };
                     }
                 }
@@ -180,4 +198,22 @@ export const optionalAuthenticate = async (
         }
         next();
     });
+};
+
+// Role-based authorization middleware factory
+export const requireRole = (...requiredRoles: string[]) => {
+    return (req: AuthRequest, res: Response, next: NextFunction): void => {
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized', message: 'Authentication required' });
+            return;
+        }
+
+        const hasRole = requiredRoles.some(role => req.user!.roles.includes(role));
+        if (!hasRole) {
+            res.status(403).json({ error: 'Forbidden', message: 'Insufficient permissions' });
+            return;
+        }
+
+        next();
+    };
 };

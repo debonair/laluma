@@ -11,8 +11,8 @@ import Onboarding from './pages/Onboarding';
 import LookingFor from './pages/LookingFor';
 import LocationSettings from './pages/LocationSettings';
 import Profile from './pages/Profile';
+import AdminRoute from './components/AdminRoute';
 
-// Placeholder imports for now, will create files next
 import Groups from './pages/Groups';
 import CreateGroup from './pages/CreateGroup';
 import GroupDetail from './pages/GroupDetail';
@@ -27,6 +27,8 @@ import Messages from './pages/Messages';
 import ConversationDetail from './pages/ConversationDetail';
 import Search from './pages/Search';
 import PublicProfile from './pages/PublicProfile';
+import SubmitContent from './pages/SubmitContent';
+import AdminSubmissions from './pages/AdminSubmissions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -195,25 +197,25 @@ const App: React.FC = () => {
               <Route
                 path="/admin/content"
                 element={
-                  <ProtectedRoute>
+                  <AdminRoute>
                     <AdminContent />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/content/new"
                 element={
-                  <ProtectedRoute>
+                  <AdminRoute>
                     <ContentForm />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/content/edit/:id"
                 element={
-                  <ProtectedRoute>
+                  <AdminRoute>
                     <ContentForm />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
               <Route
@@ -222,6 +224,22 @@ const App: React.FC = () => {
                   <ProtectedRoute>
                     <SubscriptionPage />
                   </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/submit-content"
+                element={
+                  <ProtectedRoute>
+                    <SubmitContent />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/submissions"
+                element={
+                  <AdminRoute>
+                    <AdminSubmissions />
+                  </AdminRoute>
                 }
               />
             </Routes>

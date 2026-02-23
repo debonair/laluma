@@ -14,6 +14,7 @@ export interface User {
     displayName?: string;
     aboutMe?: string;
     motherhoodStage?: string;
+    profileImageUrl?: string;
     lookingFor?: string[];
     hasCompletedOnboarding?: boolean;
     location?: {
@@ -22,6 +23,7 @@ export interface User {
         city?: string;
         country?: string;
     };
+    role?: string;
     roles?: string[];
 }
 
@@ -48,6 +50,7 @@ const mapAPIUserToUser = (apiUser: UserProfile): User => ({
     displayName: apiUser.display_name,
     aboutMe: apiUser.about_me,
     motherhoodStage: apiUser.motherhood_stage,
+    profileImageUrl: apiUser.profile_image_url,
     hasCompletedOnboarding: apiUser.has_completed_onboarding,
     lookingFor: apiUser.looking_for,
     location: apiUser.location ? {
@@ -56,8 +59,19 @@ const mapAPIUserToUser = (apiUser: UserProfile): User => ({
         city: apiUser.location.city,
         country: apiUser.location.country,
     } : undefined,
+    role: apiUser.role,
     roles: [],
 });
+
+const mergeRoles = (dbRole: string | undefined, kcRoles: string[]): string[] => {
+    const combined = [...kcRoles];
+    if (dbRole === 'admin' && !combined.includes('app-admin')) {
+        combined.push('app-admin');
+    } else if (dbRole === 'user' && !combined.includes('app-user')) {
+        combined.push('app-user');
+    }
+    return combined;
+};
 
 /** Decode JWT payload without a library */
 function parseJwtPayload(token: string): Record<string, unknown> {
@@ -85,7 +99,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const token = tokenStorage.getAccessToken();
         const parsed = (token ? parseJwtPayload(token) : {}) as { realm_access?: { roles?: string[] } };
         const mapped = mapAPIUserToUser(userProfile);
-        mapped.roles = parsed.realm_access?.roles || [];
+
+        mapped.roles = mergeRoles(mapped.role, parsed.realm_access?.roles || []);
         setUser(mapped);
     }, []);
 
@@ -179,6 +194,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 about_me: data.aboutMe,
                 motherhood_stage: data.motherhoodStage,
                 looking_for: data.lookingFor,
+                has_completed_onboarding: data.hasCompletedOnboarding,
                 location: data.location ? {
                     radius: data.location.radius,
                     anywhere: data.location.anywhere,
@@ -187,7 +203,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 } : undefined,
             };
             const updatedUser = await userService.updateCurrentUser(apiData);
-            setUser(prev => prev ? { ...prev, ...mapAPIUserToUser(updatedUser) } : null);
+            setUser(prev => {
+                if (!prev) return null;
+                const mapped = mapAPIUserToUser(updatedUser);
+                // Preserve existing roles (which include both JWT and DB-derived roles)
+                return { ...prev, ...mapped, roles: prev.roles };
+            });
         } catch (err) {
             const errorMessage = handleAPIError(err);
             setError(errorMessage);

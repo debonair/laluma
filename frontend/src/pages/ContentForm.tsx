@@ -28,6 +28,7 @@ const ContentForm: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState<ContentFormData>({
         title: '',
         body: '',
@@ -66,8 +67,8 @@ const ContentForm: React.FC = () => {
                 sponsorLogoUrl: data.sponsorLogoUrl || '',
                 sponsorLink: data.sponsorLink || ''
             });
-        } catch (error) {
-            console.error('Error fetching content:', error);
+        } catch (err) {
+            console.error('Error fetching content:', err);
         } finally {
             setLoading(false);
         }
@@ -86,6 +87,7 @@ const ContentForm: React.FC = () => {
 
         try {
             setSaving(true);
+            setError(null);
             const url = id
                 ? `http://localhost:3000/api/content/${id}`
                 : 'http://localhost:3000/api/content';
@@ -109,11 +111,12 @@ const ContentForm: React.FC = () => {
             if (response.ok) {
                 navigate('/admin/content');
             } else {
-                alert('Failed to save content');
+                const resData = await response.json().catch(() => ({}));
+                setError(resData.error || resData.message || 'Failed to save content');
             }
-        } catch (error) {
-            console.error('Error saving content:', error);
-            alert('Failed to save content');
+        } catch (err: any) {
+            console.error('Error saving content:', err);
+            setError(err.message || 'Failed to save content');
         } finally {
             setSaving(false);
         }
@@ -138,6 +141,20 @@ const ContentForm: React.FC = () => {
             </div>
 
             <main className="page-content">
+                {error && (
+                    <div style={{
+                        background: 'rgba(255, 107, 107, 0.1)',
+                        border: '1px solid rgba(255, 107, 107, 0.3)',
+                        borderRadius: '10px',
+                        padding: '0.75rem 1rem',
+                        color: '#ff4444',
+                        fontSize: '0.9rem',
+                        marginBottom: '1rem',
+                        textAlign: 'center'
+                    }}>
+                        {error}
+                    </div>
+                )}
                 <form className="content-form" onSubmit={handleSubmit}>
                     {/* Basic Information */}
                     <section className="form-section">

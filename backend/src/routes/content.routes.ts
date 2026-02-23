@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, optionalAuthenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth';
 import { videoUpload } from '../middleware/upload';
 import {
     getContent,
@@ -28,7 +28,6 @@ router.get('/:id', optionalAuthenticate, getContentById);
 router.get('/:id/comments', getComments);
 
 // Protected routes (require authentication)
-router.put('/comments/:id/moderate', authenticate, moderateComment);
 router.post('/:id/view', incrementViewCount);
 router.post('/:id/comments', authenticate, addComment);
 router.post('/:id/like', authenticate, likeContent);
@@ -36,10 +35,11 @@ router.delete('/:id/like', authenticate, unlikeContent);
 router.post('/:id/bookmark', authenticate, bookmarkContent);
 router.delete('/:id/bookmark', authenticate, removeBookmark);
 
-// Admin routes (require authentication - add admin middleware later)
-router.post('/', authenticate, createContent);
-router.put('/:id', authenticate, updateContent);
-router.delete('/:id', authenticate, deleteContent);
-router.post('/upload-video', authenticate, videoUpload.single('video'), uploadVideo);
+// Admin routes (require app-admin role)
+router.put('/comments/:id/moderate', authenticate, requireRole('app-admin'), moderateComment);
+router.post('/', authenticate, requireRole('app-admin'), createContent);
+router.put('/:id', authenticate, requireRole('app-admin'), updateContent);
+router.delete('/:id', authenticate, requireRole('app-admin'), deleteContent);
+router.post('/upload-video', authenticate, requireRole('app-admin'), videoUpload.single('video'), uploadVideo);
 
 export default router;

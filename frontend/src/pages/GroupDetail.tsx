@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGroup } from '../context/GroupContext';
+import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
+import apiClient from '../services/api';
 import type { Group } from '../services/groups.service';
 import type { Post, Comment } from '../services/posts.service';
 import { postsService } from '../services/posts.service';
+
+interface GroupMember {
+    id: string;
+    userId: string;
+    username: string;
+    displayName?: string;
+    profileImageUrl?: string;
+    role: string;
+    joinedAt: string;
+}
 
 const GroupDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -18,6 +30,87 @@ const GroupDetail: React.FC = () => {
     const [showComments, setShowComments] = useState<{ [postId: string]: boolean }>({});
     const [comments, setComments] = useState<{ [postId: string]: Comment[] }>({});
     const [loadingComments, setLoadingComments] = useState<{ [postId: string]: boolean }>({});
+    const [showMembers, setShowMembers] = useState(false);
+    const [members, setMembers] = useState<GroupMember[]>([]);
+    const [loadingMembers, setLoadingMembers] = useState(false);
+    const [submittingPost, setSubmittingPost] = useState(false);
+    const [postError, setPostError] = useState<string | null>(null);
+    const [submittingComment, setSubmittingComment] = useState<{ [postId: string]: boolean }>({});
+    const [commentError, setCommentError] = useState<{ [postId: string]: string | null }>({});
+    const { user } = useAuth();
+
+    // Pull-to-refresh state
+    const [pullDistance, setPullDistance] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [startY, setStartY] = useState(0);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (window.scrollY <= 0) {
+            setStartY(e.touches[0].clientY);
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (startY > 0 && window.scrollY <= 0) {
+            const y = e.touches[0].clientY;
+            const distance = Math.max(0, y - startY);
+            if (distance > 0 && distance < 100) {
+                setPullDistance(distance);
+            }
+        }
+    };
+
+    const handleTouchEnd = async () => {
+        if (pullDistance > 60) {
+            setIsRefreshing(true);
+            if (id) {
+                const groupData = await getGroup(id);
+                setGroup(groupData);
+                if (groupData) {
+                    const postsData = await getGroupPosts(id);
+                    setPosts(postsData);
+                }
+            }
+            setIsRefreshing(false);
+        }
+        setStartY(0);
+        setPullDistance(0);
+    };
+
+    const loadMembers = async () => {
+        if (!id) return;
+        setLoadingMembers(true);
+        try {
+            const res = await apiClient.get<GroupMember[]>(`/groups/${id}/members`);
+            setMembers(res.data);
+        } catch (err) {
+            console.error('Failed to load members', err);
+        } finally {
+            setLoadingMembers(false);
+        }
+    };
+
+    const handleRemoveMember = async (memberId: string) => {
+        if (!id || !confirm('Remove this member?')) return;
+        try {
+            await apiClient.delete(`/groups/${id}/members/${memberId}`);
+            loadMembers();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to remove member');
+        }
+    };
+
+    const handleChangeRole = async (memberId: string, role: string) => {
+        if (!id) return;
+        try {
+            await apiClient.patch(`/groups/${id}/members/${memberId}/role`, { role });
+            loadMembers();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update role');
+        }
+    };
 
     useEffect(() => {
         const loadGroupData = async () => {
@@ -36,8 +129,21 @@ const GroupDetail: React.FC = () => {
 
     const isMember = group?.is_member || false;
 
-    if (loading) {
-        return <div className="page-container">Loading...</div>;
+    if (loading && !isRefreshing) {
+        return (
+            <div className="page-container">
+                <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="skeleton" style={{ width: '24px', height: '24px', borderRadius: '50%' }}></div>
+                    <div className="skeleton" style={{ width: '150px', height: '24px', borderRadius: '4px' }}></div>
+                </div>
+                <main className="page-content">
+                    <div className="content-card skeleton" style={{ height: '200px', width: '100%' }}></div>
+                    <div className="content-card skeleton" style={{ height: '120px', width: '100%' }}></div>
+                    <div className="content-card skeleton" style={{ height: '120px', width: '100%' }}></div>
+                </main>
+                <BottomNav />
+            </div>
+        );
     }
 
     if (!group) {
@@ -59,11 +165,20 @@ const GroupDetail: React.FC = () => {
     const handlePostSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newPostContent.trim() && id) {
-            await createPost(id, newPostContent);
-            setNewPostContent('');
-            // Reload posts
-            const postsData = await getGroupPosts(id);
-            setPosts(postsData);
+            try {
+                setSubmittingPost(true);
+                setPostError(null);
+                await createPost(id, newPostContent);
+                setNewPostContent('');
+                // Reload posts
+                const postsData = await getGroupPosts(id);
+                setPosts(postsData);
+            } catch (err: any) {
+                console.error("Failed to post:", err);
+                setPostError(err.message || "Failed to create post. Please try again.");
+            } finally {
+                setSubmittingPost(false);
+            }
         }
     };
 
@@ -82,14 +197,23 @@ const GroupDetail: React.FC = () => {
     const handleCommentSubmit = async (postId: string) => {
         const content = commentContent[postId];
         if (content && content.trim()) {
-            await addComment(postId, content);
-            setCommentContent(prev => ({ ...prev, [postId]: '' }));
-            // Reload comments to show new comment
-            await loadComments(postId);
-            // Reload posts to get updated comment count
-            if (id) {
-                const postsData = await getGroupPosts(id);
-                setPosts(postsData);
+            try {
+                setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+                setCommentError(prev => ({ ...prev, [postId]: null }));
+                await addComment(postId, content);
+                setCommentContent(prev => ({ ...prev, [postId]: '' }));
+                // Reload comments to show new comment
+                await loadComments(postId);
+                // Reload posts to get updated comment count
+                if (id) {
+                    const postsData = await getGroupPosts(id);
+                    setPosts(postsData);
+                }
+            } catch (err: any) {
+                console.error("Failed to add comment:", err);
+                setCommentError(prev => ({ ...prev, [postId]: err.message || "Failed to post comment." }));
+            } finally {
+                setSubmittingComment(prev => ({ ...prev, [postId]: false }));
             }
         }
     };
@@ -114,7 +238,12 @@ const GroupDetail: React.FC = () => {
     };
 
     return (
-        <div className="page-container">
+        <div
+            className="page-container"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
             <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <button onClick={() => navigate('/groups')} className="btn-link">
                     ←
@@ -123,6 +252,21 @@ const GroupDetail: React.FC = () => {
             </div>
 
             <main className="page-content">
+                {/* Pull to refresh spinner */}
+                {pullDistance > 0 && (
+                    <div style={{
+                        height: `${pullDistance}px`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        color: 'var(--text-secondary)',
+                        transition: isRefreshing ? 'height 0.3s' : 'none'
+                    }}>
+                        {isRefreshing ? 'Refreshing...' : pullDistance > 60 ? 'Release to refresh' : 'Pull down to refresh'}
+                    </div>
+                )}
+
                 {/* Group Header Info */}
                 <div className="content-card" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{group.image_emoji || '👥'}</div>
@@ -139,9 +283,89 @@ const GroupDetail: React.FC = () => {
                     </button>
                 </div>
 
+                {/* Members Panel */}
+                {isMember && (
+                    <div className="content-card" style={{ marginBottom: '1.5rem' }}>
+                        <button
+                            className="btn-ghost"
+                            onClick={() => { setShowMembers(prev => !prev); if (!showMembers) loadMembers(); }}
+                            style={{ width: '100%', padding: '0.5rem', fontSize: '0.9rem' }}
+                        >
+                            {showMembers ? '▼ Hide Members' : '▶ View Members'}
+                        </button>
+
+                        {showMembers && (
+                            <div style={{ marginTop: '0.75rem' }}>
+                                {loadingMembers ? (
+                                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Loading...</p>
+                                ) : (
+                                    members.map(m => {
+                                        const isCurrentUserAdmin = members.find(me => me.userId === user?.id)?.role === 'admin';
+                                        return (
+                                            <div key={m.id} style={{
+                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)'
+                                            }}>
+                                                <div>
+                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                                                        {m.displayName || m.username}
+                                                    </span>
+                                                    <span style={{
+                                                        marginLeft: '0.5rem', fontSize: '0.7rem', padding: '1px 6px',
+                                                        borderRadius: '8px', backgroundColor: m.role === 'admin' ? '#8B5CF620' : '#6B728020',
+                                                        color: m.role === 'admin' ? '#8B5CF6' : '#6B7280'
+                                                    }}>
+                                                        {m.role}
+                                                    </span>
+                                                </div>
+                                                {isCurrentUserAdmin && m.userId !== user?.id && (
+                                                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                        <select
+                                                            value={m.role}
+                                                            onChange={(e) => handleChangeRole(m.userId, e.target.value)}
+                                                            style={{ fontSize: '0.75rem', padding: '2px 4px', borderRadius: '4px' }}
+                                                        >
+                                                            <option value="member">member</option>
+                                                            <option value="moderator">moderator</option>
+                                                            <option value="admin">admin</option>
+                                                        </select>
+                                                        <button
+                                                            onClick={() => handleRemoveMember(m.userId)}
+                                                            style={{
+                                                                background: 'none', border: 'none', cursor: 'pointer',
+                                                                color: '#EF4444', fontSize: '0.85rem'
+                                                            }}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Create Post */}
                 {isMember && (
                     <div className="content-card" style={{ marginBottom: '1.5rem' }}>
+                        {postError && (
+                            <div style={{
+                                background: 'rgba(255, 107, 107, 0.1)',
+                                border: '1px solid rgba(255, 107, 107, 0.3)',
+                                borderRadius: '10px',
+                                padding: '0.75rem 1rem',
+                                color: '#ff4444',
+                                fontSize: '0.9rem',
+                                marginBottom: '1rem',
+                                textAlign: 'center'
+                            }}>
+                                {postError}
+                            </div>
+                        )}
                         <form onSubmit={handlePostSubmit}>
                             <textarea
                                 value={newPostContent}
@@ -149,15 +373,16 @@ const GroupDetail: React.FC = () => {
                                 placeholder="Share something with the group..."
                                 rows={3}
                                 style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', resize: 'none' }}
+                                disabled={submittingPost}
                             />
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                                 <button
                                     type="submit"
                                     className="btn-primary"
-                                    disabled={!newPostContent.trim()}
+                                    disabled={!newPostContent.trim() || submittingPost}
                                     style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                                 >
-                                    Post
+                                    {submittingPost ? 'Posting...' : 'Post'}
                                 </button>
                             </div>
                         </form>
@@ -176,18 +401,20 @@ const GroupDetail: React.FC = () => {
                             </div>
                             <p style={{ marginBottom: '1rem' }}>{post.content}</p>
 
-                            <div style={{ display: 'flex', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '0.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginLeft: '-0.5rem' }}>
                                 <button
+                                    className="icon-btn"
                                     onClick={() => handleLike(post.id)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: post.is_liked ? 'var(--primary-color)' : 'var(--text-secondary)' }}
+                                    style={{ color: post.is_liked ? 'var(--primary-color)' : 'var(--text-secondary)' }}
                                 >
-                                    ❤️ {post.likes_count}
+                                    ❤️ <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>{post.likes_count}</span>
                                 </button>
                                 <button
+                                    className="icon-btn"
                                     onClick={() => toggleComments(post.id)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                                    style={{ color: 'var(--text-secondary)' }}
                                 >
-                                    💬 {post.comments_count}
+                                    💬 <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>{post.comments_count}</span>
                                 </button>
                             </div>
 
@@ -229,33 +456,52 @@ const GroupDetail: React.FC = () => {
 
                                     {/* Add Comment Input */}
                                     {isMember && (
-                                        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
-                                            <input
-                                                type="text"
-                                                placeholder="Write a comment..."
-                                                value={commentContent[post.id] || ''}
-                                                onChange={(e) => setCommentContent(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                                onKeyPress={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                                        e.preventDefault();
-                                                        handleCommentSubmit(post.id);
-                                                    }
-                                                }}
-                                                style={{ flex: 1, padding: '0.5rem', borderRadius: '1rem', border: '1px solid var(--border-color)' }}
-                                            />
-                                            <button
-                                                onClick={() => handleCommentSubmit(post.id)}
-                                                disabled={!commentContent[post.id]?.trim()}
-                                                style={{
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    color: commentContent[post.id]?.trim() ? 'var(--primary-color)' : 'var(--text-secondary)',
-                                                    fontWeight: 600,
-                                                    cursor: commentContent[post.id]?.trim() ? 'pointer' : 'not-allowed'
-                                                }}
-                                            >
-                                                Send
-                                            </button>
+                                        <div style={{
+                                            position: 'sticky',
+                                            bottom: '-1rem', /* Align with content container padding */
+                                            background: 'var(--card-bg)',
+                                            padding: '1rem 0',
+                                            marginTop: '0.5rem',
+                                            borderTop: '1px solid var(--border-color)',
+                                            zIndex: 2
+                                        }}>
+                                            {commentError[post.id] && (
+                                                <div style={{ color: '#ff4444', fontSize: '0.85rem', marginBottom: '0.5rem', padding: '0.5rem', background: 'rgba(255, 107, 107, 0.1)', borderRadius: '0.5rem' }}>
+                                                    {commentError[post.id]}
+                                                </div>
+                                            )}
+                                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Write a comment..."
+                                                    value={commentContent[post.id] || ''}
+                                                    onChange={(e) => setCommentContent(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleCommentSubmit(post.id);
+                                                        }
+                                                    }}
+                                                    style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '1.5rem', border: '1px solid var(--border-color)', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
+                                                    disabled={submittingComment[post.id]}
+                                                />
+                                                <button
+                                                    onClick={() => handleCommentSubmit(post.id)}
+                                                    disabled={!commentContent[post.id]?.trim() || submittingComment[post.id]}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: commentContent[post.id]?.trim() ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                                        fontWeight: 600,
+                                                        cursor: commentContent[post.id]?.trim() ? 'pointer' : 'not-allowed',
+                                                        opacity: submittingComment[post.id] ? 0.5 : 1,
+                                                        padding: '0.5rem',
+                                                        fontSize: '1rem'
+                                                    }}
+                                                >
+                                                    {submittingComment[post.id] ? '⏳' : '↑'}
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

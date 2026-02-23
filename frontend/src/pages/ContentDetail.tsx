@@ -56,6 +56,7 @@ const ContentDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [commentText, setCommentText] = useState('');
     const [submittingComment, setSubmittingComment] = useState(false);
+    const [commentError, setCommentError] = useState<string | null>(null);
 
     const fetchContent = React.useCallback(async () => {
         try {
@@ -152,9 +153,10 @@ const ContentDetail: React.FC = () => {
 
         try {
             setSubmittingComment(true);
+            setCommentError(null);
             const token = localStorage.getItem('token');
 
-            await fetch(`http://localhost:3000/api/content/${id}/comments`, {
+            const res = await fetch(`http://localhost:3000/api/content/${id}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -163,10 +165,16 @@ const ContentDetail: React.FC = () => {
                 body: JSON.stringify({ commentText })
             });
 
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to submit comment');
+            }
+
             setCommentText('');
             fetchContent();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting comment:', error);
+            setCommentError(error.message || 'Failed to submit comment');
         } finally {
             setSubmittingComment(false);
         }
@@ -330,26 +338,8 @@ const ContentDetail: React.FC = () => {
                     </article>
 
                     {/* Comments Section */}
-                    <section className="comments-section">
+                    <section className="comments-section" style={{ paddingBottom: '80px', position: 'relative' }}>
                         <h2>Comments ({content.commentsCount})</h2>
-
-                        {user ? (
-                            <form className="comment-form" onSubmit={handleSubmitComment}>
-                                <textarea
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e.target.value)}
-                                    placeholder="Share your thoughts..."
-                                    rows={3}
-                                />
-                                <button type="submit" disabled={submittingComment || !commentText.trim()}>
-                                    {submittingComment ? 'Posting...' : 'Post Comment'}
-                                </button>
-                            </form>
-                        ) : (
-                            <div className="comment-login-prompt">
-                                <p>Please <a href="/signin">sign in</a> to comment</p>
-                            </div>
-                        )}
 
                         <div className="comments-list">
                             {comments.map((comment) => (
@@ -394,6 +384,85 @@ const ContentDetail: React.FC = () => {
                                 <p className="no-comments">No comments yet. Be the first to comment!</p>
                             )}
                         </div>
+
+                        {/* Sticky Add Comment Input */}
+                        {user ? (
+                            <form
+                                className="comment-form"
+                                onSubmit={handleSubmitComment}
+                                style={{
+                                    position: 'sticky',
+                                    bottom: '-1.5rem', /* Align with content container padding */
+                                    background: 'var(--bg-color)',
+                                    padding: '1rem 0',
+                                    margin: '0',
+                                    borderTop: '1px solid var(--border-color)',
+                                    zIndex: 10,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                {commentError && (
+                                    <div style={{
+                                        background: 'rgba(255, 107, 107, 0.1)',
+                                        border: '1px solid rgba(255, 107, 107, 0.3)',
+                                        borderRadius: '10px',
+                                        padding: '0.75rem 1rem',
+                                        color: '#ff4444',
+                                        fontSize: '0.9rem',
+                                        textAlign: 'center'
+                                    }}>
+                                        {commentError}
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <textarea
+                                        value={commentText}
+                                        onChange={(e) => setCommentText(e.target.value)}
+                                        placeholder="Share your thoughts..."
+                                        rows={1}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.75rem 1rem',
+                                            borderRadius: '1.5rem',
+                                            border: '1px solid var(--border-color)',
+                                            boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
+                                            resize: 'none',
+                                            margin: 0
+                                        }}
+                                        disabled={submittingComment}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={submittingComment || !commentText.trim()}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: commentText.trim() ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                            fontWeight: 600,
+                                            cursor: commentText.trim() ? 'pointer' : 'not-allowed',
+                                            opacity: submittingComment ? 0.5 : 1,
+                                            padding: '0.5rem',
+                                            fontSize: '1rem'
+                                        }}
+                                    >
+                                        {submittingComment ? '⏳' : '↑'}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div className="comment-login-prompt" style={{
+                                position: 'sticky',
+                                bottom: '-1.5rem',
+                                background: 'var(--bg-color)',
+                                padding: '1rem 0',
+                                borderTop: '1px solid var(--border-color)',
+                                zIndex: 10
+                            }}>
+                                <p>Please <a href="/signin">sign in</a> to comment</p>
+                            </div>
+                        )}
                     </section>
                 </div>
                 {/* Bottom Nav Spacer */}

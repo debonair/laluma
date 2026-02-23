@@ -6,7 +6,7 @@ import BottomNav from '../components/BottomNav';
 
 const Home: React.FC = () => {
     const { user, signOut } = useAuth();
-    const { feed } = useGroup();
+    const { feed, isLoading } = useGroup();
     const navigate = useNavigate();
 
     const handleSignOut = () => {
@@ -41,14 +41,37 @@ const Home: React.FC = () => {
                     </div>
                 </div>
 
+                {user?.roles?.includes('app-admin') && (
+                    <div className="content-card" style={{ marginTop: '1rem', border: '1px solid var(--primary-color)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <span style={{ fontSize: '1.2rem' }}>🛠️</span>
+                            <h3 style={{ margin: 0 }}>Admin Tools</h3>
+                        </div>
+                        <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Manage content submissions and moderate the community.</p>
+                        <button
+                            onClick={() => navigate('/admin/submissions')}
+                            className="btn-primary"
+                            style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                        >
+                            Open Admin Dashboard
+                        </button>
+                    </div>
+                )}
+
                 <div className="content-card" style={{ marginTop: '1rem' }}>
                     <h3>Community Activity</h3>
-                    {feed.length > 0 ? (
+                    {isLoading ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="skeleton" style={{ height: '80px', width: '100%', borderRadius: '0.5rem' }}></div>
+                            ))}
+                        </div>
+                    ) : feed.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {feed.slice(0, 3).map(post => (
                                 <div
                                     key={post.id}
-                                    onClick={() => navigate(`/groups/${post.group_id}`)}
+                                    onClick={() => navigate(`/groups/${post.group?.id}`)}
                                     style={{
                                         cursor: 'pointer',
                                         borderBottom: '1px solid var(--border-color)',
@@ -70,7 +93,7 @@ const Home: React.FC = () => {
                                         {post.content}
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                                        in {post.group.name || 'a group'}
+                                        in {post.group?.name || 'a group'}
                                     </div>
                                 </div>
                             ))}

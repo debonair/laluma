@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
-import { io } from '../index';
+import { getIO } from '../socket';
 
 const createPostSchema = z.object({
     content: z.string().min(1).max(5000)
@@ -144,7 +144,7 @@ export const createPost = async (
         });
 
         // Notify clients of a feed update
-        io.emit('feed_updated');
+        getIO().emit('feed_updated');
     } catch (error) {
         if (error instanceof z.ZodError) {
             res.status(400).json({
@@ -372,7 +372,7 @@ export const createComment = async (
             created_at: comment.createdAt
         });
 
-        io.emit('feed_updated');
+        getIO().emit('feed_updated');
     } catch (error) {
         if (error instanceof z.ZodError) {
             res.status(400).json({

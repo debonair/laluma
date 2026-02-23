@@ -12,6 +12,7 @@ import contentRoutes from './routes/content.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import notificationRoutes from './routes/notification.routes';
 import messagesRoutes from './routes/messages.routes';
+import submissionsRoutes from './routes/submissions.routes';
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +22,7 @@ const server = createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // Initialize WebSockets
-export const io = setupSocketIO(server);
+setupSocketIO(server);
 
 // Middleware
 app.use(cors({
@@ -46,6 +47,7 @@ app.use('/api/content', contentRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/submissions', submissionsRoutes);
 
 // 404 handler
 app.use((req, res) => {

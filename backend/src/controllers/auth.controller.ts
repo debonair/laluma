@@ -164,6 +164,10 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
             }
         }
 
+        // Note: The local database record is created via JIT provisioning in the 
+        // authenticate middleware during the very first request after sign-in.
+        // This ensures the local role is always in sync with Keycloak.
+
         // 4. Sign in immediately to get tokens
         let tokens;
         try {

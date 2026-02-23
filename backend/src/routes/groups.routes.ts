@@ -4,7 +4,10 @@ import {
     createGroup,
     getGroup,
     joinGroup,
-    leaveGroup
+    leaveGroup,
+    getGroupMembers,
+    removeMember,
+    updateMemberRole
 } from '../controllers/groups.controller';
 import {
     getGroupPosts,
@@ -21,5 +24,10 @@ router.post('/:groupId/join', authenticate, joinGroup);
 router.post('/:groupId/leave', authenticate, leaveGroup);
 router.get('/:groupId/posts', authenticate, getGroupPosts);
 router.post('/:groupId/posts', authenticate, createPost);
+
+// Group management
+router.get('/:groupId/members', authenticate, getGroupMembers);
+router.delete('/:groupId/members/:memberId', authenticate, removeMember);
+router.patch('/:groupId/members/:memberId/role', authenticate, updateMemberRole);
 
 export default router;

@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { prisma } from '../db';
-import { io } from '../index';
+import { getIO } from '../socket';
 
 const router = express.Router();
 
@@ -83,6 +83,25 @@ router.get('/conversations/:id', authenticate, async (req: express.Request, res:
             orderBy: { createdAt: 'asc' }
         });
 
+        const conversationParticipants = await prisma.conversationParticipant.findMany({
+            where: { conversationId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayName: true,
+                        profileImageUrl: true
+                    }
+                }
+            }
+        });
+
+        // Get the recipient (the other participant in the conversation)
+        const recipient = conversationParticipants
+            .map(p => p.user)
+            .find(u => u.id !== userId);
+
         // Mark messages as read
         await prisma.message.updateMany({
             where: {
@@ -93,9 +112,57 @@ router.get('/conversations/:id', authenticate, async (req: express.Request, res:
             data: { isRead: true }
         });
 
-        res.json({ messages });
+        res.json({ messages, recipient });
     } catch (error) {
         console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Initialize or find a conversation with a specific user
+router.post('/init', authenticate, async (req: express.Request, res: express.Response) => {
+    const authReq = req as AuthRequest;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resAny = res as any;
+    try {
+        const senderId = authReq.user!.userId;
+        const { recipientId } = req.body;
+
+        if (!recipientId) {
+            return resAny.status(400).json({ error: 'Recipient ID is required' });
+        }
+
+        if (senderId === recipientId) {
+            return resAny.status(400).json({ error: 'Cannot start a conversation with yourself' });
+        }
+
+        // Find existing conversation
+        let conversation = await prisma.conversation.findFirst({
+            where: {
+                AND: [
+                    { participants: { some: { userId: senderId } } },
+                    { participants: { some: { userId: recipientId } } }
+                ]
+            }
+        });
+
+        // Create new if none exists
+        if (!conversation) {
+            conversation = await prisma.conversation.create({
+                data: {
+                    participants: {
+                        create: [
+                            { userId: senderId },
+                            { userId: recipientId }
+                        ]
+                    }
+                }
+            });
+        }
+
+        res.json({ conversationId: conversation.id });
+    } catch (error) {
+        console.error('Error initializing conversation:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -161,9 +228,9 @@ router.post('/send', authenticate, async (req: express.Request, res: express.Res
         });
 
         // Emit socket event to the recipient's private room
-        io.to(`user_${recipientId}`).emit('new_message', message);
+        getIO().to(`user_${recipientId}`).emit('new_message', message);
         // Also emit to the sender to confirm local delivery across devices
-        io.to(`user_${senderId}`).emit('new_message', message);
+        getIO().to(`user_${senderId}`).emit('new_message', message);
 
         res.json({ message });
     } catch (error) {

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import BottomNav from '../components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 import { notificationService } from '../services/notification.service';
 import type { Notification } from '../types/notification';
+import { Heart, MessageCircle, CornerDownRight, Bell } from 'lucide-react';
 import './Notifications.css';
 
 const Notifications: React.FC = () => {
@@ -46,20 +49,26 @@ const Notifications: React.FC = () => {
 
     const handleMarkAsRead = async (id: string, isRead: boolean) => {
         if (isRead) return;
+
+        // Optimistic UI: Immediately mark as read in local state
+        setNotifications(prev =>
+            prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+        );
+
         try {
             await notificationService.markAsRead(id);
-            setNotifications(prev =>
-                prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-            );
         } catch (error) {
             console.error('Error marking as read:', error);
+            // Revert state if api fails (optional, but good practice if critical)
         }
     };
 
     const handleMarkAllRead = async () => {
+        // Optimistic UI
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+
         try {
             await notificationService.markAllAsRead();
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch (error) {
             console.error('Error marking all as read:', error);
         }
@@ -77,16 +86,33 @@ const Notifications: React.FC = () => {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'like': return '❤️';
-            case 'comment': return '💬';
-            case 'reply': return '↩️';
-            case 'system': return '🔔';
-            default: return 'bell';
+            case 'like': return <Heart size={20} className="text-pink-500" strokeWidth={2.5} color="#EC4899" />;
+            case 'comment': return <MessageCircle size={20} className="text-blue-500" strokeWidth={2.5} color="#3B82F6" />;
+            case 'reply': return <CornerDownRight size={20} className="text-purple-500" strokeWidth={2.5} color="#8B5CF6" />;
+            case 'system': return <Bell size={20} className="text-yellow-500" strokeWidth={2.5} color="#F59E0B" />;
+            default: return <Bell size={20} strokeWidth={2.5} color="#6B7280" />;
         }
     };
 
     if (loading && notifications.length === 0) {
-        return <div className="loading-state">Loading notifications...</div>;
+        return (
+            <div className="page-container">
+                <div className="notifications-header">
+                    <h1>Notifications</h1>
+                </div>
+                <div className="notifications-list">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="notification-item" style={{ border: 'none', background: 'transparent', padding: '1rem 0' }}>
+                            <div className="avatar skeleton"></div>
+                            <div className="notification-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <div className="skeleton" style={{ height: '16px', width: '80%', borderRadius: '4px' }}></div>
+                                <div className="skeleton" style={{ height: '12px', width: '40%', borderRadius: '4px' }}></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -130,7 +156,7 @@ const Notifications: React.FC = () => {
                                     {' '}{notification.message}
                                 </p>
                                 <span className="timestamp">
-                                    {new Date(notification.createdAt).toLocaleDateString()}
+                                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                 </span>
                             </div>
                             {!notification.isRead && <div className="unread-dot" />}
@@ -148,6 +174,10 @@ const Notifications: React.FC = () => {
                     )}
                 </div>
             )}
+
+            {/* Spacer for bottom nav */}
+            <div style={{ height: '60px' }}></div>
+            <BottomNav />
         </div>
     );
 };

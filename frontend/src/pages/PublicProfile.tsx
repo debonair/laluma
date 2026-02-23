@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { userService, type PublicProfile as ProfileData } from '../services/user.service';
 import BottomNav from '../components/BottomNav';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/api';
 
 const PublicProfile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -33,20 +34,23 @@ const PublicProfile: React.FC = () => {
         fetchProfile();
     }, [id]);
 
-    const handleMessageClick = () => {
-        if (!profile) return;
+    const [isMessaging, setIsMessaging] = useState(false);
 
-        // This relies on the backend route /messages/send handling conversation creation 
-        // transparently, but we can also just route them to an optimistic generic /messages/new route
-        // For simplicity with the existing UI, let's just make sure they can navigate to a chat screen.
-        // The ConversationDetail component requires an explicit :id of the conversation, not the user.
-        // So we will jump to /messages, or we can add a new param to ConversationDetail to start a chat.
-        // For now, let's navigate to the main Messages list and instruct them to use it, OR 
-        // realistically we could call an API here to get-or-create the conversationId.
+    const handleMessageClick = async () => {
+        if (!profile || isMessaging) return;
 
-        // Let's implement the get-or-create conversation ID logic here visually if possible,
-        // or just navigate them to a generic state.
-        alert("Messaging feature integration coming soon via deep linking!");
+        try {
+            setIsMessaging(true);
+            const response = await apiClient.post<{ conversationId: string }>('/messages/init', {
+                recipientId: profile.id
+            });
+            navigate(`/messages/${response.data.conversationId}`);
+        } catch (err) {
+            console.error("Failed to start conversation:", err);
+            alert("Could not start conversation. Please try again later.");
+        } finally {
+            setIsMessaging(false);
+        }
     };
 
     if (isLoading) {

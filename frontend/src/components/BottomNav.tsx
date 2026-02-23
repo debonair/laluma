@@ -1,16 +1,18 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSocket } from '../context/SocketContext';
+import { useAuth } from '../context/AuthContext';
 
 const BottomNav: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { socket } = useSocket();
+    const { user } = useAuth();
     const [unreadCount, setUnreadCount] = React.useState(0);
 
     React.useEffect(() => {
         const fetchUnreadCount = async () => {
             try {
-                // We'll speculatively use the service we know exists
-                // We might need to move this to a context if we want it to update live
                 const { notificationService } = await import('../services/notification.service');
                 const data = await notificationService.getAll({ limit: 1 });
                 setUnreadCount(data.unreadCount);
@@ -20,10 +22,17 @@ const BottomNav: React.FC = () => {
         };
 
         fetchUnreadCount();
-        // Poll every minute
         const interval = setInterval(fetchUnreadCount, 60000);
         return () => clearInterval(interval);
     }, []);
+
+    // Real-time: increment on new_notification socket event
+    React.useEffect(() => {
+        if (!socket) return;
+        const handler = () => setUnreadCount(prev => prev + 1);
+        socket.on('new_notification', handler);
+        return () => { socket.off('new_notification', handler); };
+    }, [socket]);
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -82,6 +91,16 @@ const BottomNav: React.FC = () => {
                 <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>👤</div>
                 <span>Profile</span>
             </div>
+
+            {user?.roles?.includes('app-admin') && (
+                <div
+                    className={`nav-item ${isActive('/admin/submissions') ? 'active' : ''}`}
+                    onClick={() => navigate('/admin/submissions')}
+                >
+                    <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>🛠️</div>
+                    <span>Admin</span>
+                </div>
+            )}
         </div>
     );
 };

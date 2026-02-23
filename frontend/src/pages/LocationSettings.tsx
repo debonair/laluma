@@ -31,7 +31,8 @@ const LocationSettings: React.FC = () => {
                 location: {
                     radius,
                     anywhere
-                }
+                },
+                hasCompletedOnboarding: true
             });
             navigate('/');
         } catch (error) {

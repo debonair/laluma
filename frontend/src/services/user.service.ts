@@ -16,6 +16,7 @@ export interface UserProfile {
     };
     looking_for?: string[];
     has_completed_onboarding: boolean;
+    role: string;
     created_at: string;
 }
 
@@ -56,6 +57,15 @@ export interface UserSearchResult {
     motherhood_stage?: string;
 }
 
+export interface UserNearbyResult {
+    id: string;
+    username: string;
+    display_name?: string;
+    profile_image_url?: string;
+    motherhood_stage?: string;
+    distance_km: number;
+}
+
 export const userService = {
     getCurrentUser: async (): Promise<UserProfile> => {
         const response = await apiClient.get<UserProfile>('/users/me');
@@ -75,5 +85,10 @@ export const userService = {
     getPublicProfile: async (id: string): Promise<PublicProfile> => {
         const response = await apiClient.get<PublicProfile>(`/users/${id}`);
         return response.data;
+    },
+
+    getNearbyUsers: async (): Promise<UserNearbyResult[]> => {
+        const response = await apiClient.get<{ users: UserNearbyResult[] }>('/users/nearby');
+        return response.data.users;
     }
 };

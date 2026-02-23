@@ -20,6 +20,8 @@ model User {
   aboutMe         String?  @map("about_me")
   motherhoodStage String?  @map("motherhood_stage")
   profileImageUrl String?  @map("profile_image_url")
+  role            String   @default("user")
+  hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 

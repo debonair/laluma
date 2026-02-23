@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import BottomNav from '../components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { contentService } from '../services/content.service';
 import type { Content } from '../types/content';
@@ -84,6 +85,8 @@ const MyBookmarks: React.FC = () => {
                     ))}
                 </div>
             )}
+            <div style={{ height: '60px' }}></div>
+            <BottomNav />
         </div>
     );
 };

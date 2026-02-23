@@ -140,3 +140,13 @@
     opacity: 0.5;
     cursor: default;
 }
+
+/* Notification unread text states */
+.notification-item.unread .notification-content p {
+    font-weight: 600;
+}
+
+.notification-item.unread .timestamp {
+    color: var(--primary-color);
+    font-weight: 500;
+}

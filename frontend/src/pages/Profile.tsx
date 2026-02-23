@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../services/api';
 
 import BottomNav from '../components/BottomNav';
 
@@ -8,6 +9,8 @@ const Profile: React.FC = () => {
     const { user, updateProfile } = useAuth();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     // Form state initialized only when editing
     const [editForm, setEditForm] = useState({
@@ -39,8 +42,27 @@ const Profile: React.FC = () => {
         setIsEditing(false);
     };
 
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+            const res = await apiClient.post<{ profileImageUrl: string }>('/users/me/avatar', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setAvatarUrl(res.data.profileImageUrl);
+        } catch (err) {
+            console.error('Avatar upload failed:', err);
+            alert('Failed to upload image');
+        }
+    };
+
     if (!user) return <div>Loading...</div>;
 
+    const profileImg = avatarUrl || user.profileImageUrl;
     const displayProfileName = isEditing ? editForm.displayName : (user.displayName || user.username);
     const displayAboutMe = isEditing ? editForm.aboutMe : (user.aboutMe || '');
     const displayMotherhoodStage = isEditing ? editForm.motherhoodStage : (user.motherhoodStage || '');
@@ -50,13 +72,15 @@ const Profile: React.FC = () => {
             <div className="page-header profile-header-actions">
                 <h1>My Profile</h1>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button
-                        onClick={() => navigate('/admin/content')}
-                        className="btn-secondary"
-                        style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                    >
-                        Manage Content
-                    </button>
+                    {user?.roles?.includes('app-admin') && (
+                        <button
+                            onClick={() => navigate('/admin/content')}
+                            className="btn-secondary"
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                        >
+                            Manage Content
+                        </button>
+                    )}
                     {!isEditing ? (
                         <button
                             onClick={handleEditClick}
@@ -79,8 +103,33 @@ const Profile: React.FC = () => {
 
             <main className="page-content">
                 <div className="content-card profile-avatar-section">
-                    <div className="profile-avatar">
-                        {(displayProfileName || 'U').charAt(0).toUpperCase()}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        style={{ display: 'none' }}
+                    />
+                    <div
+                        className="profile-avatar"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                        title="Click to change avatar"
+                    >
+                        {profileImg ? (
+                            <img
+                                src={profileImg.startsWith('/') ? `http://localhost:3000${profileImg}` : profileImg}
+                                alt="Avatar"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                            />
+                        ) : (
+                            (displayProfileName || 'U').charAt(0).toUpperCase()
+                        )}
+                        <div style={{
+                            position: 'absolute', bottom: 0, left: 0, right: 0,
+                            background: 'rgba(0,0,0,0.5)', color: '#fff',
+                            fontSize: '0.6rem', textAlign: 'center', padding: '2px 0'
+                        }}>📷</div>
                     </div>
                     {isEditing ? (
                         <input

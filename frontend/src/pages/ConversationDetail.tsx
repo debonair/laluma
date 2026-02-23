@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import BottomNav from '../components/BottomNav';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
 import { useSocket } from '../context/SocketContext';
@@ -24,8 +25,12 @@ const ConversationDetail: React.FC = () => {
     const { user } = useAuth();
 
     const [messages, setMessages] = useState<Message[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [recipient, setRecipient] = useState<any>(null);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [sendingMessage, setSendingMessage] = useState(false);
+    const [messageError, setMessageError] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Fetch message history
@@ -33,8 +38,10 @@ const ConversationDetail: React.FC = () => {
         const fetchMessages = async () => {
             if (!id) return;
             try {
-                const response = await apiClient.get<{ messages: Message[] }>(`/messages/conversations/${id}`);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const response = await apiClient.get<{ messages: Message[], recipient: any }>(`/messages/conversations/${id}`);
                 setMessages(response.data.messages);
+                setRecipient(response.data.recipient);
             } catch (error) {
                 console.error('Error fetching conversation:', error);
             } finally {
@@ -68,23 +75,18 @@ const ConversationDetail: React.FC = () => {
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!newMessage.trim() || !user) return;
-
-        // In a real robust system we would Optimistic UI append here and replace on success.
-        // For simplicity, we just rely on the API success + WebSocket roundtrip or local injection.
+        if (!newMessage.trim() || !user || sendingMessage) return;
 
         const contentToAuth = newMessage.trim();
-        setNewMessage(''); // optimistic clear
 
         try {
-            // Find the other user from the existing messages or conversation endpoint
-            // Hack: To send a message to a direct route, we need recipientId. 
-            // Better to update backend `send` route to accept `conversationId` alongside `recipientId`.
-            // Let's assume the backend will handle routing via a modified post endpoint if we pass conversationId.
-            const recipientCandidate = messages.find(m => m.senderId !== user.id)?.senderId;
+            setSendingMessage(true);
+            setMessageError(null);
+
+            const recipientCandidate = recipient?.id || messages.find(m => m.senderId !== user.id)?.senderId;
 
             if (!recipientCandidate) {
-                console.error('Missing recipient. Cannot determine who to reply to.');
+                setMessageError("Cannot determine recipient to reply to.");
                 return;
             }
 
@@ -93,11 +95,12 @@ const ConversationDetail: React.FC = () => {
                 content: contentToAuth
             });
 
-            // If local socket bounce isn't instant, we can manually inject the sent response:
-            // But we already added `io.to(senderId).emit('new_message')` in the backend!
-            // So we'll let the WebSocket bounce handle the local state append.
-        } catch (error) {
+            setNewMessage('');
+        } catch (error: any) {
             console.error('Failed to send message:', error);
+            setMessageError(error.response?.data?.error || error.message || 'Failed to send message.');
+        } finally {
+            setSendingMessage(false);
         }
     };
 
@@ -113,7 +116,9 @@ const ConversationDetail: React.FC = () => {
                     <ArrowLeft size={20} />
                 </button>
                 <div style={{ flex: 1 }}>
-                    <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Chat</h2>
+                    <h2 style={{ margin: 0, fontSize: '1.2rem' }}>
+                        {recipient ? `Chat with ${recipient.displayName || recipient.username}` : 'Chat'}
+                    </h2>
                 </div>
             </header>
 
@@ -178,13 +183,19 @@ const ConversationDetail: React.FC = () => {
             </div>
 
             {/* Input Area */}
-            <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)', backgroundColor: 'white' }}>
+            <div style={{ padding: '1rem', paddingBottom: 'calc(1rem + 60px)', borderTop: '1px solid var(--border-color)', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {messageError && (
+                    <div style={{ color: '#ff4444', fontSize: '0.85rem', padding: '0.5rem', background: 'rgba(255, 107, 107, 0.1)', borderRadius: '0.5rem', textAlign: 'center' }}>
+                        {messageError}
+                    </div>
+                )}
                 <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
+                        disabled={sendingMessage}
                         style={{
                             flex: 1,
                             padding: '0.75rem 1rem',
@@ -196,7 +207,7 @@ const ConversationDetail: React.FC = () => {
                     />
                     <button
                         type="submit"
-                        disabled={!newMessage.trim()}
+                        disabled={!newMessage.trim() || sendingMessage}
                         style={{
                             width: '44px',
                             height: '44px',
@@ -207,14 +218,16 @@ const ConversationDetail: React.FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            cursor: newMessage.trim() ? 'pointer' : 'default',
-                            transition: 'background-color 0.2s'
+                            cursor: newMessage.trim() && !sendingMessage ? 'pointer' : 'default',
+                            transition: 'background-color 0.2s',
+                            opacity: sendingMessage ? 0.5 : 1
                         }}
                     >
-                        <Send size={20} style={{ marginLeft: '-2px' }} />
+                        {sendingMessage ? '...' : <Send size={20} style={{ marginLeft: '-2px' }} />}
                     </button>
                 </form>
             </div>
+            <BottomNav />
         </div>
     );
 };

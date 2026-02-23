@@ -33,6 +33,15 @@ export interface AuthenticatedSocket extends Socket {
     };
 }
 
+let ioInstance: SocketIOServer;
+
+export function getIO(): SocketIOServer {
+    if (!ioInstance) {
+        throw new Error('Socket.io not initialized!');
+    }
+    return ioInstance;
+}
+
 export function setupSocketIO(server: HttpServer) {
     const io = new SocketIOServer(server, {
         cors: {
@@ -41,6 +50,8 @@ export function setupSocketIO(server: HttpServer) {
             credentials: true
         }
     });
+
+    ioInstance = io;
 
     // 1. Authentication Middleware
     io.use((socket: AuthenticatedSocket, next) => {

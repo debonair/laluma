@@ -296,3 +296,111 @@ export const leaveGroup = async (
         });
     }
 };
+
+// ─── Group Management (Admin) ──────────────────────────────────────────────────
+
+export const getGroupMembers = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const groupId = req.params.groupId as string;
+        const members = await prisma.groupMember.findMany({
+            where: { groupId },
+            include: {
+                user: {
+                    select: { id: true, username: true, displayName: true, profileImageUrl: true }
+                }
+            },
+            orderBy: { joinedAt: 'asc' }
+        });
+
+        res.json(members.map(m => ({
+            id: m.id,
+            userId: m.user.id,
+            username: m.user.username,
+            displayName: m.user.displayName,
+            profileImageUrl: m.user.profileImageUrl,
+            role: m.role,
+            joinedAt: m.joinedAt
+        })));
+    } catch (error) {
+        console.error('Get group members error:', error);
+        res.status(500).json({ error: 'Failed to fetch members' });
+    }
+};
+
+export const removeMember = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const groupId = req.params.groupId as string;
+        const memberId = req.params.memberId as string;
+
+        // Check requester is group admin
+        const requesterMembership = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId: req.user!.userId } }
+        });
+        if (!requesterMembership || requesterMembership.role !== 'admin') {
+            res.status(403).json({ error: 'Only group admins can remove members' });
+            return;
+        }
+
+        // Cannot remove self
+        if (memberId === req.user!.userId) {
+            res.status(400).json({ error: 'Cannot remove yourself. Use leave group instead.' });
+            return;
+        }
+
+        await prisma.$transaction([
+            prisma.groupMember.delete({
+                where: { groupId_userId: { groupId, userId: memberId } }
+            }),
+            prisma.group.update({
+                where: { id: groupId },
+                data: { memberCount: { decrement: 1 } }
+            })
+        ]);
+
+        res.json({ success: true, message: 'Member removed' });
+    } catch (error) {
+        console.error('Remove member error:', error);
+        res.status(500).json({ error: 'Failed to remove member' });
+    }
+};
+
+export const updateMemberRole = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const groupId = req.params.groupId as string;
+        const memberId = req.params.memberId as string;
+        const { role } = req.body;
+
+        if (!['admin', 'moderator', 'member'].includes(role)) {
+            res.status(400).json({ error: 'Invalid role. Must be admin, moderator, or member.' });
+            return;
+        }
+
+        // Check requester is group admin
+        const requesterMembership = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId: req.user!.userId } }
+        });
+        if (!requesterMembership || requesterMembership.role !== 'admin') {
+            res.status(403).json({ error: 'Only group admins can change roles' });
+            return;
+        }
+
+        const updated = await prisma.groupMember.update({
+            where: { groupId_userId: { groupId, userId: memberId } },
+            data: { role }
+        });
+
+        res.json({ success: true, role: updated.role });
+    } catch (error) {
+        console.error('Update member role error:', error);
+        res.status(500).json({ error: 'Failed to update member role' });
+    }
+};

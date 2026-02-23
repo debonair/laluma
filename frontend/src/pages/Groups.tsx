@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 
 const Groups: React.FC = () => {
-    const { groups, userGroups, joinGroup } = useGroup();
+    const { groups, userGroups, joinGroup, isLoading } = useGroup();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'my-groups' | 'discover'>('my-groups');
     const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +89,13 @@ const Groups: React.FC = () => {
 
                 {/* Group List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {displayedGroups.length === 0 ? (
+                    {isLoading ? (
+                        <>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="content-card skeleton" style={{ height: '100px', width: '100%', padding: 0 }}></div>
+                            ))}
+                        </>
+                    ) : displayedGroups.length === 0 ? (
                         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '2rem' }}>
                             {activeTab === 'my-groups'
                                 ? "You haven't joined any groups yet. Check the 'Discover' tab!"
