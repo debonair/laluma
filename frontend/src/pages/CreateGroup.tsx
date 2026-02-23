@@ -20,9 +20,10 @@ const CreateGroup: React.FC = () => {
             try {
                 await createGroup(name, description);
                 navigate('/groups');
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to create group:", err);
-                setError(err.message || "Failed to create group. Please try again.");
+                const msg = err instanceof Error ? err.message : "Failed to create group. Please try again.";
+                setError(msg);
             } finally {
                 setIsSubmitting(false);
             }

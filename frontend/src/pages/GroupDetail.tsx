@@ -173,9 +173,10 @@ const GroupDetail: React.FC = () => {
                 // Reload posts
                 const postsData = await getGroupPosts(id);
                 setPosts(postsData);
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to post:", err);
-                setPostError(err.message || "Failed to create post. Please try again.");
+                const msg = err instanceof Error ? err.message : "Failed to create post. Please try again.";
+                setPostError(msg);
             } finally {
                 setSubmittingPost(false);
             }
@@ -209,9 +210,10 @@ const GroupDetail: React.FC = () => {
                     const postsData = await getGroupPosts(id);
                     setPosts(postsData);
                 }
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to add comment:", err);
-                setCommentError(prev => ({ ...prev, [postId]: err.message || "Failed to post comment." }));
+                const msg = err instanceof Error ? err.message : "Failed to post comment.";
+                setCommentError(prev => ({ ...prev, [postId]: msg }));
             } finally {
                 setSubmittingComment(prev => ({ ...prev, [postId]: false }));
             }

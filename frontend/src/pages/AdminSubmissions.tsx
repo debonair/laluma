@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { submissionService, type Submission } from '../services/submission.service';
 import BottomNav from '../components/BottomNav';
 
@@ -9,9 +9,8 @@ const AdminSubmissions: React.FC = () => {
     const [rejectId, setRejectId] = useState<string | null>(null);
     const [rejectReason, setRejectReason] = useState('');
 
-    useEffect(() => { loadSubmissions(); }, [filter]);
-
-    const loadSubmissions = async () => {
+    useEffect(() => { loadSubmissions(); }, [loadSubmissions]);
+    const loadSubmissions = useCallback(async () => {
         try {
             setLoading(true);
             const data = await submissionService.getAll(filter || undefined);
@@ -21,7 +20,9 @@ const AdminSubmissions: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter]);
+
+    useEffect(() => { loadSubmissions(); }, [loadSubmissions]);
 
     const handleApprove = async (id: string) => {
         if (!confirm('Approve this submission? It will be published as content.')) return;

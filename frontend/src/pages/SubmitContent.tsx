@@ -46,9 +46,10 @@ const SubmitContent: React.FC = () => {
             setCategory('');
             setSuccess('Your content has been submitted for review!');
             setTimeout(() => setSuccess(''), 5000);
-        } catch (err: any) {
+        } catch (err) {
             console.error(err);
-            setError(err.message || 'Failed to submit content. Please try again.');
+            const msg = err instanceof Error ? err.message : 'Failed to submit content. Please try again.';
+            setError(msg);
         } finally {
             setSubmitting(false);
         }

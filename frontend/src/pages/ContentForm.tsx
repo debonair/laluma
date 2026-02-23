@@ -114,9 +114,10 @@ const ContentForm: React.FC = () => {
                 const resData = await response.json().catch(() => ({}));
                 setError(resData.error || resData.message || 'Failed to save content');
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error saving content:', err);
-            setError(err.message || 'Failed to save content');
+            const msg = err instanceof Error ? err.message : 'Failed to save content';
+            setError(msg);
         } finally {
             setSaving(false);
         }

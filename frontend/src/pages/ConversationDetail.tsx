@@ -5,6 +5,8 @@ import apiClient from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Send } from 'lucide-react';
+import { type UserProfile } from '../services/user.service';
+import { handleAPIError } from '../services/api';
 
 interface Message {
     id: string;
@@ -25,8 +27,7 @@ const ConversationDetail: React.FC = () => {
     const { user } = useAuth();
 
     const [messages, setMessages] = useState<Message[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [recipient, setRecipient] = useState<any>(null);
+    const [recipient, setRecipient] = useState<UserProfile | null>(null);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [sendingMessage, setSendingMessage] = useState(false);
@@ -38,8 +39,7 @@ const ConversationDetail: React.FC = () => {
         const fetchMessages = async () => {
             if (!id) return;
             try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const response = await apiClient.get<{ messages: Message[], recipient: any }>(`/messages/conversations/${id}`);
+                const response = await apiClient.get<{ messages: Message[], recipient: UserProfile }>(`/messages/conversations/${id}`);
                 setMessages(response.data.messages);
                 setRecipient(response.data.recipient);
             } catch (error) {
@@ -96,9 +96,9 @@ const ConversationDetail: React.FC = () => {
             });
 
             setNewMessage('');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to send message:', error);
-            setMessageError(error.response?.data?.error || error.message || 'Failed to send message.');
+            setMessageError(handleAPIError(error) || 'Failed to send message.');
         } finally {
             setSendingMessage(false);
         }
@@ -154,7 +154,7 @@ const ConversationDetail: React.FC = () => {
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     fontSize: '0.8rem', fontWeight: 'bold'
                                                 }}>
-                                                    {(msg.sender.displayName || msg.sender.username).charAt(0).toUpperCase()}
+                                                    {(recipient?.displayName || recipient?.username || 'Loading...').charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>

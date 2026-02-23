@@ -172,9 +172,10 @@ const ContentDetail: React.FC = () => {
 
             setCommentText('');
             fetchContent();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error submitting comment:', error);
-            setCommentError(error.message || 'Failed to submit comment');
+            const msg = error instanceof Error ? error.message : 'Failed to submit comment';
+            setCommentError(msg);
         } finally {
             setSubmittingComment(false);
         }
