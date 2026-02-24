@@ -12,6 +12,8 @@ export interface Content {
     discountValue?: string;
     eventDate?: string;
     eventLocation?: string;
+    latitude?: number;
+    longitude?: number;
     contentType: 'article' | 'video' | 'mixed' | 'event' | 'promotion';
     isPremium: boolean;
     premiumTier?: 'premium' | 'premium_plus';

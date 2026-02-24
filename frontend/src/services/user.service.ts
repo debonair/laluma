@@ -13,6 +13,8 @@ export interface UserProfile {
         anywhere: boolean;
         city?: string;
         country?: string;
+        latitude?: number;
+        longitude?: number;
     };
     looking_for?: string[];
     has_completed_onboarding: boolean;

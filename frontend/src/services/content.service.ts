@@ -18,6 +18,11 @@ export const contentService = {
         return response.data;
     },
 
+    getDiscover: async (params?: { latitude?: number; longitude?: number; radius?: number }): Promise<{ promotions: Content[], events: Content[] }> => {
+        const response = await apiClient.get<{ promotions: Content[], events: Content[] }>('/content/discover', { params });
+        return response.data;
+    },
+
     getBookmarks: async (params?: { limit?: number; offset?: number }): Promise<Content[]> => {
         const response = await apiClient.get<Content[]>('/content/bookmarks', { params });
         return response.data;

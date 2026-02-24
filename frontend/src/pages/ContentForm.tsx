@@ -16,6 +16,8 @@ interface ContentFormData {
     discountValue?: string;
     eventDate?: string;
     eventLocation?: string;
+    latitude?: number | '';
+    longitude?: number | '';
     contentType: 'article' | 'video' | 'mixed' | 'event' | 'promotion';
     isPremium: boolean;
     premiumTier?: 'premium' | 'premium_plus';
@@ -74,7 +76,9 @@ const ContentForm: React.FC = () => {
                 discountCode: data.discountCode || '',
                 discountValue: data.discountValue || '',
                 eventDate: data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 16) : '',
-                eventLocation: data.eventLocation || ''
+                eventLocation: data.eventLocation || '',
+                latitude: data.latitude ?? '',
+                longitude: data.longitude ?? ''
             });
         } catch (err) {
             console.error('Error fetching content:', err);
@@ -105,6 +109,8 @@ const ContentForm: React.FC = () => {
 
             const payload = {
                 ...formData,
+                latitude: formData.latitude === '' ? null : Number(formData.latitude),
+                longitude: formData.longitude === '' ? null : Number(formData.longitude),
                 publishedAt: formData.status === 'approved' ? new Date().toISOString() : undefined,
                 eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : undefined
             };
@@ -285,7 +291,7 @@ const ContentForm: React.FC = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label htmlFor="eventLocation">Event Location *</label>
+                                    <label htmlFor="eventLocation">Event Location String *</label>
                                     <input
                                         type="text"
                                         id="eventLocation"
@@ -294,6 +300,32 @@ const ContentForm: React.FC = () => {
                                         placeholder="e.g. Centennial Park or Zoom Link"
                                         required={formData.contentType === 'event'}
                                     />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label htmlFor="latitude">Latitude *</label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            id="latitude"
+                                            value={formData.latitude}
+                                            onChange={(e) => setFormData({ ...formData, latitude: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                            placeholder="e.g. 40.7128"
+                                            required={formData.contentType === 'event'}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="longitude">Longitude *</label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            id="longitude"
+                                            value={formData.longitude}
+                                            onChange={(e) => setFormData({ ...formData, longitude: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                            placeholder="e.g. -74.0060"
+                                            required={formData.contentType === 'event'}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="body">Event Details *</label>

@@ -3,6 +3,7 @@ import { authenticate, optionalAuthenticate, requireRole } from '../middleware/a
 import { videoUpload } from '../middleware/upload';
 import {
     getContent,
+    getDiscoverContent,
     getContentById,
     createContent,
     updateContent,
@@ -23,6 +24,7 @@ const router = Router();
 
 // Public routes (no auth required for reading)
 router.get('/', optionalAuthenticate, getContent);
+router.get('/discover', optionalAuthenticate, getDiscoverContent);
 router.get('/bookmarks', authenticate, getUserBookmarks);
 router.get('/:id', optionalAuthenticate, getContentById);
 router.get('/:id/comments', getComments);

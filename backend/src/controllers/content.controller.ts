@@ -26,6 +26,8 @@ const createContentSchema = z.object({
     discountValue: z.string().optional(),
     eventDate: z.string().datetime().optional(),
     eventLocation: z.string().optional(),
+    latitude: z.number().optional().nullable(),
+    longitude: z.number().optional().nullable(),
     contentType: z.enum(['article', 'video', 'mixed', 'event', 'promotion']).default('article'),
     isPremium: z.boolean().default(false),
     premiumTier: z.enum(['premium', 'premium_plus']).optional(),
@@ -136,6 +138,64 @@ export const getContent = async (
     } catch (error) {
         console.error('Error fetching content:', error);
         res.status(500).json({ error: 'Failed to fetch content' });
+    }
+};
+
+// Get content for Discover feed (Promotions globally, Events geofenced)
+export const getDiscoverContent = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const userLat = parseFloat(req.query.latitude as string);
+        const userLon = parseFloat(req.query.longitude as string);
+        const radiusKm = parseFloat(req.query.radius as string) || 100;
+
+        // Fetch all active promotions
+        const promotions = await prisma.content.findMany({
+            where: { contentType: 'promotion', isActive: true, status: 'approved' },
+            orderBy: { publishedAt: 'desc' },
+            take: 10
+        });
+
+        // Fetch all active upcoming events
+        const events = await prisma.content.findMany({
+            where: {
+                contentType: 'event',
+                isActive: true,
+                status: 'approved',
+                eventDate: { gte: new Date() } // upcoming only
+            },
+            orderBy: { eventDate: 'asc' }
+        });
+
+        let localEvents = events;
+        // Filter events by distance if user coords provided
+        if (!isNaN(userLat) && !isNaN(userLon)) {
+            localEvents = events.filter(event => {
+                if (event.latitude === null || event.longitude === null) return true; // Include if no coords set
+
+                const R = 6371; // Earth's radius in km
+                const dLat = (event.latitude - userLat) * Math.PI / 180;
+                const dLon = (event.longitude - userLon) * Math.PI / 180;
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(userLat * Math.PI / 180) * Math.cos(event.latitude * Math.PI / 180) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const distance = R * c;
+
+                return distance <= radiusKm;
+            });
+        }
+
+        res.json({
+            promotions,
+            events: localEvents
+        });
+    } catch (error) {
+        console.error('Error fetching discover content:', error);
+        res.status(500).json({ error: 'Failed to fetch discover content' });
     }
 };
 

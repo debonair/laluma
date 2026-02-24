@@ -177,6 +177,8 @@ model Content {
   discountValue  String?   @map("discount_value")
   eventDate      DateTime? @map("event_date")
   eventLocation  String?   @map("event_location")
+  latitude       Float?
+  longitude      Float?
   isFeatured     Boolean   @default(false) @map("is_featured")
   isActive       Boolean   @default(true) @map("is_active")
   status         String    @default("draft")
