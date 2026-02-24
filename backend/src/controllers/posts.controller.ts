@@ -6,11 +6,17 @@ import prisma from '../utils/prisma';
 import { getIO } from '../socket';
 
 const createPostSchema = z.object({
-    content: z.string().min(1).max(5000)
+    content: z.string().min(1).max(5000),
+    isAnonymous: z.boolean().optional().default(false),
+    poll: z.object({
+        question: z.string().min(1).max(300),
+        options: z.array(z.string().min(1).max(100)).min(2).max(10)
+    }).optional()
 });
 
 const createCommentSchema = z.object({
-    content: z.string().min(1).max(2000)
+    content: z.string().min(1).max(2000),
+    isAnonymous: z.boolean().optional().default(false)
 });
 
 export const getGroupPosts = async (
@@ -51,6 +57,15 @@ export const getGroupPosts = async (
                     author: true,
                     likes: {
                         where: { userId: req.user!.userId }
+                    },
+                    poll: {
+                        include: {
+                            options: {
+                                include: { _count: { select: { votes: true } } },
+                                orderBy: { order: 'asc' }
+                            },
+                            votes: { where: { userId: req.user?.userId || 'unknown' } }
+                        }
                     }
                 }
             }),
@@ -66,17 +81,24 @@ export const getGroupPosts = async (
             }>) => ({
                 id: post.id,
                 group_id: post.groupId,
-                author: post.author ? {
+                author: post.isAnonymous && post.authorId !== req.user!.userId ? {
+                    id: 'anonymous',
+                    username: 'anonymous',
+                    display_name: 'Anonymous Mom',
+                    profile_image_url: undefined
+                } : (post.author ? {
                     id: post.author.id,
                     username: post.author.username,
                     display_name: post.author.displayName,
                     profile_image_url: post.author.profileImageUrl
-                } : null,
+                } : null),
+                is_anonymous: post.isAnonymous,
                 content: post.content,
                 likes_count: post.likesCount,
                 comments_count: post.commentsCount,
                 is_liked: post.likes.length > 0,
-                created_at: post.createdAt
+                created_at: post.createdAt,
+                poll: (post as any).poll
             })),
             total,
             has_more: offset + limit < total
@@ -122,25 +144,43 @@ export const createPost = async (
             data: {
                 groupId: groupId,
                 authorId: req.user!.userId,
-                content: data.content
+                content: data.content,
+                isAnonymous: data.isAnonymous || false,
+                poll: data.poll ? {
+                    create: {
+                        question: data.poll.question,
+                        options: {
+                            create: data.poll.options.map((opt, i) => ({ text: opt, order: i }))
+                        }
+                    }
+                } : undefined
             },
             include: {
-                author: true
+                author: true,
+                poll: {
+                    include: { options: true }
+                }
             }
         });
 
         res.status(201).json({
             id: post.id,
             group_id: post.groupId,
-            author: {
-                id: post.author!.id,
-                username: post.author!.username,
-                display_name: post.author!.displayName
-            },
+            author: post.isAnonymous ? {
+                id: 'anonymous',
+                username: 'anonymous',
+                display_name: 'Anonymous Mom'
+            } : (post.author ? {
+                id: post.author.id,
+                username: post.author.username,
+                display_name: post.author.displayName
+            } : null),
+            is_anonymous: post.isAnonymous,
             content: post.content,
             likes_count: post.likesCount,
             comments_count: post.commentsCount,
-            created_at: post.createdAt
+            created_at: post.createdAt,
+            poll: (post as any).poll
         });
 
         // Notify clients of a feed update
@@ -299,12 +339,18 @@ export const getPostComments = async (
             }>) => ({
                 id: comment.id,
                 post_id: comment.postId,
-                author: comment.author ? {
+                author: comment.isAnonymous && comment.authorId !== req.user!.userId ? {
+                    id: 'anonymous',
+                    username: 'anonymous',
+                    display_name: 'Anonymous Mom',
+                    profile_image_url: undefined
+                } : (comment.author ? {
                     id: comment.author.id,
                     username: comment.author.username,
                     display_name: comment.author.displayName,
                     profile_image_url: comment.author.profileImageUrl
-                } : null,
+                } : null),
+                is_anonymous: comment.isAnonymous,
                 content: comment.content,
                 created_at: comment.createdAt
             })),
@@ -348,7 +394,8 @@ export const createComment = async (
                 data: {
                     postId: post.id,
                     authorId: req.user!.userId,
-                    content: data.content
+                    content: data.content,
+                    isAnonymous: data.isAnonymous || false
                 },
                 include: {
                     author: true
@@ -363,11 +410,16 @@ export const createComment = async (
         res.status(201).json({
             id: comment.id,
             post_id: comment.postId,
-            author: {
-                id: comment.author!.id,
-                username: comment.author!.username,
-                display_name: comment.author!.displayName
-            },
+            author: comment.isAnonymous ? {
+                id: 'anonymous',
+                username: 'anonymous',
+                display_name: 'Anonymous Mom'
+            } : (comment.author ? {
+                id: comment.author.id,
+                username: comment.author.username,
+                display_name: comment.author.displayName
+            } : null),
+            is_anonymous: comment.isAnonymous,
             content: comment.content,
             created_at: comment.createdAt
         });

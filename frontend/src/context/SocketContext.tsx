@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import { tokenStorage } from '../services/auth.service';
+import { SERVER_URL } from '../services/api';
 
 interface SocketContextData {
     socket: Socket | null;
@@ -26,7 +27,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
             if (token) {
                 // Connect to Socket.IO backend
-                newSocket = io('http://localhost:3000', {
+                newSocket = io(`${SERVER_URL}`, {
                     auth: { token },
                     transports: ['websocket', 'polling'] // Try WS first, fallback to polling
                 });

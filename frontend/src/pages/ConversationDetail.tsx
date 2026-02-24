@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Send } from 'lucide-react';
 import { type UserProfile } from '../services/user.service';
 import { handleAPIError } from '../services/api';
+import { SERVER_URL } from '../services/api';
 
 interface Message {
     id: string;
@@ -240,9 +241,9 @@ const ConversationDetail: React.FC = () => {
                                                     overflow: 'hidden'
                                                 }}>
                                                     {msg.attachmentType === 'image' ? (
-                                                        <img src={`http://localhost:3000${msg.attachmentUrl}`} alt="attachment" style={{ maxWidth: '100%', display: 'block' }} />
+                                                        <img src={`${SERVER_URL}${msg.attachmentUrl}`} alt="attachment" style={{ maxWidth: '100%', display: 'block' }} />
                                                     ) : (
-                                                        <a href={`http://localhost:3000${msg.attachmentUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: isMine ? 'white' : 'var(--primary-color)', padding: '0.5rem', display: 'block', textDecoration: 'underline' }}>
+                                                        <a href={`${SERVER_URL}${msg.attachmentUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: isMine ? 'white' : 'var(--primary-color)', padding: '0.5rem', display: 'block', textDecoration: 'underline' }}>
                                                             📎 View Attachment
                                                         </a>
                                                     )}

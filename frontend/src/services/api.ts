@@ -1,7 +1,23 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
 import { tokenStorage, authService } from './auth.service';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { Capacitor } from '@capacitor/core';
+
+const getBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
+
+    // In Android emulator, localhost points to the emulator itself. We need to use 10.0.2.2 to reach the host machine.
+    if (Capacitor.getPlatform() === 'android') {
+        return 'http://10.0.2.2:3000';
+    }
+
+    return 'http://localhost:3000';
+};
+
+export const SERVER_URL = getBaseUrl();
+const API_BASE_URL = `${SERVER_URL}/api`;
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({

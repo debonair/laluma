@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import { SERVER_URL } from '../services/api';
 
 interface AdminStats {
     totalUsers: number;
@@ -18,7 +19,7 @@ const AdminDashboard: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/admin/stats', {
+                const response = await fetch(`${SERVER_URL}/api/admin/stats`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

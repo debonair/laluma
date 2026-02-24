@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import Skeleton from '../components/Skeleton';
 import './AdminContent.css';
+import { SERVER_URL } from '../services/api';
 
 interface Content {
     id: string;
@@ -32,7 +33,7 @@ const AdminContent: React.FC = () => {
         try {
             setLoading(true);
             const statusParam = filter === 'all' ? '' : `?status=${filter}`;
-            const response = await fetch(`http://localhost:3000/api/content${statusParam}`, {
+            const response = await fetch(`${SERVER_URL}/api/content${statusParam}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -54,7 +55,7 @@ const AdminContent: React.FC = () => {
         if (!confirm('Are you sure you want to delete this content?')) return;
 
         try {
-            await fetch(`http://localhost:3000/api/content/${id}`, {
+            await fetch(`${SERVER_URL}/api/content/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -68,7 +69,7 @@ const AdminContent: React.FC = () => {
 
     const handleStatusChange = async (id: string, newStatus: string) => {
         try {
-            await fetch(`http://localhost:3000/api/content/${id}`, {
+            await fetch(`${SERVER_URL}/api/content/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

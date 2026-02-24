@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './VideoUpload.css';
+import { SERVER_URL } from '../services/api';
 
 interface VideoUploadProps {
     onVideoUploaded: (videoUrl: string, filename: string) => void;
@@ -49,7 +50,7 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onVideoUploaded, currentVideo
             xhr.addEventListener('load', () => {
                 if (xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
-                    setPreviewUrl(`http://localhost:3000${data.videoUrl}`);
+                    setPreviewUrl(`${SERVER_URL}${data.videoUrl}`);
                     onVideoUploaded(data.videoUrl, data.filename);
                     setProgress(100);
                 } else {
@@ -63,7 +64,7 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onVideoUploaded, currentVideo
                 setUploading(false);
             });
 
-            xhr.open('POST', 'http://localhost:3000/api/content/upload-video');
+            xhr.open('POST', `${SERVER_URL}/api/content/upload-video`);
             xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
             xhr.send(formData);
 

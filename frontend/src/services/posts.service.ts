@@ -1,5 +1,21 @@
 import apiClient from './api';
 
+export interface PollOption {
+    id: string;
+    text: string;
+    votes: number;
+    percentage: number;
+}
+
+export interface Poll {
+    id: string;
+    question: string;
+    totalVotes: number;
+    hasVoted: boolean;
+    userVoteOptionId: string | null;
+    options: PollOption[];
+}
+
 export interface Post {
     id: string;
     group_id: string;
@@ -8,12 +24,15 @@ export interface Post {
         username: string;
         display_name?: string;
         profile_image_url?: string;
+        isVerified?: boolean;
     } | null;
     content: string;
     likes_count: number;
     comments_count: number;
     is_liked: boolean;
     created_at: string;
+    is_anonymous?: boolean;
+    poll?: Poll;
 }
 
 export interface Comment {
@@ -24,6 +43,7 @@ export interface Comment {
         username: string;
         display_name?: string;
         profile_image_url?: string;
+        isVerified?: boolean;
     } | null;
     content: string;
     created_at: string;
@@ -50,8 +70,8 @@ export const postsService = {
         return response.data;
     },
 
-    createPost: async (groupId: string, content: string): Promise<Post> => {
-        const response = await apiClient.post<Post>(`/groups/${groupId}/posts`, { content });
+    createPost: async (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }): Promise<Post> => {
+        const response = await apiClient.post<Post>(`/groups/${groupId}/posts`, data);
         return response.data;
     },
 

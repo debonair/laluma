@@ -23,6 +23,7 @@ export interface User {
         city?: string;
         country?: string;
     };
+    isVerified?: boolean;
     role?: string;
     roles?: string[];
 }
@@ -59,6 +60,7 @@ const mapAPIUserToUser = (apiUser: UserProfile): User => ({
         city: apiUser.location.city,
         country: apiUser.location.country,
     } : undefined,
+    isVerified: apiUser.isVerified,
     role: apiUser.role,
     roles: [],
 });

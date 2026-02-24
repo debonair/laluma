@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService, type UserNearbyResult } from '../services/user.service';
 import { contentService } from '../services/content.service';
+import { connectionService, type Connection } from '../services/connection.service';
 import type { Content } from '../types/content';
 import BottomNav from '../components/BottomNav';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { MessageCircle, MapPin, Search as SearchIcon } from 'lucide-react';
+import { MessageCircle, MapPin, Search as SearchIcon, BadgeCheck } from 'lucide-react';
+import { SERVER_URL } from '../services/api';
 
 const Discover: React.FC = () => {
     const [nearbyUsers, setNearbyUsers] = useState<UserNearbyResult[]>([]);
     const [discoverContent, setDiscoverContent] = useState<{ promotions: Content[], events: Content[] }>({ promotions: [], events: [] });
+    const [pendingRequests, setPendingRequests] = useState<Connection[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isLocating, setIsLocating] = useState(false);
     const [locationShared, setLocationShared] = useState(false);
@@ -22,12 +25,15 @@ const Discover: React.FC = () => {
     const fetchDiscoverData = async (lat?: number, lon?: number, radius?: number) => {
         setIsLoading(true);
         try {
-            const [users, content] = await Promise.all([
+            const [users, content, connections] = await Promise.all([
                 userService.getNearbyUsers(),
-                contentService.getDiscover({ latitude: lat, longitude: lon, radius })
+                contentService.getDiscover({ latitude: lat, longitude: lon, radius }),
+                connectionService.getConnections().catch(() => [])
             ]);
             setNearbyUsers(users);
             setDiscoverContent(content);
+            const currentUser = await userService.getCurrentUser();
+            setPendingRequests((connections || []).filter((c: Connection) => c.status === 'pending' && c.recipientId === currentUser.id));
         } catch (error) {
             console.error('Failed to fetch discover data', error);
         } finally {
@@ -96,6 +102,16 @@ const Discover: React.FC = () => {
         navigate(`/users/${recipientId}`);
     };
 
+    const handleRespondRequest = async (connectionId: string, status: 'accepted' | 'declined') => {
+        try {
+            await connectionService.respondToRequest(connectionId, status);
+            setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
+            addToast(`Request ${status}`, 'success');
+        } catch (err: any) {
+            addToast(err.response?.data?.error || 'Failed to respond', 'error');
+        }
+    };
+
     return (
         <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-color)' }}>
             <header className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -106,6 +122,52 @@ const Discover: React.FC = () => {
             </header>
 
             <main className="page-content" style={{ padding: '1rem', flex: 1, overflowY: 'auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                    <button
+                        onClick={() => navigate('/marketplace')}
+                        style={{
+                            padding: '1.5rem 1rem',
+                            backgroundColor: 'var(--card-bg)',
+                            border: '4px solid #000',
+                            borderRadius: '12px',
+                            boxShadow: '4px 4px 0px 0px #000',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: 'pointer',
+                            transition: 'transform 0.1s linear, box-shadow 0.1s linear'
+                        }}
+                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(4px, 4px)'; e.currentTarget.style.boxShadow = '0px 0px 0px 0px #000'; }}
+                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
+                    >
+                        <div style={{ fontSize: '2rem' }}>🛒</div>
+                        <span style={{ fontWeight: 800 }}>Marketplace</span>
+                    </button>
+                    <button
+                        onClick={() => navigate('/directory')}
+                        style={{
+                            padding: '1.5rem 1rem',
+                            backgroundColor: 'var(--card-bg)',
+                            border: '4px solid #000',
+                            borderRadius: '12px',
+                            boxShadow: '4px 4px 0px 0px #000',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: 'pointer',
+                            transition: 'transform 0.1s linear, box-shadow 0.1s linear'
+                        }}
+                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(4px, 4px)'; e.currentTarget.style.boxShadow = '0px 0px 0px 0px #000'; }}
+                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
+                    >
+                        <div style={{ fontSize: '2rem' }}>📖</div>
+                        <span style={{ fontWeight: 800 }}>Directory</span>
+                    </button>
+                </div>
                 {!locationShared ? (
                     <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)', marginTop: '2rem' }}>
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📍</div>
@@ -150,6 +212,44 @@ const Discover: React.FC = () => {
                             </div>
                         ) : (
                             <>
+                                {/* Pending Connection Requests */}
+                                {pendingRequests.length > 0 && (
+                                    <div style={{ marginBottom: '2rem' }}>
+                                        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 800 }}>Incoming Waves 👋</h2>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                            {pendingRequests.map(req => (
+                                                <div key={req.id} style={{
+                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                    padding: '1rem', backgroundColor: 'var(--card-bg)', border: '2px solid #000',
+                                                    boxShadow: '2px 2px 0px 0px #000', borderRadius: '12px'
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate(`/users/${req.requesterId}`)}>
+                                                        <div style={{
+                                                            width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--primary-light)',
+                                                            backgroundImage: req.requester.profileImageUrl ? `url(${SERVER_URL}${req.requester.profileImageUrl})` : 'none',
+                                                            backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--primary-color)'
+                                                        }}>
+                                                            {!req.requester.profileImageUrl && (req.requester.displayName || req.requester.username || 'U').charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                {req.requester.displayName || req.requester.username}
+                                                                {req.requester.isVerified && <BadgeCheck style={{ width: '1rem', height: '1rem', color: '#3b82f6' }} />}
+                                                            </div>
+                                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>wants to connect</div>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button onClick={() => handleRespondRequest(req.id, 'declined')} className="btn-ghost" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }}>Ignore</button>
+                                                        <button onClick={() => handleRespondRequest(req.id, 'accepted')} className="btn-primary" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }}>Wave Back</button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Local Events & Promos Section */}
                                 {(discoverContent.events.length > 0 || discoverContent.promotions.length > 0) && (
                                     <div style={{ marginBottom: '2rem' }}>
@@ -305,7 +405,7 @@ const Discover: React.FC = () => {
                                                         height: '240px',
                                                         width: '100%',
                                                         backgroundColor: hasImage ? 'transparent' : 'var(--primary-light)',
-                                                        backgroundImage: hasImage ? `url(http://localhost:3000${resultUser.profile_image_url})` : 'none',
+                                                        backgroundImage: hasImage ? `url(${SERVER_URL}${resultUser.profile_image_url})` : 'none',
                                                         backgroundSize: 'cover',
                                                         backgroundPosition: 'center',
                                                         position: 'relative',
@@ -334,6 +434,7 @@ const Discover: React.FC = () => {
                                                         }}>
                                                             <h3 style={{ margin: 0, color: 'white', fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                                 {resultUser.display_name || resultUser.username}
+                                                                {resultUser.isVerified && <BadgeCheck style={{ width: '1.25rem', height: '1.25rem', color: '#60a5fa' }} />}
                                                             </h3>
                                                             <p style={{ margin: '0.25rem 0 0 0', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                                 <MapPin size={14} /> {resultUser.distance_km} km away

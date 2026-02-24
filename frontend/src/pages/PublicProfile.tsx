@@ -4,8 +4,9 @@ import { userService, type PublicProfile as ProfileData } from '../services/user
 import BottomNav from '../components/BottomNav';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BadgeCheck } from 'lucide-react';
 import apiClient from '../services/api';
+import { connectionService } from '../services/connection.service';
 
 const PublicProfile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -53,6 +54,22 @@ const PublicProfile: React.FC = () => {
             addToast("Could not start conversation. Please try again later.", "error");
         } finally {
             setIsMessaging(false);
+        }
+    };
+
+    const [isWaving, setIsWaving] = useState(false);
+
+    const handleWaveClick = async () => {
+        if (!profile || isWaving) return;
+        try {
+            setIsWaving(true);
+            await connectionService.sendRequest(profile.id);
+            addToast("Wave sent! 👋", "success");
+        } catch (err: any) {
+            console.error("Failed to wave:", err);
+            addToast(err.response?.data?.error || "Failed to wave", "error");
+        } finally {
+            setIsWaving(false);
         }
     };
 
@@ -125,8 +142,9 @@ const PublicProfile: React.FC = () => {
                         {!profile.profile_image_url && (profile.display_name || profile.username).charAt(0).toUpperCase()}
                     </div>
 
-                    <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         {profile.display_name || profile.username}
+                        {profile.isVerified && <BadgeCheck style={{ color: '#3b82f6', width: '1.25rem', height: '1.25rem' }} />}
                     </h2>
 
                     <p style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)', fontSize: '1rem' }}>
@@ -140,13 +158,24 @@ const PublicProfile: React.FC = () => {
                     )}
 
                     {!isOwnProfile && (
-                        <button
-                            onClick={handleMessageClick}
-                            className="primary-button"
-                            style={{ padding: '0.75rem 2rem', fontSize: '1rem', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                        >
-                            <span style={{ fontSize: '1.2rem' }}>💬</span> Message
-                        </button>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <button
+                                onClick={handleMessageClick}
+                                disabled={isMessaging}
+                                className="btn-secondary"
+                                style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
+                                <span style={{ fontSize: '1.2rem' }}>💬</span> Message
+                            </button>
+                            <button
+                                onClick={handleWaveClick}
+                                disabled={isWaving}
+                                className="btn-primary"
+                                style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
+                                <span style={{ fontSize: '1.2rem' }}>👋</span> {isWaving ? "Waving..." : "Wave"}
+                            </button>
+                        </div>
                     )}
                 </div>
 

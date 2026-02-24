@@ -6,7 +6,7 @@ import './SubscriptionPage.css';
 
 const SubscriptionPage: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { } = useAuth();
     const { addToast } = useToast();
     const [isProcessing, setIsProcessing] = useState(false);
 

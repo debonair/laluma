@@ -34,7 +34,12 @@ const createContentSchema = z.object({
     isFeatured: z.boolean().default(false),
     isActive: z.boolean().default(true),
     status: z.enum(['draft', 'pending', 'approved', 'rejected']).default('draft'),
-    publishedAt: z.string().datetime().optional()
+    publishedAt: z.string().datetime().optional(),
+    isAnonymous: z.boolean().optional().default(false),
+    poll: z.object({
+        question: z.string().min(1).max(300),
+        options: z.array(z.string().min(1).max(100)).min(2).max(10)
+    }).optional()
 });
 
 const updateContentSchema = createContentSchema.partial();
@@ -93,6 +98,15 @@ export const getContent = async (
                             likes: true,
                             bookmarks: true
                         }
+                    },
+                    poll: {
+                        include: {
+                            options: {
+                                include: { _count: { select: { votes: true } } },
+                                orderBy: { order: 'asc' }
+                            },
+                            votes: { where: { userId: req.user?.userId || 'unknown' } }
+                        }
                     }
                 }
             }),
@@ -110,7 +124,7 @@ export const getContent = async (
             }
         }
 
-        const enrichedContent = content.map(item => {
+        const enrichedContent = content.map((item: any) => {
             let hasAccess = !item.isPremium;
             if (item.isPremium) {
                 if (item.premiumTier === 'premium_plus') {
@@ -120,8 +134,19 @@ export const getContent = async (
                 }
             }
 
+            const isOwner = item.authorId === req.user?.userId;
+            const isAdmin = req.user?.roles?.includes('admin');
+
+            const safeAuthor = (item.isAnonymous && !isOwner && !isAdmin) ? {
+                id: 'anonymous',
+                username: 'anonymous',
+                displayName: 'Anonymous Mom',
+                profileImageUrl: undefined
+            } : item.author;
+
             return {
                 ...item,
+                author: safeAuthor,
                 hasAccess
             };
         });
@@ -317,12 +342,21 @@ export const createContent = async (
 ): Promise<void> => {
     try {
         const validatedData = createContentSchema.parse(req.body);
+        const { poll, ...restData } = validatedData;
 
         const content = await prisma.content.create({
             data: {
-                ...validatedData,
+                ...restData,
                 authorId: req.user?.userId,
-                publishedAt: validatedData.publishedAt ? new Date(validatedData.publishedAt) : null
+                publishedAt: restData.publishedAt ? new Date(restData.publishedAt) : null,
+                poll: poll ? {
+                    create: {
+                        question: poll.question,
+                        options: {
+                            create: poll.options.map((opt: string, ind: number) => ({ text: opt, order: ind }))
+                        }
+                    }
+                } : undefined
             },
             include: {
                 author: {
@@ -354,12 +388,14 @@ export const updateContent = async (
     try {
         const id = getStringParam(req.params.id);
         const validatedData = updateContentSchema.parse(req.body);
-
+        const { poll, ...restData } = validatedData;
         const content = await prisma.content.update({
             where: { id },
             data: {
-                ...validatedData,
-                publishedAt: validatedData.publishedAt ? new Date(validatedData.publishedAt) : undefined
+                ...restData,
+                publishedAt: restData.publishedAt ? new Date(restData.publishedAt) : undefined,
+                // simplified update, usually replacing a poll is complex (you'd delete the old one or update it)
+                // but since this is optional, we'll omit full poll update for now to stick to requirements
             },
             include: {
                 author: {

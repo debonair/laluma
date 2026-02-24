@@ -21,6 +21,8 @@ model User {
   motherhoodStage        String?  @map("motherhood_stage")
   profileImageUrl        String?  @map("profile_image_url")
   role                   String   @default("user")
+  isVerified             Boolean  @default(false) @map("is_verified")
+  verificationMethod     String?  @map("verification_method")
   hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
@@ -31,6 +33,8 @@ model User {
   posts            Post[]
   comments         Comment[]
   postLikes        PostLike[]
+  marketplaceItems MarketplaceItem[]
+  directoryReviews DirectoryReview[]
 
   // My Luma content relations
   contentAuthored        Content[]           @relation("ContentAuthor")
@@ -41,10 +45,15 @@ model User {
   contentSubmissions     ContentSubmission[] @relation("ContentSubmissions")
   notifications          Notification[]      @relation("UserNotifications")
   notificationsTriggered Notification[]      @relation("NotificationActor")
+  pollVotes              PollVote[]
 
   // Real-time Messaging Relations
   conversations ConversationParticipant[]
   messagesSent  Message[]                 @relation("MessageSender")
+
+  // Connections / Friend Requests
+  connectionsSent     Connection[] @relation("ConnectionRequester")
+  connectionsReceived Connection[] @relation("ConnectionRecipient")
 
   @@index([username])
   @@index([email])
@@ -114,11 +123,13 @@ model Post {
   commentsCount Int      @default(0) @map("comments_count")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
+  isAnonymous   Boolean  @default(false) @map("is_anonymous")
 
   group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
   author   User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
   comments Comment[]
   likes    PostLike[]
+  poll     Poll?
 
   @@index([groupId])
   @@index([createdAt])
@@ -126,12 +137,13 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  postId    String   @map("post_id")
-  authorId  String?  @map("author_id")
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  postId      String   @map("post_id")
+  authorId    String?  @map("author_id")
+  content     String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  isAnonymous Boolean  @default(false) @map("is_anonymous")
 
   post   Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
   author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
@@ -151,6 +163,58 @@ model PostLike {
 
   @@unique([postId, userId])
   @@map("post_likes")
+}
+
+model MarketplaceItem {
+  id          String   @id @default(uuid())
+  sellerId    String   @map("seller_id")
+  title       String
+  description String
+  price       Float    @default(0)
+  condition   String
+  category    String
+  latitude    Float
+  longitude   Float
+  status      String   @default("available")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  seller User @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([latitude, longitude])
+  @@map("marketplace_items")
+}
+
+model DirectoryListing {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  address     String?
+  latitude    Float
+  longitude   Float
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  reviews DirectoryReview[]
+
+  @@index([latitude, longitude])
+  @@map("directory_listings")
+}
+
+model DirectoryReview {
+  id          String   @id @default(uuid())
+  listingId   String   @map("listing_id")
+  authorId    String   @map("author_id")
+  rating      Int
+  content     String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  listing DirectoryListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  author  User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("directory_reviews")
 }
 
 // My Luma Content System Models
@@ -194,6 +258,7 @@ model Content {
   comments  ContentComment[]
   likes     ContentLike[]
   bookmarks ContentBookmark[]
+  poll      Poll?
 
   @@index([category])
   @@index([isPremium])
@@ -211,6 +276,7 @@ model ContentComment {
   status      String   @default("visible") // visible, hidden, flagged
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  isAnonymous Boolean  @default(false) @map("is_anonymous")
 
   content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   author  User?   @relation("ContentCommentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
@@ -350,4 +416,69 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@map("messages")
+}
+
+model Connection {
+  id          String   @id @default(uuid())
+  requesterId String   @map("requester_id")
+  recipientId String   @map("recipient_id")
+  status      String   @default("pending") // 'pending', 'accepted', 'declined'
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  requester User @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient User @relation("ConnectionRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@index([requesterId])
+  @@index([recipientId])
+  @@map("connections")
+}
+
+// --- Phase 2: Interactive Polls ---
+
+model Poll {
+  id        String    @id @default(uuid())
+  postId    String?   @unique @map("post_id")
+  contentId String?   @unique @map("content_id")
+  question  String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  expiresAt DateTime? @map("expires_at")
+
+  post    Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  content Content?     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  options PollOption[]
+  votes   PollVote[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id     String @id @default(uuid())
+  pollId String @map("poll_id")
+  text   String
+  order  Int    @default(0)
+
+  poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@index([pollId])
+  @@map("poll_options")
+}
+
+model PollVote {
+  id        String   @id @default(uuid())
+  pollId    String   @map("poll_id")
+  optionId  String   @map("option_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@index([optionId])
+  @@map("poll_votes")
 }

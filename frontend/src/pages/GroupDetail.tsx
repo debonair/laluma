@@ -9,6 +9,7 @@ import type { Group } from '../services/groups.service';
 import type { Post, Comment } from '../services/posts.service';
 import { postsService } from '../services/posts.service';
 import { shareContent } from '../utils/share';
+import PollUI from '../components/PollUI';
 
 interface GroupMember {
     id: string;
@@ -28,6 +29,10 @@ const GroupDetail: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [newPostContent, setNewPostContent] = useState('');
+    const [isAnonymous, setIsAnonymous] = useState(false);
+    const [showPoll, setShowPoll] = useState(false);
+    const [pollQuestion, setPollQuestion] = useState('');
+    const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
     const [commentContent, setCommentContent] = useState<{ [postId: string]: string }>({});
     const [showComments, setShowComments] = useState<{ [postId: string]: boolean }>({});
     const [comments, setComments] = useState<{ [postId: string]: Comment[] }>({});
@@ -186,12 +191,38 @@ const GroupDetail: React.FC = () => {
 
     const handlePostSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPostContent.trim() && id) {
+
+        let validPollOptions = pollOptions.filter(opt => opt.trim() !== '');
+        if (showPoll && (validPollOptions.length < 2 || !pollQuestion.trim())) {
+            setPostError("Poll must have a question and at least 2 options.");
+            return;
+        }
+
+        if ((newPostContent.trim() || showPoll) && id) {
             try {
                 setSubmittingPost(true);
                 setPostError(null);
-                await createPost(id, newPostContent);
+
+                const postData: any = {
+                    content: newPostContent || 'Poll',
+                    isAnonymous
+                };
+
+                if (showPoll && pollQuestion.trim() && validPollOptions.length >= 2) {
+                    postData.poll = {
+                        question: pollQuestion.trim(),
+                        options: validPollOptions
+                    };
+                }
+
+                await createPost(id, postData);
+
                 setNewPostContent('');
+                setIsAnonymous(false);
+                setShowPoll(false);
+                setPollQuestion('');
+                setPollOptions(['', '']);
+
                 // Reload posts
                 const postsData = await getGroupPosts(id);
                 setPosts(postsData);
@@ -203,6 +234,26 @@ const GroupDetail: React.FC = () => {
                 setSubmittingPost(false);
             }
         }
+    };
+
+    const handleAddPollOption = () => {
+        if (pollOptions.length < 10) {
+            setPollOptions([...pollOptions, '']);
+        }
+    };
+
+    const handleRemovePollOption = (index: number) => {
+        if (pollOptions.length > 2) {
+            const newOptions = [...pollOptions];
+            newOptions.splice(index, 1);
+            setPollOptions(newOptions);
+        }
+    };
+
+    const handlePollOptionChange = (index: number, value: string) => {
+        const newOptions = [...pollOptions];
+        newOptions[index] = value;
+        setPollOptions(newOptions);
     };
 
     const loadComments = async (postId: string) => {
@@ -415,17 +466,72 @@ const GroupDetail: React.FC = () => {
                             <textarea
                                 value={newPostContent}
                                 onChange={(e) => setNewPostContent(e.target.value)}
-                                placeholder="Share something with the group..."
-                                rows={3}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', resize: 'none' }}
+                                placeholder={showPoll ? "Add context to your poll (optional)..." : "Share something with the group..."}
+                                rows={showPoll ? 2 : 3}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', resize: 'none', marginBottom: '0.5rem' }}
                                 disabled={submittingPost}
                             />
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+
+                            {showPoll && (
+                                <div style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem', border: '1px solid var(--border-color)' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Ask a question..."
+                                        value={pollQuestion}
+                                        onChange={(e) => setPollQuestion(e.target.value)}
+                                        style={{ width: '100%', padding: '0.5rem', marginBottom: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', fontWeight: 'bold' }}
+                                        disabled={submittingPost}
+                                    />
+                                    {pollOptions.map((opt, index) => (
+                                        <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                            <input
+                                                type="text"
+                                                placeholder={`Option ${index + 1}`}
+                                                value={opt}
+                                                onChange={(e) => handlePollOptionChange(index, e.target.value)}
+                                                style={{ flex: 1, padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)' }}
+                                                disabled={submittingPost}
+                                            />
+                                            {pollOptions.length > 2 && (
+                                                <button type="button" onClick={() => handleRemovePollOption(index)} className="btn-ghost" style={{ padding: '0 0.5rem', color: '#EF4444' }}>✕</button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {pollOptions.length < 10 && (
+                                        <button type="button" onClick={handleAddPollOption} className="btn-secondary" style={{ marginTop: '0.5rem', padding: '0.25rem 0.75rem', fontSize: '0.8rem' }} disabled={submittingPost}>
+                                            + Add Option
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={isAnonymous}
+                                            onChange={(e) => setIsAnonymous(e.target.checked)}
+                                            style={{ cursor: 'pointer' }}
+                                            disabled={submittingPost}
+                                        />
+                                        Post Anonymously
+                                    </label>
+                                    <button
+                                        type="button"
+                                        className="btn-link"
+                                        style={{ fontSize: '0.85rem' }}
+                                        onClick={() => setShowPoll(!showPoll)}
+                                        disabled={submittingPost}
+                                    >
+                                        {showPoll ? '✕ Remove Poll' : '📊 Add Poll'}
+                                    </button>
+                                </div>
                                 <button
                                     type="submit"
                                     className="btn-primary"
-                                    disabled={!newPostContent.trim() || submittingPost}
-                                    style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                                    disabled={(!newPostContent.trim() && !showPoll) || submittingPost}
+                                    style={{ width: 'auto', padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
                                 >
                                     {submittingPost ? 'Posting...' : 'Post'}
                                 </button>
@@ -450,6 +556,7 @@ const GroupDetail: React.FC = () => {
                                 </span>
                             </div>
                             <p style={{ marginBottom: '1rem' }}>{post.content}</p>
+                            {post.poll && <PollUI poll={post.poll} />}
 
                             <div style={{ display: 'flex', gap: '0.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginLeft: '-0.5rem' }}>
                                 <button

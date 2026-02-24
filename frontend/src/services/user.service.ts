@@ -19,6 +19,7 @@ export interface UserProfile {
     looking_for?: string[];
     has_completed_onboarding: boolean;
     role: string;
+    isVerified?: boolean;
     created_at: string;
 }
 
@@ -44,6 +45,7 @@ export interface PublicProfile {
     about_me?: string;
     motherhood_stage?: string;
     profile_image_url?: string;
+    isVerified?: boolean;
     created_at: string;
     stats: {
         groups_created: number;
@@ -57,6 +59,7 @@ export interface UserSearchResult {
     display_name?: string;
     profile_image_url?: string;
     motherhood_stage?: string;
+    isVerified?: boolean;
 }
 
 export interface UserNearbyResult {
@@ -65,6 +68,7 @@ export interface UserNearbyResult {
     display_name?: string;
     profile_image_url?: string;
     motherhood_stage?: string;
+    isVerified?: boolean;
     distance_km: number;
 }
 
@@ -92,5 +96,10 @@ export const userService = {
     getNearbyUsers: async (): Promise<UserNearbyResult[]> => {
         const response = await apiClient.get<{ users: UserNearbyResult[] }>('/users/nearby');
         return response.data.users;
+    },
+
+    verifyUser: async (verificationMethod: 'manual' | 'selfie' | 'phone'): Promise<{ success: boolean; isVerified: boolean }> => {
+        const response = await apiClient.post('/users/me/verify', { verificationMethod });
+        return response.data;
     }
 };

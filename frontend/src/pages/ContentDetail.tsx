@@ -8,6 +8,7 @@ import BottomNav from '../components/BottomNav';
 import Skeleton from '../components/Skeleton';
 import { shareContent } from '../utils/share';
 import './ContentDetail.css';
+import { SERVER_URL } from '../services/api';
 
 interface Content {
     id: string;
@@ -89,7 +90,7 @@ const ContentDetail: React.FC = () => {
 
     const trackView = React.useCallback(async () => {
         try {
-            await fetch(`http://localhost:3000/api/content/${id}/view`, {
+            await fetch(`${SERVER_URL}/api/content/${id}/view`, {
                 method: 'POST'
             });
         } catch (error) {
@@ -114,7 +115,7 @@ const ContentDetail: React.FC = () => {
             const token = localStorage.getItem('token');
             const method = content?.userInteractions?.liked ? 'DELETE' : 'POST';
 
-            await fetch(`http://localhost:3000/api/content/${id}/like`, {
+            await fetch(`${SERVER_URL}/api/content/${id}/like`, {
                 method,
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -137,7 +138,7 @@ const ContentDetail: React.FC = () => {
             const token = localStorage.getItem('token');
             const method = content?.userInteractions?.bookmarked ? 'DELETE' : 'POST';
 
-            await fetch(`http://localhost:3000/api/content/${id}/bookmark`, {
+            await fetch(`${SERVER_URL}/api/content/${id}/bookmark`, {
                 method,
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -165,7 +166,7 @@ const ContentDetail: React.FC = () => {
             setCommentError(null);
             const token = localStorage.getItem('token');
 
-            const res = await fetch(`http://localhost:3000/api/content/${id}/comments`, {
+            const res = await fetch(`${SERVER_URL}/api/content/${id}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -324,7 +325,7 @@ const ContentDetail: React.FC = () => {
                         {content.videoUrl && (content.contentType === 'video' || content.contentType === 'mixed') && (
                             <div className="video-container">
                                 <video controls className="content-video">
-                                    <source src={`http://localhost:3000${content.videoUrl}`} type="video/mp4" />
+                                    <source src={`${SERVER_URL}${content.videoUrl}`} type="video/mp4" />
                                     Your browser does not support video playback.
                                 </video>
                             </div>

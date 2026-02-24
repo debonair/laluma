@@ -6,6 +6,9 @@ import compression from 'compression';
 import dotenv from 'dotenv';
 import { setupSocketIO } from './socket';
 import { globalLimiter, authLimiter } from './middleware/rateLimiter';
+import { authenticate, optionalAuthenticate } from './middleware/auth';
+import marketplaceRoutes from './routes/marketplace.routes';
+import directoryRoutes from './routes/directory.routes';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import groupsRoutes from './routes/groups.routes';
@@ -17,6 +20,8 @@ import notificationRoutes from './routes/notification.routes';
 import messagesRoutes from './routes/messages.routes';
 import submissionsRoutes from './routes/submissions.routes';
 import adminRoutes from './routes/admin.routes';
+import connectionRoutes from './routes/connection.routes';
+import pollsRoutes from './routes/polls.routes';
 
 // Load environment variables
 dotenv.config();
@@ -32,7 +37,7 @@ setupSocketIO(server);
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
     credentials: true
 }));
 app.use(globalLimiter);
@@ -56,6 +61,10 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/submissions', submissionsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/connections', connectionRoutes);
+app.use('/api/polls', pollsRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/directory', directoryRoutes);
 
 // 404 handler
 app.use((req, res) => {

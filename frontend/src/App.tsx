@@ -28,6 +28,8 @@ import ConversationDetail from './pages/ConversationDetail';
 import Search from './pages/Search';
 import Discover from './pages/Discover';
 import PublicProfile from './pages/PublicProfile';
+import Marketplace from './pages/Marketplace';
+import Directory from './pages/Directory';
 import SubmitContent from './pages/SubmitContent';
 import AdminSubmissions from './pages/AdminSubmissions';
 import AdminDashboard from './pages/AdminDashboard';
@@ -183,6 +185,22 @@ const App: React.FC = () => {
                   element={
                     <ProtectedRoute>
                       <Search />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/marketplace"
+                  element={
+                    <ProtectedRoute>
+                      <Marketplace />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/directory"
+                  element={
+                    <ProtectedRoute>
+                      <Directory />
                     </ProtectedRoute>
                   }
                 />

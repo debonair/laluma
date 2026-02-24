@@ -56,6 +56,7 @@ export const getCurrentUser = async (
             looking_for: user.preferences?.lookingFor || [],
             has_completed_onboarding: user.hasCompletedOnboarding,
             role: user.role,
+            isVerified: user.isVerified,
             created_at: user.createdAt
         });
     } catch (error) {
@@ -137,6 +138,7 @@ export const updateCurrentUser = async (
             looking_for: updatedUser!.preferences?.lookingFor || [],
             has_completed_onboarding: updatedUser!.hasCompletedOnboarding,
             role: updatedUser!.role,
+            isVerified: updatedUser!.isVerified,
             created_at: updatedUser!.createdAt
         });
     } catch (error) {
@@ -241,6 +243,7 @@ export const getPublicProfile = async (
             about_me: user.aboutMe,
             motherhood_stage: user.motherhoodStage,
             profile_image_url: user.profileImageUrl,
+            isVerified: user.isVerified,
             created_at: user.createdAt,
             stats: {
                 groups_created: (user as any)._count?.createdGroups || 0,
@@ -357,5 +360,38 @@ export const uploadProfileImage = async (
     } catch (error) {
         console.error('Error uploading profile image:', error);
         res.status(500).json({ error: 'Failed to upload profile image' });
+    }
+};
+
+const verifyUserSchema = z.object({
+    verificationMethod: z.enum(['manual', 'selfie', 'phone'])
+});
+
+export const verifyUser = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+
+        const data = verifyUserSchema.parse(req.body);
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                isVerified: true,
+                verificationMethod: data.verificationMethod
+            }
+        });
+
+        res.json({ success: true, isVerified: updatedUser.isVerified });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            res.status(400).json({ error: 'Bad Request', details: error.errors });
+            return;
+        }
+        console.error('Verify user error:', error);
+        res.status(500).json({ error: 'Failed to verify user' });
     }
 };

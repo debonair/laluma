@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface Props {
     children: ReactNode;
@@ -47,7 +47,7 @@ class ErrorBoundary extends Component<Props, State> {
                         </p>
 
                         {/* Optional: Show error message in development */}
-                        {process.env.NODE_ENV === 'development' && this.state.error && (
+                        {this.state.error && (
                             <div style={{ textAlign: 'left', background: '#f871711a', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #f871714d', overflowX: 'auto' }}>
                                 <p style={{ color: '#ef4444', fontFamily: 'monospace', fontSize: '0.8rem', margin: 0 }}>
                                     {this.state.error.toString()}

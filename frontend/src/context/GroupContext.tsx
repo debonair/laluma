@@ -16,7 +16,7 @@ interface GroupContextType {
     joinGroup: (groupId: string) => Promise<void>;
     leaveGroup: (groupId: string) => Promise<void>;
     createGroup: (name: string, description: string, emoji?: string) => Promise<void>;
-    createPost: (groupId: string, content: string) => Promise<void>;
+    createPost: (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }) => Promise<void>;
     addComment: (postId: string, content: string) => Promise<void>;
     likePost: (postId: string) => Promise<void>;
     unlikePost: (postId: string) => Promise<void>;
@@ -151,10 +151,10 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
-    const createPost = async (groupId: string, content: string) => {
+    const createPost = async (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }) => {
         try {
             setError(null);
-            await postsService.createPost(groupId, content);
+            await postsService.createPost(groupId, data);
             // Refresh feed
             await refreshFeed();
         } catch (err) {

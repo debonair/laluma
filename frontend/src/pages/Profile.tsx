@@ -2,10 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import { BadgeCheck } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import apiClient from '../services/api';
 
 import BottomNav from '../components/BottomNav';
+import { SERVER_URL } from '../services/api';
 
 const Profile: React.FC = () => {
     const { user, updateProfile } = useAuth();
@@ -60,6 +62,16 @@ const Profile: React.FC = () => {
         } catch (err) {
             console.error('Avatar upload failed:', err);
             addToast('Failed to upload image', 'error');
+        }
+    };
+
+    const handleRequestVerification = async () => {
+        try {
+            await apiClient.post('/users/me/verify', { verificationMethod: 'manual' });
+            addToast('Verification approved!', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (err) {
+            addToast('Verification failed', 'error');
         }
     };
 
@@ -130,7 +142,7 @@ const Profile: React.FC = () => {
                     >
                         {profileImg ? (
                             <img
-                                src={profileImg.startsWith('/') ? `http://localhost:3000${profileImg}` : profileImg}
+                                src={profileImg.startsWith('/') ? `${SERVER_URL}${profileImg}` : profileImg}
                                 alt="Avatar"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                             />
@@ -152,9 +164,22 @@ const Profile: React.FC = () => {
                                 className="profile-name-input"
                             />
                         ) : (
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>{displayProfileName}</h2>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                {displayProfileName}
+                                {user.isVerified && <BadgeCheck style={{ color: '#3b82f6', width: '1.25rem', height: '1.25rem' }} />}
+                            </h2>
                         )}
                     <p className="helper-text">@{user.username}</p>
+
+                    {!user.isVerified && !isEditing && (
+                        <button
+                            onClick={handleRequestVerification}
+                            className="btn-secondary"
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginTop: '0.5rem', borderRadius: '4px' }}
+                        >
+                            Get Verified Shield
+                        </button>
+                    )}
                 </div >
 
                 <div className="content-card">

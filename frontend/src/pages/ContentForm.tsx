@@ -4,6 +4,7 @@ import VideoUpload from '../components/VideoUpload';
 import BottomNav from '../components/BottomNav';
 import Skeleton from '../components/Skeleton';
 import './ContentForm.css';
+import { SERVER_URL } from '../services/api';
 
 interface ContentFormData {
     title: string;
@@ -52,7 +53,7 @@ const ContentForm: React.FC = () => {
     const fetchContent = React.useCallback(async () => {
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:3000/api/content/${id}`, {
+            const response = await fetch(`${SERVER_URL}/api/content/${id}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -102,8 +103,8 @@ const ContentForm: React.FC = () => {
             setSaving(true);
             setError(null);
             const url = id
-                ? `http://localhost:3000/api/content/${id}`
-                : 'http://localhost:3000/api/content';
+                ? `${SERVER_URL}/api/content/${id}`
+                : `${SERVER_URL}/api/content`;
 
             const method = id ? 'PUT' : 'POST';
 

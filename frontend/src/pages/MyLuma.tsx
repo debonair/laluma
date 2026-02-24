@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import './MyLuma.css';
+import { SERVER_URL } from '../services/api';
 
 interface Content {
     id: string;
@@ -41,7 +42,7 @@ const MyLuma: React.FC = () => {
             if (selectedCategory !== 'All') {
                 params.set('category', selectedCategory);
             }
-            const response = await fetch(`http://localhost:3000/api/content?${params.toString()}`);
+            const response = await fetch(`${SERVER_URL}/api/content?${params.toString()}`);
             const data = await response.json();
             setContent(data.content || []);
         } catch (error) {
@@ -53,7 +54,7 @@ const MyLuma: React.FC = () => {
 
     const fetchFeaturedContent = React.useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/content?isFeatured=true&status=approved&limit=3');
+            const response = await fetch(`${SERVER_URL}/api/content?isFeatured=true&status=approved&limit=3`);
             const data = await response.json();
             setFeaturedContent(data.content || []);
         } catch (error) {

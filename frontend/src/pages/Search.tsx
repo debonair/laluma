@@ -19,7 +19,7 @@ const Search: React.FC = () => {
     const [isLoadingNearby, setIsLoadingNearby] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
 
-    const { user, updateProfile } = useAuth();
+    const { user } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
     const [locationShared, setLocationShared] = useState(false);

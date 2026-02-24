@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useGroup } from '../context/GroupContext';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { Users, Compass } from 'lucide-react';
+import { Users, Compass, BadgeCheck } from 'lucide-react';
+import PollUI from '../components/PollUI';
 
 const Home: React.FC = () => {
     const { user, signOut } = useAuth();
@@ -92,9 +93,10 @@ const Home: React.FC = () => {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <span
                                             onClick={(e) => { e.stopPropagation(); if (post.author?.id) navigate(`/users/${post.author.id}`); }}
-                                            style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary-color)', cursor: post.author?.id ? 'pointer' : 'default' }}
+                                            style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary-color)', cursor: post.author?.id ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '4px' }}
                                         >
                                             {post.author?.username || 'Unknown'}
+                                            {post.author?.isVerified && <BadgeCheck style={{ width: '1rem', height: '1rem', color: '#3b82f6' }} />}
                                         </span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                                             {new Date(post.created_at).toLocaleDateString()}
@@ -103,6 +105,7 @@ const Home: React.FC = () => {
                                     <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                         {post.content}
                                     </div>
+                                    {post.poll && <PollUI poll={post.poll} />}
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
                                         in {post.group?.name || 'a group'}
                                     </div>
