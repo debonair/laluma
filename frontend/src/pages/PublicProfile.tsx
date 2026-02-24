@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { userService, type PublicProfile as ProfileData } from '../services/user.service';
 import BottomNav from '../components/BottomNav';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { ArrowLeft } from 'lucide-react';
 import apiClient from '../services/api';
 
 const PublicProfile: React.FC = () => {
@@ -12,7 +14,8 @@ const PublicProfile: React.FC = () => {
 
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const { addToast } = useToast();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -47,7 +50,7 @@ const PublicProfile: React.FC = () => {
             navigate(`/messages/${response.data.conversationId}`);
         } catch (err) {
             console.error("Failed to start conversation:", err);
-            alert("Could not start conversation. Please try again later.");
+            addToast("Could not start conversation. Please try again later.", "error");
         } finally {
             setIsMessaging(false);
         }
@@ -64,12 +67,9 @@ const PublicProfile: React.FC = () => {
     if (error || !profile) {
         return (
             <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-color)' }}>
-                <header className="page-header" style={{ display: 'flex', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', marginRight: '1rem', color: 'var(--text-primary)' }}>
-                        ←
-                    </button>
-                    <h1 style={{ fontSize: '1.25rem', margin: 0 }}>Error</h1>
-                </header>
+                <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
+                    <h1>Error</h1>
+                </div>
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem', textAlign: 'center' }}>
                     <div>
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
@@ -91,14 +91,14 @@ const PublicProfile: React.FC = () => {
 
     return (
         <div className="page-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
-            <header className="page-header" style={{ display: 'flex', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10 }}>
-                <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', marginRight: '1rem', color: 'var(--text-primary)' }}>
-                    ←
+            <div className="page-header" style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10 }}>
+                <button onClick={() => navigate(-1)} className="icon-btn" aria-label="Go back">
+                    <ArrowLeft size={24} />
                 </button>
-                <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {profile.display_name || profile.username}
+                <h1>
+                    {profile.display_name || profile.username || 'User Profile'}
                 </h1>
-            </header>
+            </div>
 
             <main className="page-content" style={{ padding: '0', flex: 1 }}>
                 {/* Profile Header Block */}
@@ -181,8 +181,6 @@ const PublicProfile: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-                <div style={{ height: '80px' }} />
             </main>
 
             <BottomNav />

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { submissionService, type Submission } from '../services/submission.service';
+import { useToast } from '../context/ToastContext';
 import BottomNav from '../components/BottomNav';
+import Skeleton from '../components/Skeleton';
 
 const AdminSubmissions: React.FC = () => {
     const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -8,8 +10,8 @@ const AdminSubmissions: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [rejectId, setRejectId] = useState<string | null>(null);
     const [rejectReason, setRejectReason] = useState('');
+    const { addToast } = useToast();
 
-    useEffect(() => { loadSubmissions(); }, [loadSubmissions]);
     const loadSubmissions = useCallback(async () => {
         try {
             setLoading(true);
@@ -31,7 +33,7 @@ const AdminSubmissions: React.FC = () => {
             loadSubmissions();
         } catch (err) {
             console.error(err);
-            alert('Failed to approve');
+            addToast('Failed to approve submission', 'error');
         }
     };
 
@@ -44,7 +46,7 @@ const AdminSubmissions: React.FC = () => {
             loadSubmissions();
         } catch (err) {
             console.error(err);
-            alert('Failed to reject');
+            addToast('Failed to reject submission', 'error');
         }
     };
 
@@ -74,7 +76,10 @@ const AdminSubmissions: React.FC = () => {
 
             <main className="page-content">
                 {loading ? (
-                    <p style={{ textAlign: 'center', padding: '2rem' }}>Loading...</p>
+                    <div style={{ padding: '1rem' }}>
+                        <Skeleton height={140} style={{ marginBottom: '1rem' }} borderRadius="12px" />
+                        <Skeleton height={140} style={{ marginBottom: '1rem' }} borderRadius="12px" />
+                    </div>
                 ) : submissions.length === 0 ? (
                     <div className="content-card" style={{ textAlign: 'center', padding: '3rem' }}>
                         <p style={{ fontSize: '2rem' }}>📭</p>
@@ -95,7 +100,7 @@ const AdminSubmissions: React.FC = () => {
                                     borderRadius: '12px',
                                     fontSize: '0.7rem',
                                     fontWeight: 700,
-                                    backgroundColor: `${getStatusColor(s.status)}20`,
+                                    backgroundColor: `${getStatusColor(s.status)} 20`,
                                     color: getStatusColor(s.status)
                                 }}>
                                     {s.status.toUpperCase()}
@@ -147,8 +152,6 @@ const AdminSubmissions: React.FC = () => {
                         </div>
                     </div>
                 )}
-
-                <div style={{ height: '80px' }} />
             </main>
             <BottomNav />
         </div>

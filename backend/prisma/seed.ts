@@ -75,6 +75,35 @@ const sampleContent = [
         isFeatured: false,
         status: "approved",
         publishedAt: new Date('2024-02-01')
+    },
+    {
+        title: "Mommy & Me Yoga in the Park",
+        body: `Join us for a relaxing and rejuvenating yoga session designed specifically for mothers and their little ones (ages 0-3). Let's stretch, breathe, and bond in the beautiful outdoors.\n\n## What to Bring\n- A yoga mat (or two!)\n- Water bottle\n- Sunscreen and hats\n- Snacks for the little ones\n\nNo prior yoga experience is necessary. This is a judgment-free zone where crying babies and feeding breaks are completely expected and welcomed!`,
+        excerpt: "A relaxing outdoor yoga session for mothers and toddlers.",
+        category: "Health & Fitness",
+        authorName: "Luma Community Team",
+        contentType: "event",
+        eventDate: new Date('2026-03-15T10:00:00Z'),
+        eventLocation: "Centennial Park, Main Lawn",
+        isPremium: false,
+        isFeatured: true,
+        status: "approved",
+        publishedAt: new Date('2024-02-15')
+    },
+    {
+        title: "Exclusive: 20% Off All Organic Baby Food at FreshBites",
+        body: `We've partnered with FreshBites to bring Luma mothers an exclusive discount on their premium, organic baby food delivery service.\n\nFreshBites sources only the highest quality local organic produce to create nutritious, delicious meals for your growing baby. Their meals are freshly prepared, flash-frozen to lock in nutrients, and delivered straight to your door.\n\n## How to Claim\n1. Visit the FreshBites website\n2. Select your meal plan\n3. Enter the discount code at checkout\n\n*Valid for new customers only on their first month's subscription.*`,
+        excerpt: "Get 20% off your first month of premium organic baby food delivery.",
+        category: "Nutrition",
+        authorName: "Luma Partnerships",
+        contentType: "promotion",
+        discountCode: "LUMA20MB",
+        discountValue: "20% Off",
+        sponsorName: "FreshBites",
+        isPremium: false,
+        isFeatured: true,
+        status: "approved",
+        publishedAt: new Date('2024-02-10')
     }
 ];
 

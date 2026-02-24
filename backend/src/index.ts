@@ -1,8 +1,11 @@
 import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import { setupSocketIO } from './socket';
+import { globalLimiter, authLimiter } from './middleware/rateLimiter';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import groupsRoutes from './routes/groups.routes';
@@ -13,6 +16,7 @@ import subscriptionRoutes from './routes/subscription.routes';
 import notificationRoutes from './routes/notification.routes';
 import messagesRoutes from './routes/messages.routes';
 import submissionsRoutes from './routes/submissions.routes';
+import adminRoutes from './routes/admin.routes';
 
 // Load environment variables
 dotenv.config();
@@ -25,10 +29,13 @@ const PORT = process.env.PORT || 3000;
 setupSocketIO(server);
 
 // Middleware
+app.use(helmet());
+app.use(compression());
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     credentials: true
 }));
+app.use(globalLimiter);
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
@@ -38,7 +45,7 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupsRoutes);
 app.use('/api/posts', postsRoutes);
@@ -48,6 +55,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/submissions', submissionsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

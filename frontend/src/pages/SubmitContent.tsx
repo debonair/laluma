@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { submissionService, type Submission } from '../services/submission.service';
 import BottomNav from '../components/BottomNav';
+import Skeleton from '../components/Skeleton';
 
 const CATEGORIES = ['Motherhood', 'Health & Wellness', 'Parenting Tips', 'Recipes', 'Mental Health', 'Fitness', 'Other'];
 
@@ -164,7 +165,10 @@ const SubmitContent: React.FC = () => {
                 ) : (
                     <div>
                         {loading ? (
-                            <p style={{ textAlign: 'center', padding: '2rem' }}>Loading...</p>
+                            <div style={{ padding: '1rem' }}>
+                                <Skeleton height={120} style={{ marginBottom: '1rem' }} borderRadius="12px" />
+                                <Skeleton height={120} style={{ marginBottom: '1rem' }} borderRadius="12px" />
+                            </div>
                         ) : submissions.length === 0 ? (
                             <div className="content-card" style={{ textAlign: 'center', padding: '3rem' }}>
                                 <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</p>
@@ -190,8 +194,6 @@ const SubmitContent: React.FC = () => {
                         )}
                     </div>
                 )}
-
-                <div style={{ height: '80px' }} />
             </main>
             <BottomNav />
         </div>

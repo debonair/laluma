@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 
 const SignIn: React.FC = () => {
-    const { signIn, isAuthenticated, isLoading, error, clearError, user } = useAuth();
+    const { signIn, isAuthenticated, isLoading, error, clearError } = useAuth();
     const navigate = useNavigate();
 
     const [username, setUsername] = useState('');
@@ -13,9 +13,6 @@ const SignIn: React.FC = () => {
     const [localError, setLocalError] = useState('');
 
     if (isAuthenticated) {
-        if (user && !user.hasCompletedOnboarding) {
-            return <Navigate to="/onboarding" replace />;
-        }
         return <Navigate to="/" replace />;
     }
 
@@ -52,13 +49,14 @@ const SignIn: React.FC = () => {
                         width: 56,
                         height: 56,
                         borderRadius: '16px',
-                        background: 'linear-gradient(135deg, #ff6b9d 0%, #c44dff 100%)',
+                        background: 'linear-gradient(135deg, var(--bg-color) 0%, #FFF5EF 100%)',
+                        border: '2px solid rgba(232, 168, 124, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '1.75rem',
                         margin: '0 auto 1rem',
-                        boxShadow: '0 4px 16px rgba(196, 77, 255, 0.3)'
+                        boxShadow: 'var(--shadow-sm)'
                     }}>
                         🌸
                     </div>
@@ -71,14 +69,15 @@ const SignIn: React.FC = () => {
                 {/* Error */}
                 {displayError && (
                     <div style={{
-                        background: 'rgba(255, 107, 107, 0.1)',
-                        border: '1px solid rgba(255, 107, 107, 0.3)',
-                        borderRadius: '10px',
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '0.75rem',
                         padding: '0.75rem 1rem',
-                        color: '#ff4444',
+                        color: '#ef4444',
                         fontSize: '0.9rem',
                         marginBottom: '1.25rem',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        boxShadow: 'var(--shadow-sm)'
                     }}>
                         {displayError}
                     </div>
@@ -141,7 +140,7 @@ const SignIn: React.FC = () => {
                     <button
                         type="submit"
                         className="btn-primary"
-                        style={{ width: '100%', fontSize: '1rem', padding: '0.85rem' }}
+                        style={{ width: '100%', fontSize: '1.05rem', padding: '0.85rem', marginTop: '0.5rem' }}
                         disabled={submitting || isLoading}
                     >
                         {submitting ? 'Signing in…' : 'Sign In'}

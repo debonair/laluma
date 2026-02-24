@@ -35,7 +35,7 @@ const MyBookmarks: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="bookmarks-header">
+            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
                 <h1>My Bookmarks</h1>
                 <p>Your saved articles and videos</p>
             </div>
@@ -48,7 +48,7 @@ const MyBookmarks: React.FC = () => {
                     </button>
                 </div>
             ) : (
-                <div className="content-grid">
+                <main className="content-grid">
                     {bookmarks.map((item) => (
                         <div
                             key={item.id}
@@ -83,9 +83,8 @@ const MyBookmarks: React.FC = () => {
                             </div>
                         </div>
                     ))}
-                </div>
+                </main>
             )}
-            <div style={{ height: '60px' }}></div>
             <BottomNav />
         </div>
     );

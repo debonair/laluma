@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import Skeleton from '../components/Skeleton';
 import './AdminContent.css';
 
 interface Content {
@@ -94,15 +95,14 @@ const AdminContent: React.FC = () => {
     return (
 
         <div className="page-container">
-            <div className="page-header admin-header">
+            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
                 <h1>Content Management</h1>
-                <button
-                    className="btn-primary"
-                    onClick={() => navigate('/admin/content/new')}
-                >
-                    + New Content
-                </button>
-            </div>
+            </div>    <button
+                className="btn-primary"
+                onClick={() => navigate('/admin/content/new')}
+            >
+                + New Content
+            </button>
 
             <main className="page-content">
                 <div className="filters">
@@ -139,7 +139,11 @@ const AdminContent: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="loading">Loading...</div>
+                    <div style={{ padding: '2rem' }}>
+                        <Skeleton height={60} style={{ marginBottom: '1rem' }} />
+                        <Skeleton height={60} style={{ marginBottom: '1rem' }} />
+                        <Skeleton height={60} style={{ marginBottom: '1rem' }} />
+                    </div>
                 ) : (
                     <div className="content-table">
                         <table>
@@ -233,8 +237,6 @@ const AdminContent: React.FC = () => {
                         )}
                     </div>
                 )}
-                {/* Spacer for bottom nav */}
-                <div style={{ height: '60px' }}></div>
             </main>
             <BottomNav />
         </div>

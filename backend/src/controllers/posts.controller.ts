@@ -392,3 +392,70 @@ export const createComment = async (
         });
     }
 };
+
+export const deletePost = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const postId = req.params.postId as string;
+
+        // Find the post
+        const post = await prisma.post.findUnique({
+            where: { id: postId }
+        });
+
+        if (!post) {
+            res.status(404).json({
+                error: 'Not Found',
+                message: 'Post not found',
+                code: 'POST_NOT_FOUND'
+            });
+            return;
+        }
+
+        // Check if user is the author
+        let canDelete = post.authorId === req.user!.userId;
+
+        // If not author, check if user is admin or moderator of the group
+        if (!canDelete) {
+            const member = await prisma.groupMember.findUnique({
+                where: {
+                    groupId_userId: {
+                        groupId: post.groupId,
+                        userId: req.user!.userId
+                    }
+                }
+            });
+
+            if (member && (member.role === 'admin' || member.role === 'moderator')) {
+                canDelete = true;
+            }
+        }
+
+        if (!canDelete) {
+            res.status(403).json({
+                error: 'Forbidden',
+                message: 'You do not have permission to delete this post',
+                code: 'FORBIDDEN'
+            });
+            return;
+        }
+
+        await prisma.post.delete({
+            where: { id: postId }
+        });
+
+        // Notify clients of a feed update
+        getIO().emit('feed_updated');
+
+        res.json({ success: true, message: 'Post deleted successfully' });
+    } catch (error) {
+        console.error('Delete post error:', error);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: 'An error occurred',
+            code: 'INTERNAL_ERROR'
+        });
+    }
+};

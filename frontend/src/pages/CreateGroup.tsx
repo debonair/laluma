@@ -89,7 +89,6 @@ const CreateGroup: React.FC = () => {
                     </button>
                 </form>
             </main>
-            <div style={{ height: '60px' }}></div>
             <BottomNav />
         </div>
     );

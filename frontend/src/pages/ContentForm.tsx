@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoUpload from '../components/VideoUpload';
 import BottomNav from '../components/BottomNav';
+import Skeleton from '../components/Skeleton';
 import './ContentForm.css';
 
 interface ContentFormData {
@@ -11,7 +12,11 @@ interface ContentFormData {
     category: string;
     authorName: string;
     videoUrl: string;
-    contentType: 'article' | 'video' | 'mixed';
+    discountCode?: string;
+    discountValue?: string;
+    eventDate?: string;
+    eventLocation?: string;
+    contentType: 'article' | 'video' | 'mixed' | 'event' | 'promotion';
     isPremium: boolean;
     premiumTier?: 'premium' | 'premium_plus';
     isFeatured: boolean;
@@ -65,7 +70,11 @@ const ContentForm: React.FC = () => {
                 status: data.status || 'draft',
                 sponsorName: data.sponsorName || '',
                 sponsorLogoUrl: data.sponsorLogoUrl || '',
-                sponsorLink: data.sponsorLink || ''
+                sponsorLink: data.sponsorLink || '',
+                discountCode: data.discountCode || '',
+                discountValue: data.discountValue || '',
+                eventDate: data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 16) : '',
+                eventLocation: data.eventLocation || ''
             });
         } catch (err) {
             console.error('Error fetching content:', err);
@@ -96,7 +105,8 @@ const ContentForm: React.FC = () => {
 
             const payload = {
                 ...formData,
-                publishedAt: formData.status === 'approved' ? new Date().toISOString() : undefined
+                publishedAt: formData.status === 'approved' ? new Date().toISOString() : undefined,
+                eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : undefined
             };
 
             const response = await fetch(url, {
@@ -128,14 +138,20 @@ const ContentForm: React.FC = () => {
     };
 
     if (loading) {
-        return <div className="content-form-loading">Loading...</div>;
+        return (
+            <div className="page-container" style={{ padding: '2rem' }}>
+                <Skeleton height={50} width="60%" style={{ marginBottom: '2rem' }} />
+                <Skeleton height={400} borderRadius="12px" />
+            </div>
+        );
     }
 
     return (
 
         <div className="page-container">
-            <div className="page-header content-form-header">
-                <button className="back-button" onClick={() => navigate('/admin/content')} style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontSize: '1.2rem', cursor: 'pointer', marginRight: '1rem' }}>
+            {/* Header */}
+            <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
+                <button type="button" onClick={() => navigate(-1)} className="btn-link">
                     ←
                 </button>
                 <h1>{id ? 'Edit Content' : 'Create New Content'}</h1>
@@ -227,9 +243,11 @@ const ContentForm: React.FC = () => {
                                 <option value="article">Article (Text Only)</option>
                                 <option value="video">Video (Video Only)</option>
                                 <option value="mixed">Mixed (Video + Text)</option>
+                                <option value="event">Event</option>
+                                <option value="promotion">Promotion (Discount)</option>
                             </select>
                             <span className="form-hint">
-                                Choose whether this content is text-only, video-only, or both
+                                Choose the format or type of this content
                             </span>
                         </div>
 
@@ -252,6 +270,82 @@ const ContentForm: React.FC = () => {
                                     placeholder="Write your article content here..."
                                 />
                             </div>
+                        )}
+
+                        {formData.contentType === 'event' && (
+                            <>
+                                <div className="form-group">
+                                    <label htmlFor="eventDate">Event Date & Time *</label>
+                                    <input
+                                        type="datetime-local"
+                                        id="eventDate"
+                                        value={formData.eventDate || ''}
+                                        onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                                        required={formData.contentType === 'event'}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="eventLocation">Event Location *</label>
+                                    <input
+                                        type="text"
+                                        id="eventLocation"
+                                        value={formData.eventLocation || ''}
+                                        onChange={(e) => setFormData({ ...formData, eventLocation: e.target.value })}
+                                        placeholder="e.g. Centennial Park or Zoom Link"
+                                        required={formData.contentType === 'event'}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="body">Event Details *</label>
+                                    <textarea
+                                        id="body"
+                                        value={formData.body}
+                                        onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                                        rows={8}
+                                        required={formData.contentType === 'event'}
+                                        placeholder="Describe the event..."
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {formData.contentType === 'promotion' && (
+                            <>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label htmlFor="discountCode">Discount Code</label>
+                                        <input
+                                            type="text"
+                                            id="discountCode"
+                                            value={formData.discountCode || ''}
+                                            onChange={(e) => setFormData({ ...formData, discountCode: e.target.value })}
+                                            placeholder="e.g. LUMA20"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="discountValue">Discount Value *</label>
+                                        <input
+                                            type="text"
+                                            id="discountValue"
+                                            value={formData.discountValue || ''}
+                                            onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                                            placeholder="e.g. 20% Off"
+                                            required={formData.contentType === 'promotion'}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="body">Promotion Details *</label>
+                                    <textarea
+                                        id="body"
+                                        value={formData.body}
+                                        onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                                        rows={8}
+                                        required={formData.contentType === 'promotion'}
+                                        placeholder="Describe the promotion and terms..."
+                                    />
+                                </div>
+                            </>
                         )}
                     </section>
 
@@ -367,8 +461,6 @@ const ContentForm: React.FC = () => {
                         </button>
                     </div>
                 </form>
-                {/* Spacer for bottom nav */}
-                <div style={{ height: '60px' }}></div>
             </main>
             <BottomNav />
         </div>

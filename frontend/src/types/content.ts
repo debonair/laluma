@@ -8,7 +8,11 @@ export interface Content {
     thumbnailUrl?: string;
     videoUrl?: string;
     videoDuration?: number;
-    contentType: 'article' | 'video' | 'mixed';
+    discountCode?: string;
+    discountValue?: string;
+    eventDate?: string;
+    eventLocation?: string;
+    contentType: 'article' | 'video' | 'mixed' | 'event' | 'promotion';
     isPremium: boolean;
     premiumTier?: 'premium' | 'premium_plus';
     isFeatured: boolean;

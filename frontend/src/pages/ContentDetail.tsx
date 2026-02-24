@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contentService } from '../services/content.service';
+import { useToast } from '../context/ToastContext';
 import apiClient from '../services/api';
 import BottomNav from '../components/BottomNav';
+import Skeleton from '../components/Skeleton';
+import { shareContent } from '../utils/share';
 import './ContentDetail.css';
 
 interface Content {
@@ -23,6 +26,10 @@ interface Content {
     sponsorName?: string;
     sponsorLogoUrl?: string;
     sponsorLink?: string;
+    discountCode?: string;
+    discountValue?: string;
+    eventDate?: string;
+    eventLocation?: string;
     viewCount: number;
     likesCount: number;
     commentsCount: number;
@@ -57,6 +64,8 @@ const ContentDetail: React.FC = () => {
     const [commentText, setCommentText] = useState('');
     const [submittingComment, setSubmittingComment] = useState(false);
     const [commentError, setCommentError] = useState<string | null>(null);
+
+    const { addToast } = useToast();
 
     const fetchContent = React.useCallback(async () => {
         try {
@@ -190,15 +199,20 @@ const ContentDetail: React.FC = () => {
             setComments(prev => prev.filter(c => c.id !== commentId));
         } catch (error) {
             console.error('Error removing comment:', error);
-            alert('Failed to remove comment');
+            addToast('Failed to remove comment', 'error');
         }
     };
 
     if (loading) {
         return (
-            <div className="content-detail-loading">
-                <div className="spinner"></div>
-                <p>Loading...</p>
+            <div className="page-container" style={{ padding: '0' }}>
+                <Skeleton height={300} borderRadius="0" />
+                <div style={{ padding: '1.5rem' }}>
+                    <Skeleton height={40} width="80%" style={{ marginBottom: '1rem' }} />
+                    <Skeleton height={20} width="40%" style={{ marginBottom: '2rem' }} />
+                    <Skeleton height={100} style={{ marginBottom: '1rem' }} />
+                    <Skeleton height={100} style={{ marginBottom: '1rem' }} />
+                </div>
             </div>
         );
     }
@@ -250,6 +264,38 @@ const ContentDetail: React.FC = () => {
                                 <span>❤️ {content.likesCount} likes</span>
                                 <span>💬 {content.commentsCount} comments</span>
                             </div>
+
+                            {content.contentType === 'event' && (
+                                <div style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px' }}>
+                                    <h3 style={{ margin: '0 0 1rem 0', color: '#1E3A8A', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>📅 Event Details</h3>
+                                    {content.eventDate && (
+                                        <div style={{ marginBottom: '0.5rem', color: '#1E40AF', fontWeight: 500 }}>
+                                            <strong>When:</strong> {new Date(content.eventDate).toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                        </div>
+                                    )}
+                                    {content.eventLocation && (
+                                        <div style={{ color: '#1E40AF', fontWeight: 500 }}>
+                                            <strong>Where:</strong> {content.eventLocation}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {content.contentType === 'promotion' && (
+                                <div style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: '#FEFCE8', border: '1px solid #FEF08A', borderRadius: '12px', textAlign: 'center' }}>
+                                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#854D0E' }}>🏷️ Special Promotion</h3>
+                                    {content.discountValue && (
+                                        <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-color)', marginBottom: '1rem' }}>
+                                            {content.discountValue}
+                                        </div>
+                                    )}
+                                    {content.discountCode && (
+                                        <div style={{ display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#FFFFFF', border: '2px dashed #CA8A04', borderRadius: '8px', fontSize: '1.25rem', fontWeight: 700, color: '#854D0E', letterSpacing: '2px' }}>
+                                            {content.discountCode}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </header>
 
                         {/* Sponsor Section */}
@@ -335,6 +381,16 @@ const ContentDetail: React.FC = () => {
                             >
                                 🔖 {content.userInteractions?.bookmarked ? 'Saved' : 'Save'}
                             </button>
+                            <button
+                                className="action-button"
+                                onClick={() => shareContent(
+                                    content.title,
+                                    content.excerpt,
+                                    window.location.href
+                                )}
+                            >
+                                📤 Share
+                            </button>
                         </div>
                     </article>
 
@@ -350,7 +406,11 @@ const ContentDetail: React.FC = () => {
                                             {comment.author.profileImageUrl && (
                                                 <img src={comment.author.profileImageUrl} alt={comment.author.displayName} />
                                             )}
-                                            <span className="author-name">
+                                            <span
+                                                className="author-name"
+                                                onClick={(e) => { e.stopPropagation(); if (comment.author?.id) navigate(`/users/${comment.author.id}`); }}
+                                                style={{ cursor: comment.author?.id ? 'pointer' : 'default', textDecoration: comment.author?.id ? 'underline' : 'none', textUnderlineOffset: '2px' }}
+                                            >
                                                 {comment.author.displayName || comment.author.username}
                                             </span>
                                         </div>
@@ -466,8 +526,6 @@ const ContentDetail: React.FC = () => {
                         )}
                     </section>
                 </div>
-                {/* Bottom Nav Spacer */}
-                <div style={{ height: '60px' }}></div>
             </main>
             <BottomNav />
         </div>

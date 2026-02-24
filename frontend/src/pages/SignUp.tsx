@@ -84,38 +84,24 @@ const SignUp: React.FC = () => {
         <div className="auth-container">
             <div className="auth-card">
                 {/* Branding */}
-                <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-                    <div style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '16px',
-                        background: 'linear-gradient(135deg, #ff6b9d 0%, #c44dff 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.75rem',
-                        margin: '0 auto 1rem',
-                        boxShadow: '0 4px 16px rgba(196, 77, 255, 0.3)'
-                    }}>
-                        🌸
-                    </div>
-                    <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>Join Luma</h1>
-                    <p className="auth-subtitle" style={{ marginTop: '0.5rem' }}>
-                        Your community of mothers awaits
-                    </p>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div className="logo-text" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>luma</div>
+                    <h1>Join Luma</h1>
+                    <p>Create an account to connect with the community</p>
                 </div>
 
                 {/* Error */}
                 {displayError && (
                     <div style={{
-                        background: 'rgba(255, 107, 107, 0.1)',
-                        border: '1px solid rgba(255, 107, 107, 0.3)',
-                        borderRadius: '10px',
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '0.75rem',
                         padding: '0.75rem 1rem',
-                        color: '#ff4444',
+                        color: '#ef4444',
                         fontSize: '0.9rem',
                         marginBottom: '1.25rem',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        boxShadow: 'var(--shadow-sm)'
                     }}>
                         {displayError}
                     </div>
@@ -241,7 +227,7 @@ const SignUp: React.FC = () => {
                     <button
                         type="submit"
                         className="btn-primary"
-                        style={{ width: '100%', fontSize: '1rem', padding: '0.85rem' }}
+                        style={{ width: '100%', fontSize: '1.05rem', padding: '0.85rem', marginTop: '0.5rem' }}
                         disabled={submitting || isLoading}
                     >
                         {submitting ? 'Creating account…' : 'Create Account'}

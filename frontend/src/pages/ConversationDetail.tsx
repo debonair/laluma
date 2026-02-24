@@ -13,6 +13,9 @@ interface Message {
     content: string;
     createdAt: string;
     senderId: string;
+    isRead?: boolean;
+    attachmentUrl?: string | null;
+    attachmentType?: string | null;
     sender?: {
         id: string;
         username: string;
@@ -32,7 +35,10 @@ const ConversationDetail: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [sendingMessage, setSendingMessage] = useState(false);
     const [messageError, setMessageError] = useState<string | null>(null);
+    const [attachment, setAttachment] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Fetch message history
     useEffect(() => {
@@ -58,24 +64,64 @@ const ConversationDetail: React.FC = () => {
         const handleNewMessage = (incomingMsg: Message & { conversationId: string }) => {
             if (incomingMsg.conversationId === id) {
                 setMessages(prev => [...prev, incomingMsg]);
+
+                // If I am receiving a new message while looking at this screen, mark it as read
+                if (incomingMsg.senderId !== user?.id) {
+                    apiClient.post('/messages/read', { conversationId: id }).catch(console.error);
+                }
+            }
+        };
+
+        const handleMessagesRead = (data: { conversationId: string, readBy: string, timestamp: string }) => {
+            // Update UI to show messages are read by the other person
+            if (data.conversationId === id && data.readBy !== user?.id) {
+                setMessages(prev => prev.map(msg =>
+                    msg.senderId === user?.id && !msg.isRead
+                        ? { ...msg, isRead: true }
+                        : msg
+                ));
             }
         };
 
         socket.on('new_message', handleNewMessage);
+        socket.on('messages_read', handleMessagesRead);
+
         return () => {
             socket.off('new_message', handleNewMessage);
+            socket.off('messages_read', handleMessagesRead);
         };
-    }, [socket, id]);
+    }, [socket, id, user?.id]);
+
+    // Mark messages as read when opening conversation
+    useEffect(() => {
+        if (id && messages.length > 0 && messages.some(m => !m.isRead && m.senderId !== user?.id)) {
+            apiClient.post('/messages/read', { conversationId: id }).catch(console.error);
+        }
+    }, [id, messages, user?.id]);
 
     // Auto-scroll to bottom of chat
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [messages, previewUrl]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setAttachment(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
+    const clearAttachment = () => {
+        setAttachment(null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!newMessage.trim() || !user || sendingMessage) return;
+        if ((!newMessage.trim() && !attachment) || !user || sendingMessage) return;
 
         const contentToAuth = newMessage.trim();
 
@@ -90,12 +136,24 @@ const ConversationDetail: React.FC = () => {
                 return;
             }
 
-            await apiClient.post('/messages/send', {
-                recipientId: recipientCandidate,
-                content: contentToAuth
-            });
+            if (attachment) {
+                const formData = new FormData();
+                formData.append('recipientId', recipientCandidate);
+                if (contentToAuth) formData.append('content', contentToAuth);
+                formData.append('attachment', attachment);
+
+                await apiClient.post('/messages/send/attachment', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            } else {
+                await apiClient.post('/messages/send', {
+                    recipientId: recipientCandidate,
+                    content: contentToAuth
+                });
+            }
 
             setNewMessage('');
+            clearAttachment();
         } catch (error) {
             console.error('Failed to send message:', error);
             setMessageError(handleAPIError(error) || 'Failed to send message.');
@@ -117,7 +175,7 @@ const ConversationDetail: React.FC = () => {
                 </button>
                 <div style={{ flex: 1 }}>
                     <h2 style={{ margin: 0, fontSize: '1.2rem' }}>
-                        {recipient ? `Chat with ${recipient.displayName || recipient.username}` : 'Chat'}
+                        {recipient ? `Chat with ${recipient.display_name || recipient.username}` : 'Chat'}
                     </h2>
                 </div>
             </header>
@@ -154,25 +212,52 @@ const ConversationDetail: React.FC = () => {
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     fontSize: '0.8rem', fontWeight: 'bold'
                                                 }}>
-                                                    {(recipient?.displayName || recipient?.username || 'Loading...').charAt(0).toUpperCase()}
+                                                    {(recipient?.display_name || recipient?.username || 'Loading...').charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
                                     )}
-                                    <div
-                                        style={{
-                                            maxWidth: '75%',
-                                            padding: '0.75rem 1rem',
-                                            borderRadius: '16px',
-                                            backgroundColor: isMine ? 'var(--primary-color)' : '#F0F2F5',
-                                            color: isMine ? 'white' : 'var(--text-primary)',
-                                            borderBottomRightRadius: isMine ? '4px' : '16px',
-                                            borderBottomLeftRadius: !isMine ? '4px' : '16px',
-                                            wordBreak: 'break-word',
-                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                                        }}
-                                    >
-                                        <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.4 }}>{msg.content}</p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
+                                        <div
+                                            style={{
+                                                padding: msg.attachmentUrl ? '0.25rem' : '0.75rem 1rem',
+                                                borderRadius: '16px',
+                                                backgroundColor: isMine ? 'var(--primary-color)' : '#F0F2F5',
+                                                color: isMine ? 'white' : 'var(--text-primary)',
+                                                borderBottomRightRadius: isMine ? '4px' : '16px',
+                                                borderBottomLeftRadius: !isMine ? '4px' : '16px',
+                                                wordBreak: 'break-word',
+                                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                                display: 'flex',
+                                                flexDirection: 'column'
+                                            }}
+                                        >
+                                            {msg.attachmentUrl && (
+                                                <div style={{
+                                                    width: '100%',
+                                                    marginBottom: msg.content ? '0.5rem' : '0',
+                                                    borderRadius: '12px',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    {msg.attachmentType === 'image' ? (
+                                                        <img src={`http://localhost:3000${msg.attachmentUrl}`} alt="attachment" style={{ maxWidth: '100%', display: 'block' }} />
+                                                    ) : (
+                                                        <a href={`http://localhost:3000${msg.attachmentUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: isMine ? 'white' : 'var(--primary-color)', padding: '0.5rem', display: 'block', textDecoration: 'underline' }}>
+                                                            📎 View Attachment
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {msg.content && (
+                                                <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.4, padding: msg.attachmentUrl ? '0 0.5rem 0.5rem' : 0 }}>{msg.content}</p>
+                                            )}
+                                        </div>
+                                        {/* Read Receipt */}
+                                        {isMine && (
+                                            <div style={{ fontSize: '0.7rem', color: msg.isRead ? 'var(--primary-color)' : 'var(--text-secondary)', marginTop: '0.1rem', marginRight: '0.25rem' }}>
+                                                {msg.isRead ? '✓✓' : '✓'}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -183,13 +268,39 @@ const ConversationDetail: React.FC = () => {
             </div>
 
             {/* Input Area */}
-            <div style={{ padding: '1rem', paddingBottom: 'calc(1rem + 60px)', borderTop: '1px solid var(--border-color)', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ padding: '0 1rem 1rem', paddingBottom: 'calc(1rem + 60px)', borderTop: previewUrl ? 'none' : '1px solid var(--border-color)', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {previewUrl && (
+                    <div style={{ position: 'relative', margin: '0.5rem 0', alignSelf: 'flex-start', maxWidth: '150px' }}>
+                        <img src={previewUrl} alt="Preview" style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
+                        <button
+                            type="button"
+                            onClick={clearAttachment}
+                            style={{ position: 'absolute', top: -10, right: -10, background: '#ff4444', color: 'white', width: '24px', height: '24px', borderRadius: '50%', border: '2px solid white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', lineHeight: 1 }}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
                 {messageError && (
                     <div style={{ color: '#ff4444', fontSize: '0.85rem', padding: '0.5rem', background: 'rgba(255, 107, 107, 0.1)', borderRadius: '0.5rem', textAlign: 'center' }}>
                         {messageError}
                     </div>
                 )}
-                <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem' }}>
+                <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', paddingTop: previewUrl ? 0 : '1rem' }}>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <span style={{ fontSize: '1.25rem' }}>📎</span>
+                    </button>
                     <input
                         type="text"
                         value={newMessage}
@@ -207,12 +318,12 @@ const ConversationDetail: React.FC = () => {
                     />
                     <button
                         type="submit"
-                        disabled={!newMessage.trim() || sendingMessage}
+                        disabled={(!newMessage.trim() && !attachment) || sendingMessage}
                         style={{
                             width: '44px',
                             height: '44px',
                             borderRadius: '50%',
-                            backgroundColor: newMessage.trim() ? 'var(--primary-color)' : '#E0E0E0',
+                            backgroundColor: (newMessage.trim() || attachment) ? 'var(--primary-color)' : '#E0E0E0',
                             color: 'white',
                             border: 'none',
                             display: 'flex',

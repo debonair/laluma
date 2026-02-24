@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { userService, type UserSearchResult, type UserNearbyResult } from '../services/user.service';
 import BottomNav from '../components/BottomNav';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const Search: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'search' | 'nearby'>('search');
@@ -18,7 +19,8 @@ const Search: React.FC = () => {
     const [isLoadingNearby, setIsLoadingNearby] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
 
-    const { user } = useAuth();
+    const { user, updateProfile } = useAuth();
+    const { addToast } = useToast();
     const navigate = useNavigate();
     const [locationShared, setLocationShared] = useState(false);
 
@@ -69,7 +71,8 @@ const Search: React.FC = () => {
 
     const handleShareLocation = () => {
         if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser');
+            addToast('Geolocation is not supported by your browser', 'error');
+            setIsLocating(false); // Assuming this was the intent of setIsLoadingLocation
             return;
         }
         setIsLocating(true);
@@ -82,17 +85,17 @@ const Search: React.FC = () => {
                     });
                     setLocationShared(true);
                     await fetchNearbyUsers();
-                } catch (error) {
-                    console.error('Failed to update location', error);
-                    alert('Failed to save your location.');
+                } catch (err) {
+                    console.error('Failed to update location preferences:', err);
+                    addToast('Failed to save your location.', 'error');
                 } finally {
                     setIsLocating(false);
                 }
             },
             (error) => {
                 console.error('Geolocation error:', error);
-                alert('Unable to retrieve your location. Please check your browser permissions.');
-                setIsLocating(false);
+                addToast('Unable to retrieve your location. Please check your browser permissions.', 'error');
+                setIsLocating(false); // Assuming this was the intent of setIsLoadingLocation
             }
         );
     };
@@ -167,7 +170,11 @@ const Search: React.FC = () => {
                     {activeTab === 'search' && (
                         <>
                             {isSearching ? (
-                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>Searching...</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingTop: '1rem' }}>
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="skeleton" style={{ height: '84px', width: '100%', borderRadius: '12px', border: '1px solid var(--border-color)' }}></div>
+                                    ))}
+                                </div>
                             ) : hasSearched && results.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                                     <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>🤷‍♀️</div>
@@ -216,7 +223,11 @@ const Search: React.FC = () => {
                             ) : (
                                 <>
                                     {isLoadingNearby ? (
-                                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>Finding nearby moms...</div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            {[1, 2, 3, 4].map(i => (
+                                                <div key={i} className="skeleton" style={{ height: '84px', width: '100%', borderRadius: '12px', border: '1px solid var(--border-color)' }}></div>
+                                            ))}
+                                        </div>
                                     ) : nearbyUsers.length === 0 ? (
                                         <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                                             <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>🌍</div>
@@ -249,7 +260,6 @@ const Search: React.FC = () => {
                     )}
 
                 </div>
-                <div style={{ height: '80px' }} />
             </main>
 
             <BottomNav />
@@ -262,7 +272,7 @@ const renderUserCard = (resultUser: UserSearchResult | UserNearbyResult, navigat
     return (
         <div
             key={resultUser.id}
-            onClick={() => navigate(`/users/${resultUser.id}`)}
+            onClick={() => navigate(`/ users / ${resultUser.id} `)}
             style={{
                 display: 'flex',
                 alignItems: 'center',

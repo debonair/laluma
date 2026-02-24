@@ -22,16 +22,19 @@
     display: block;
     width: 100%;
     padding: 3rem 2rem;
-    border: 2px dashed #D1D5DB;
-    border-radius: 12px;
-    background: #F9FAFB;
+    border: 4px dashed #000000;
+    box-shadow: 4px 4px 0px 0px #000000;
+    border-radius: 0;
+    background: var(--bg-color);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .upload-button:hover {
-    border-color: #8B5CF6;
-    background: #F3F4F6;
+    border-color: var(--primary-color);
+    background: var(--accent-color);
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0px 0px #000000;
 }
 
 .upload-prompt {
@@ -108,7 +111,7 @@
 .preview-video {
     width: 100%;
     max-height: 400px;
-    border-radius: 12px;
+    border-radius: 0;
     background: #000;
 }
 
@@ -117,7 +120,7 @@
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
@@ -133,7 +136,7 @@
     padding: 0.75rem 1rem;
     background: #FEE2E2;
     border: 1px solid #FECACA;
-    border-radius: 8px;
+    border-radius: 0;
     color: #991B1B;
     font-size: 0.875rem;
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Skeleton from './Skeleton';
 
 interface AdminRouteProps {
     children: React.ReactNode;
@@ -11,8 +12,9 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
 
     if (isLoading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                Loading...
+            <div style={{ padding: '2rem' }}>
+                <Skeleton height={200} borderRadius="12px" style={{ marginBottom: '1rem' }} />
+                <Skeleton height={200} borderRadius="12px" />
             </div>
         );
     }

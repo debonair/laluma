@@ -174,9 +174,6 @@ const Notifications: React.FC = () => {
                     )}
                 </div>
             )}
-
-            {/* Spacer for bottom nav */}
-            <div style={{ height: '60px' }}></div>
             <BottomNav />
         </div>
     );

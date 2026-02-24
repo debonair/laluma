@@ -52,7 +52,7 @@ const LocationSettings: React.FC = () => {
                     Set your preferred distance for meeting other mothers.
                 </p>
 
-                <div className="content-card">
+                <div className="content-card" style={{ animation: 'slideUpFade 0.4s ease-out forwards' }}>
                     <div style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <label style={{ fontWeight: 600 }}>Distance Radius</label>

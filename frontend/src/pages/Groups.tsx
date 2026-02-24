@@ -32,12 +32,15 @@ const Groups: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
                 <h1>Community Groups</h1>
+                <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>
+                    Join groups to discover content and members
+                </p>
                 <button
                     onClick={() => navigate('/groups/create')}
                     className="btn-link"
-                    style={{ fontSize: '1.5rem', padding: '0 0.5rem' }}
+                    style={{ fontSize: '1.5rem', padding: '0 0.5rem', position: 'absolute', top: '1rem', right: '1rem' }}
                 >
                     +
                 </button>
@@ -146,11 +149,7 @@ const Groups: React.FC = () => {
                         ))
                     )}
                 </div>
-
-                {/* Spacer for bottom nav */}
-                <div style={{ height: '60px' }}></div>
             </main>
-
             <BottomNav />
         </div>
     );

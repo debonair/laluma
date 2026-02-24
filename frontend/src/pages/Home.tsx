@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useGroup } from '../context/GroupContext';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import { Users, Compass } from 'lucide-react';
 
 const Home: React.FC = () => {
     const { user, signOut } = useAuth();
@@ -16,8 +17,15 @@ const Home: React.FC = () => {
 
     return (
         <div className="page-container">
-            <header className="page-header">
+            <header className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h1>Welcome, {user?.displayName || user?.username}!</h1>
+                <button
+                    onClick={() => navigate('/messages')}
+                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--primary-color)' }}
+                    title="Messages"
+                >
+                    💬
+                </button>
             </header>
             <main className="page-content">
                 <div className="content-card">
@@ -49,7 +57,7 @@ const Home: React.FC = () => {
                         </div>
                         <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Manage content submissions and moderate the community.</p>
                         <button
-                            onClick={() => navigate('/admin/submissions')}
+                            onClick={() => navigate('/admin')}
                             className="btn-primary"
                             style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                         >
@@ -82,7 +90,10 @@ const Home: React.FC = () => {
                                     }}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary-color)' }}>
+                                        <span
+                                            onClick={(e) => { e.stopPropagation(); if (post.author?.id) navigate(`/users/${post.author.id}`); }}
+                                            style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary-color)', cursor: post.author?.id ? 'pointer' : 'default' }}
+                                        >
                                             {post.author?.username || 'Unknown'}
                                         </span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
@@ -99,17 +110,43 @@ const Home: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Join groups to see activity here!</p>
-                            <button onClick={() => navigate('/groups')} className="btn-primary" style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
-                                Discover Groups
-                            </button>
+                        <div className="empty-state-card" style={{
+                            textAlign: 'center',
+                            padding: '3rem 1.5rem',
+                            backgroundColor: 'white',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                            marginTop: '2rem',
+                            border: '1px solid rgba(0,0,0,0.02)'
+                        }}>
+                            <div style={{
+                                width: '64px', height: '64px',
+                                backgroundColor: 'var(--primary-color)',
+                                color: 'white',
+                                borderRadius: '50%',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                margin: '0 auto 1.5rem auto',
+                                boxShadow: '0 8px 16px rgba(0,0,0, 0.1)'
+                            }}>
+                                <Users size={32} />
+                            </div>
+                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Your Feed is Quiet</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.5' }}>
+                                Your home feed shows recent posts from the groups you belong to. Join some communities to get started!
+                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <button
+                                    onClick={() => navigate('/groups')}
+                                    className="btn-primary"
+                                    style={{ width: '100%', padding: '0.875rem', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                >
+                                    <Compass size={18} />
+                                    Discover Communities
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
-
-                {/* Spacer for bottom nav */}
-                <div style={{ height: '60px' }}></div>
             </main>
 
             <BottomNav />

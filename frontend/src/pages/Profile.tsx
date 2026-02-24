@@ -1,12 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import Skeleton from '../components/Skeleton';
 import apiClient from '../services/api';
 
 import BottomNav from '../components/BottomNav';
 
 const Profile: React.FC = () => {
     const { user, updateProfile } = useAuth();
+    const { addToast } = useToast();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,11 +59,20 @@ const Profile: React.FC = () => {
             setAvatarUrl(res.data.profileImageUrl);
         } catch (err) {
             console.error('Avatar upload failed:', err);
-            alert('Failed to upload image');
+            addToast('Failed to upload image', 'error');
         }
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (!user) {
+        return (
+            <div className="page-container" style={{ padding: '2rem' }}>
+                <Skeleton height={200} borderRadius="12px" style={{ marginBottom: '2rem' }} />
+                <Skeleton height={40} width="60%" style={{ marginBottom: '1rem' }} />
+                <Skeleton height={20} width="40%" style={{ marginBottom: '2rem' }} />
+                <Skeleton height={150} borderRadius="8px" />
+            </div>
+        );
+    }
 
     const profileImg = avatarUrl || user.profileImageUrl;
     const displayProfileName = isEditing ? editForm.displayName : (user.displayName || user.username);
@@ -130,19 +142,20 @@ const Profile: React.FC = () => {
                             background: 'rgba(0,0,0,0.5)', color: '#fff',
                             fontSize: '0.6rem', textAlign: 'center', padding: '2px 0'
                         }}>📷</div>
-                    </div>
-                    {isEditing ? (
-                        <input
-                            type="text"
-                            value={editForm.displayName}
-                            onChange={(e) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
-                            className="profile-name-input"
-                        />
-                    ) : (
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>{displayProfileName}</h2>
-                    )}
+                    </div >
+                    {
+                        isEditing ? (
+                            <input
+                                type="text"
+                                value={editForm.displayName}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
+                                className="profile-name-input"
+                            />
+                        ) : (
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>{displayProfileName}</h2>
+                        )}
                     <p className="helper-text">@{user.username}</p>
-                </div>
+                </div >
 
                 <div className="content-card">
                     <h3 className="profile-section-title">About Me</h3>
@@ -236,12 +249,9 @@ const Profile: React.FC = () => {
                         )}
                     </div>
                 </div>
-
-                {/* Bottom Nav Spacer */}
-                <div style={{ height: '60px' }}></div>
-            </main>
+            </main >
             <BottomNav />
-        </div>
+        </div >
     );
 };
 

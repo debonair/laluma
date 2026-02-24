@@ -11,19 +11,19 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(uuid())
-  keycloakId      String?  @unique @map("keycloak_id")
-  username        String   @unique
-  email           String   @unique
-  passwordHash    String   @map("password_hash")
-  displayName     String?  @map("display_name")
-  aboutMe         String?  @map("about_me")
-  motherhoodStage String?  @map("motherhood_stage")
-  profileImageUrl String?  @map("profile_image_url")
-  role            String   @default("user")
+  id                     String   @id @default(uuid())
+  keycloakId             String?  @unique @map("keycloak_id")
+  username               String   @unique
+  email                  String   @unique
+  passwordHash           String   @map("password_hash")
+  displayName            String?  @map("display_name")
+  aboutMe                String?  @map("about_me")
+  motherhoodStage        String?  @map("motherhood_stage")
+  profileImageUrl        String?  @map("profile_image_url")
+  role                   String   @default("user")
   hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
 
   preferences      UserPreference?
   createdGroups    Group[]         @relation("GroupCreator")
@@ -46,21 +46,25 @@ model User {
   conversations ConversationParticipant[]
   messagesSent  Message[]                 @relation("MessageSender")
 
+  @@index([username])
+  @@index([email])
   @@map("users")
 }
 
 model UserPreference {
-  id               String   @id @default(uuid())
-  userId           String   @unique @map("user_id")
-  lookingFor       String[] @map("looking_for")
-  locationRadius   Int      @default(10) @map("location_radius")
-  locationAnywhere Boolean  @default(false) @map("location_anywhere")
-  latitude         Float?
-  longitude        Float?
-  city             String?
-  country          String?
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid())
+  userId             String   @unique @map("user_id")
+  lookingFor         String[] @map("looking_for")
+  locationRadius     Int      @default(10) @map("location_radius")
+  locationAnywhere   Boolean  @default(false) @map("location_anywhere")
+  latitude           Float?
+  longitude          Float?
+  city               String?
+  country            String?
+  interestedInEvents Boolean  @default(true) @map("interested_in_events")
+  interestedInPromos Boolean  @default(true) @map("interested_in_promos")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -83,6 +87,7 @@ model Group {
   members   GroupMember[]
   posts     Post[]
 
+  @@index([name])
   @@map("groups")
 }
 
@@ -115,6 +120,8 @@ model Post {
   comments Comment[]
   likes    PostLike[]
 
+  @@index([groupId])
+  @@index([createdAt])
   @@map("posts")
 }
 
@@ -129,6 +136,7 @@ model Comment {
   post   Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
   author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
+  @@index([postId])
   @@map("comments")
 }
 
@@ -165,6 +173,10 @@ model Content {
   sponsorLink    String?   @map("sponsor_link")
   isPremium      Boolean   @default(false) @map("is_premium")
   premiumTier    String?   @map("premium_tier")
+  discountCode   String?   @map("discount_code")
+  discountValue  String?   @map("discount_value")
+  eventDate      DateTime? @map("event_date")
+  eventLocation  String?   @map("event_location")
   isFeatured     Boolean   @default(false) @map("is_featured")
   isActive       Boolean   @default(true) @map("is_active")
   status         String    @default("draft")
@@ -320,10 +332,12 @@ model ConversationParticipant {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-  isRead    Boolean  @default(false) @map("is_read")
+  id             String   @id @default(uuid())
+  content        String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  isRead         Boolean  @default(false) @map("is_read")
+  attachmentUrl  String?  @map("attachment_url")
+  attachmentType String?  @map("attachment_type")
 
   senderId       String @map("sender_id")
   conversationId String @map("conversation_id")

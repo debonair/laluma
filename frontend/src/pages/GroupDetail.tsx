@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGroup } from '../context/GroupContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import BottomNav from '../components/BottomNav';
 import apiClient from '../services/api';
 import type { Group } from '../services/groups.service';
 import type { Post, Comment } from '../services/posts.service';
 import { postsService } from '../services/posts.service';
+import { shareContent } from '../utils/share';
 
 interface GroupMember {
     id: string;
@@ -38,6 +40,7 @@ const GroupDetail: React.FC = () => {
     const [submittingComment, setSubmittingComment] = useState<{ [postId: string]: boolean }>({});
     const [commentError, setCommentError] = useState<{ [postId: string]: string | null }>({});
     const { user } = useAuth();
+    const { addToast } = useToast();
 
     // Pull-to-refresh state
     const [pullDistance, setPullDistance] = useState(0);
@@ -97,7 +100,7 @@ const GroupDetail: React.FC = () => {
             loadMembers();
         } catch (err) {
             console.error(err);
-            alert('Failed to remove member');
+            addToast('Failed to remove member', 'error');
         }
     };
 
@@ -108,7 +111,7 @@ const GroupDetail: React.FC = () => {
             loadMembers();
         } catch (err) {
             console.error(err);
-            alert('Failed to update role');
+            addToast('Failed to update role', 'error');
         }
     };
 
@@ -121,6 +124,11 @@ const GroupDetail: React.FC = () => {
             if (groupData) {
                 const postsData = await getGroupPosts(id);
                 setPosts(postsData);
+                // Preemptively load members so we know the user's role for moderation
+                try {
+                    const res = await apiClient.get<GroupMember[]>(`/groups/${id}/members`);
+                    setMembers(res.data);
+                } catch (e) { }
             }
             setLoading(false);
         };
@@ -147,7 +155,21 @@ const GroupDetail: React.FC = () => {
     }
 
     if (!group) {
-        return <div className="page-container">Group not found</div>;
+        return (
+            <div className="page-container">
+                <main className="page-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚷</div>
+                    <h2 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Group Not Found</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '300px' }}>
+                        The group you're looking for doesn't exist or has been deleted.
+                    </p>
+                    <button className="btn-primary" onClick={() => navigate('/groups')}>
+                        Back to Groups
+                    </button>
+                </main>
+                <BottomNav />
+            </div>
+        );
     }
 
     const handleJoinLeave = async () => {
@@ -239,6 +261,20 @@ const GroupDetail: React.FC = () => {
         }
     };
 
+    const handleDeletePost = async (postId: string) => {
+        if (!confirm('Are you sure you want to delete this post?')) return;
+        try {
+            await postsService.deletePost(postId);
+            if (id) {
+                const postsData = await getGroupPosts(id);
+                setPosts(postsData);
+            }
+        } catch (err) {
+            console.error("Failed to delete post:", err);
+            addToast('Failed to delete post.', 'error');
+        }
+    };
+
     return (
         <div
             className="page-container"
@@ -250,7 +286,7 @@ const GroupDetail: React.FC = () => {
                 <button onClick={() => navigate('/groups')} className="btn-link">
                     ←
                 </button>
-                <h1 style={{ fontSize: '1.2rem', margin: 0 }}>{group.name}</h1>
+                <h1>{group.name}</h1>
             </div>
 
             <main className="page-content">
@@ -299,7 +335,11 @@ const GroupDetail: React.FC = () => {
                         {showMembers && (
                             <div style={{ marginTop: '0.75rem' }}>
                                 {loadingMembers ? (
-                                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Loading...</p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem 0' }}>
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="skeleton" style={{ height: '40px', width: '100%', borderRadius: '8px' }}></div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     members.map(m => {
                                         const isCurrentUserAdmin = members.find(me => me.userId === user?.id)?.role === 'admin';
@@ -309,7 +349,10 @@ const GroupDetail: React.FC = () => {
                                                 padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)'
                                             }}>
                                                 <div>
-                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                                                    <span
+                                                        onClick={(e) => { e.stopPropagation(); if (m.userId) navigate(`/users/${m.userId}`); }}
+                                                        style={{ fontWeight: 600, fontSize: '0.9rem', cursor: m.userId ? 'pointer' : 'default' }}
+                                                    >
                                                         {m.displayName || m.username}
                                                     </span>
                                                     <span style={{
@@ -396,7 +439,12 @@ const GroupDetail: React.FC = () => {
                     {posts.map(post => (
                         <div key={post.id} className="content-card" style={{ padding: '1rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ fontWeight: 600 }}>{post.author?.username || 'Unknown'}</span>
+                                <span
+                                    onClick={(e) => { e.stopPropagation(); if (post.author?.id) navigate(`/users/${post.author.id}`); }}
+                                    style={{ fontWeight: 600, cursor: post.author?.id ? 'pointer' : 'default' }}
+                                >
+                                    {post.author?.username || 'Unknown'}
+                                </span>
                                 <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                     {new Date(post.created_at).toLocaleDateString()}
                                 </span>
@@ -418,15 +466,37 @@ const GroupDetail: React.FC = () => {
                                 >
                                     💬 <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>{post.comments_count}</span>
                                 </button>
+                                <button
+                                    className="icon-btn"
+                                    onClick={() => shareContent(
+                                        `Post by ${post.author?.username || 'a member'} in ${group?.name}`,
+                                        post.content,
+                                        `${window.location.origin}/groups/${group?.id}`
+                                    )}
+                                    style={{ color: 'var(--text-secondary)' }}
+                                >
+                                    📤 <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>Share</span>
+                                </button>
+                                {((post.author?.id === user?.id) || members.some(m => m.userId === user?.id && ['admin', 'moderator'].includes(m.role))) && (
+                                    <button
+                                        className="icon-btn"
+                                        onClick={() => handleDeletePost(post.id)}
+                                        style={{ color: '#EF4444', marginLeft: 'auto' }}
+                                    >
+                                        🗑️ <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>Delete</span>
+                                    </button>
+                                )}
                             </div>
 
                             {/* Comments Section */}
                             {showComments[post.id] && (
                                 <div style={{ marginTop: '1rem', paddingLeft: '1rem', borderLeft: '2px solid var(--border-color)' }}>
                                     {loadingComments[post.id] ? (
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                            Loading comments...
-                                        </p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                                            {[1, 2].map(i => (
+                                                <div key={i} className="skeleton" style={{ height: '50px', width: '100%', borderRadius: '8px' }}></div>
+                                            ))}
+                                        </div>
                                     ) : (
                                         <>
                                             {/* Display Comments */}
@@ -435,7 +505,10 @@ const GroupDetail: React.FC = () => {
                                                     {comments[post.id].map(comment => (
                                                         <div key={comment.id} style={{ fontSize: '0.9rem' }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                                                <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                                                                <span
+                                                                    onClick={(e) => { e.stopPropagation(); if (comment.author?.id) navigate(`/users/${comment.author.id}`); }}
+                                                                    style={{ fontWeight: 600, fontSize: '0.85rem', cursor: comment.author?.id ? 'pointer' : 'default' }}
+                                                                >
                                                                     {comment.author?.username || 'Unknown'}
                                                                 </span>
                                                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
@@ -514,9 +587,6 @@ const GroupDetail: React.FC = () => {
                         <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No posts yet. Be the first to share!</p>
                     )}
                 </div>
-
-                {/* Spacer for bottom nav */}
-                <div style={{ height: '60px' }}></div>
             </main>
             <BottomNav />
         </div>

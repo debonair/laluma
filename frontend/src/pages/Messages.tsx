@@ -169,7 +169,6 @@ const Messages: React.FC = () => {
                         })}
                     </div>
                 )}
-                <div style={{ height: '70px' }} />
             </main>
             <BottomNav />
         </div>

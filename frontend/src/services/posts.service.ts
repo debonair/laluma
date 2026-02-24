@@ -77,4 +77,9 @@ export const postsService = {
         const response = await apiClient.post<Comment>(`/posts/${postId}/comments`, { content });
         return response.data;
     },
+
+    deletePost: async (postId: string): Promise<{ success: boolean }> => {
+        const response = await apiClient.delete(`/posts/${postId}`);
+        return response.data;
+    }
 };

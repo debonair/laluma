@@ -63,11 +63,11 @@ const BottomNav: React.FC = () => {
             </div>
 
             <div
-                className={`nav-item ${isActive('/search') ? 'active' : ''}`}
-                onClick={() => navigate('/search')}
+                className={`nav-item ${isActive('/discover') ? 'active' : ''}`}
+                onClick={() => navigate('/discover')}
             >
-                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>🔍</div>
-                <span>Search</span>
+                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>✨</div>
+                <span>Discover</span>
             </div>
 
             <div
@@ -94,8 +94,8 @@ const BottomNav: React.FC = () => {
 
             {user?.roles?.includes('app-admin') && (
                 <div
-                    className={`nav-item ${isActive('/admin/submissions') ? 'active' : ''}`}
-                    onClick={() => navigate('/admin/submissions')}
+                    className={`nav-item ${isActive('/admin') ? 'active' : ''}`}
+                    onClick={() => navigate('/admin')}
                 >
                     <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>🛠️</div>
                     <span>Admin</span>

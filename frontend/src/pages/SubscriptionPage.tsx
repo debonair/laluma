@@ -1,126 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import { subscriptionService } from '../services/subscription.service';
-import type { Subscription } from '../services/subscription.service';
-import BottomNav from '../components/BottomNav';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './SubscriptionPage.css';
 
 const SubscriptionPage: React.FC = () => {
-    const [subscription, setSubscription] = useState<Subscription | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        loadSubscription();
-    }, []);
-
-    const loadSubscription = async () => {
-        try {
-            setLoading(true);
-            const data = await subscriptionService.getStatus();
-            setSubscription(data);
-        } catch (err) {
-            console.error(err);
-            setError('Failed to load subscription details.');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const { addToast } = useToast();
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleSubscribe = async (tier: 'premium' | 'premium_plus') => {
-        try {
-            setLoading(true);
-            const updated = await subscriptionService.subscribe(tier);
-            setSubscription(updated);
-            alert(`Successfully upgraded to ${tier}!`);
-        } catch (err) {
-            console.error(err);
-            alert('Failed to upgrade subscription.');
-        } finally {
-            setLoading(false);
-        }
-    };
+        setIsProcessing(true);
+        // Mock a processing delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
-    const handleCancel = async () => {
-        if (!confirm('Are you sure you want to cancel? You will lose access at the end of the billing period.')) return;
-        try {
-            setLoading(true);
-            const updated = await subscriptionService.cancel();
-            setSubscription(updated);
-            alert('Subscription canceled.');
-        } catch (err) {
-            console.error(err);
-            alert('Failed to cancel subscription.');
-        } finally {
-            setLoading(false);
-        }
-    };
+        // In a real app, this would redirect to Stripe Checkout
+        // For Phase 6 mock, we just show a fake success toast and redirect
+        addToast(`Successfully subscribed to ${tier === 'premium_plus' ? 'Premium+' : 'Premium'} !(Mocked)`, 'success');
 
-    if (loading && !subscription) return <div className="page-loading">Loading...</div>;
+        setIsProcessing(false);
+        navigate('/my-luma');
+    };
 
     return (
-        <div className="page-container subscription-page">
-            <header className="page-header">
-                <h1>My Subscription</h1>
+        <div className="subscription-container">
+            <header className="subscription-header">
+                <button className="btn-back" onClick={() => navigate(-1)}>
+                    ← Back
+                </button>
+                <h1>Unlock Premium Access</h1>
+                <p>Get exclusive content, early access to local meets, and support Luma creators.</p>
             </header>
 
-            <div className="subscription-content">
-                {error && <div className="error-message">{error}</div>}
-
-                <div className="current-plan-card">
-                    <h2>Current Plan</h2>
-                    <div className="plan-badge">{subscription?.tier.toUpperCase()}</div>
-                    <p>Status: {subscription?.status}</p>
-                    {subscription?.cancelAtPeriodEnd && <p className="warning-text">Standard access ends on {new Date(subscription.currentPeriodEnd).toLocaleDateString()}</p>}
-
-                    {subscription?.tier !== 'free' && !subscription?.cancelAtPeriodEnd && (
-                        <button className="btn-secondary" onClick={handleCancel}>Cancel Subscription</button>
-                    )}
+            <div className="pricing-tiers">
+                <div className="tier-card">
+                    <div className="tier-header">
+                        <h2>Premium</h2>
+                        <div className="tier-price">
+                            <span className="currency">$</span>
+                            <span className="amount">4.99</span>
+                            <span className="period">/mo</span>
+                        </div>
+                    </div>
+                    <ul className="tier-features">
+                        <li>✔️ Access to all Premium Articles</li>
+                        <li>✔️ Ad-free experience</li>
+                        <li>✔️ Premium Badge on Profile</li>
+                    </ul>
+                    <button
+                        className="btn-subscribe"
+                        onClick={() => handleSubscribe('premium')}
+                        disabled={isProcessing}
+                    >
+                        {isProcessing ? 'Processing...' : 'Subscribe'}
+                    </button>
                 </div>
 
-                <div className="plans-grid">
-                    <div className={`plan-card ${subscription?.tier === 'free' ? 'active' : ''}`}>
-                        <h3>Free</h3>
-                        <div className="price">$0/mo</div>
-                        <ul>
-                            <li>Access to free articles</li>
-                            <li>Basic community features</li>
-                        </ul>
-                        {subscription?.tier === 'free' && <button className="btn-current" disabled>Current Plan</button>}
+                <div className="tier-card premium-plus">
+                    <div className="tier-badge">Best Value</div>
+                    <div className="tier-header">
+                        <h2>Premium+</h2>
+                        <div className="tier-price">
+                            <span className="currency">$</span>
+                            <span className="amount">9.99</span>
+                            <span className="period">/mo</span>
+                        </div>
                     </div>
-
-                    <div className={`plan-card ${subscription?.tier === 'premium' ? 'active' : ''}`}>
-                        <h3>Premium</h3>
-                        <div className="price">$9.99/mo</div>
-                        <ul>
-                            <li>Everything in Free</li>
-                            <li>Access to Premium articles</li>
-                            <li>Ad-free experience</li>
-                        </ul>
-                        {subscription?.tier === 'premium' ? (
-                            <button className="btn-current" disabled>Current Plan</button>
-                        ) : (
-                            <button className="btn-primary" onClick={() => handleSubscribe('premium')}>Upgrade to Premium</button>
-                        )}
-                    </div>
-
-                    <div className={`plan-card ${subscription?.tier === 'premium_plus' ? 'active' : ''}`}>
-                        <h3>Premium+</h3>
-                        <div className="price">$19.99/mo</div>
-                        <ul>
-                            <li>Everything in Premium</li>
-                            <li>Exclusive video content</li>
-                            <li>Priority support</li>
-                        </ul>
-                        {subscription?.tier === 'premium_plus' ? (
-                            <button className="btn-current" disabled>Current Plan</button>
-                        ) : (
-                            <button className="btn-primary" onClick={() => handleSubscribe('premium_plus')}>Upgrade to Premium+</button>
-                        )}
-                    </div>
+                    <ul className="tier-features">
+                        <li>✔️ Everything in Premium</li>
+                        <li>✔️ Exclusive Video Content</li>
+                        <li>✔️ Priority customer support</li>
+                        <li>✔️ Create up to 10 Private Groups</li>
+                    </ul>
+                    <button
+                        className="btn-subscribe highlight"
+                        onClick={() => handleSubscribe('premium_plus')}
+                        disabled={isProcessing}
+                    >
+                        {isProcessing ? 'Processing...' : 'Subscribe Now'}
+                    </button>
                 </div>
             </div>
 
-            <BottomNav />
+            <div className="subscription-footer">
+                <p>Secure checkout powered by Stripe. Cancel anytime.</p>
+            </div>
         </div>
     );
 };
