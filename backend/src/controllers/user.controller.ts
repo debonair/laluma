@@ -4,6 +4,30 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { Prisma } from '@prisma/client';
 
+export const VALID_LIFE_STAGES = [
+    'expecting',
+    'new_mom',
+    'toddler_years',
+    'school_age',
+    'teens',
+    'empty_nester'
+] as const;
+
+export const VALID_JOURNEY_CONTEXTS = [
+    'solo_by_choice',
+    'co_parenting',
+    'parallel_parenting',
+    'widowed',
+    'separated',
+    'divorced',
+    'other'
+] as const;
+
+const updateOnboardingSchema = z.object({
+    lifeStage: z.enum(VALID_LIFE_STAGES),
+    journeyContext: z.enum(VALID_JOURNEY_CONTEXTS)
+});
+
 const updateProfileSchema = z.object({
     display_name: z.string().max(100).optional(),
     about_me: z.string().max(1000).optional(),
@@ -25,8 +49,14 @@ export const getCurrentUser = async (
     res: Response
 ): Promise<void> => {
     try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
+
         const user = await prisma.user.findUnique({
-            where: { id: req.user!.userId },
+            where: { id: userId },
             include: { preferences: true }
         });
 
@@ -55,6 +85,8 @@ export const getCurrentUser = async (
             } : undefined,
             looking_for: user.preferences?.lookingFor || [],
             has_completed_onboarding: user.hasCompletedOnboarding,
+            life_stage: user.lifeStage,
+            journey_context: user.journeyContext,
             role: user.role,
             isVerified: user.isVerified,
             created_at: user.createdAt
@@ -74,11 +106,17 @@ export const updateCurrentUser = async (
     res: Response
 ): Promise<void> => {
     try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
+
         const data = updateProfileSchema.parse(req.body);
 
         // Update user
         const user = await prisma.user.update({
-            where: { id: req.user!.userId },
+            where: { id: userId },
             data: {
                 displayName: data.display_name,
                 aboutMe: data.about_me,
@@ -137,6 +175,8 @@ export const updateCurrentUser = async (
             } : undefined,
             looking_for: updatedUser!.preferences?.lookingFor || [],
             has_completed_onboarding: updatedUser!.hasCompletedOnboarding,
+            life_stage: updatedUser!.lifeStage,
+            journey_context: updatedUser!.journeyContext,
             role: updatedUser!.role,
             isVerified: updatedUser!.isVerified,
             created_at: updatedUser!.createdAt
@@ -265,7 +305,11 @@ export const getNearbyUsers = async (
     res: Response
 ): Promise<void> => {
     try {
-        const userId = req.user!.userId;
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
 
         const userPrefs = await prisma.userPreference.findUnique({
             where: { userId }
@@ -393,5 +437,60 @@ export const verifyUser = async (
         }
         console.error('Verify user error:', error);
         res.status(500).json({ error: 'Failed to verify user' });
+    }
+};
+
+export const updateOnboardingContext = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
+
+        const data = updateOnboardingSchema.parse(req.body);
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                lifeStage: data.lifeStage,
+                journeyContext: data.journeyContext,
+                hasCompletedOnboarding: true
+            },
+            select: {
+                id: true,
+                username: true,
+                lifeStage: true,
+                journeyContext: true,
+                hasCompletedOnboarding: true
+            }
+        });
+
+        res.json({
+            message: 'Onboarding context updated successfully',
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                life_stage: updatedUser.lifeStage,
+                journey_context: updatedUser.journeyContext,
+                has_completed_onboarding: updatedUser.hasCompletedOnboarding
+            }
+        });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            res.status(400).json({
+                error: 'Bad Request',
+                message: 'Invalid onboarding fields',
+                code: 'VALIDATION_ERROR',
+                details: error.errors
+            });
+            return;
+        }
+
+        console.error('Error updating onboarding context:', error);
+        res.status(500).json({ error: 'Internal Server Error', code: 'INTERNAL_ERROR' });
     }
 };

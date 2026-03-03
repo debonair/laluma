@@ -1,6 +1,6 @@
 # Story 1.2: User Registration & SSO (FR1)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -68,6 +68,7 @@ Antigravity
 - Created a placeholder `GET /auth/oauth/:provider` route to define where the React/Capacitor application initiates Identity Provider flows for Google/Apple using PKCE.
 - Updated `auth.controller.test.ts` to verify the missing endpoints and modified the previously failing mock payload testing.
 - `npm run test` confirms 33 unit tests pass.
+- **Code Review Fixes:** Addressed unhandled promise rejection in role assignment try/catch block during `signUp`; ran `npm audit fix` addressing `minimatch` and `multer`. (Left `tar` vulnerabilities alone as they reside deep inside mapbox dependency). Added OAuth callback routing documentation; committed all changes cleanly to Git.
 
 ### File List
 - `backend/src/controllers/auth.controller.ts`

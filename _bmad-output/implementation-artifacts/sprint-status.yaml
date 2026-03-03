@@ -42,8 +42,8 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   epic-1: in-progress
   1-1-database-schema-keycloak-roles-setup: done
-  1-2-user-registration-sso: in-progress
-  1-3-onboarding-journey-context-selection: backlog
+  1-2-user-registration-sso: done
+  1-3-onboarding-journey-context-selection: done
   1-4-warm-empty-state-group-recommendations: backlog
   1-5-profile-viewing-editing: backlog
   1-6-admin-user-management: backlog
