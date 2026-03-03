@@ -140,6 +140,9 @@ export const createPost = async (
             return;
         }
 
+        // TODO (Epic 6): Implement server-side keyword blocklist validation here
+        // if (containsBlockedKeywords(data.content)) { ... }
+
         const post = await prisma.post.create({
             data: {
                 groupId: groupId,
@@ -169,11 +172,13 @@ export const createPost = async (
             author: post.isAnonymous ? {
                 id: 'anonymous',
                 username: 'anonymous',
-                display_name: 'Anonymous Mom'
+                display_name: 'Anonymous Mom',
+                profile_image_url: undefined
             } : (post.author ? {
                 id: post.author.id,
                 username: post.author.username,
-                display_name: post.author.displayName
+                display_name: post.author.displayName,
+                profile_image_url: post.author.profileImageUrl
             } : null),
             is_anonymous: post.isAnonymous,
             content: post.content,
@@ -188,10 +193,16 @@ export const createPost = async (
             getIO().to(`group_${groupId}`).emit('new_post', {
                 id: post.id,
                 group_id: post.groupId,
-                author: post.isAnonymous ? null : (post.author ? {
+                author: post.isAnonymous ? {
+                    id: 'anonymous',
+                    username: 'anonymous',
+                    display_name: 'Anonymous Mom',
+                    profile_image_url: undefined
+                } : (post.author ? {
                     id: post.author.id,
                     username: post.author.username,
-                    display_name: post.author.displayName
+                    display_name: post.author.displayName,
+                    profile_image_url: post.author.profileImageUrl
                 } : null),
                 is_anonymous: post.isAnonymous,
                 content: post.content,
