@@ -55,6 +55,51 @@ describe('Groups Controller', () => {
                 total: 1 // Because filter reduces total returned
             }));
         });
+
+        it('filters groups by text search (name and description)', async () => {
+            mockReq.query = { search: 'moms' };
+
+            mockedPrisma.group.findMany.mockResolvedValueOnce([
+                { id: '1', name: 'New Moms', latitude: null, longitude: null, members: [] }
+            ]);
+            mockedPrisma.group.count.mockResolvedValueOnce(1);
+
+            await getGroups(mockReq, mockRes);
+
+            expect(mockedPrisma.group.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                where: expect.objectContaining({
+                    OR: [
+                        { name: { contains: 'moms', mode: 'insensitive' } },
+                        { description: { contains: 'moms', mode: 'insensitive' } }
+                    ]
+                })
+            }));
+
+            expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+                groups: [expect.objectContaining({ id: '1' })],
+                total: 1
+            }));
+        });
+
+        it('supports pagination limit and offset', async () => {
+            mockReq.query = { limit: '1', offset: '1' };
+
+            mockedPrisma.group.findMany.mockResolvedValueOnce([
+                { id: '1', name: 'G1', latitude: null, longitude: null, members: [] },
+                { id: '2', name: 'G2', latitude: null, longitude: null, members: [] },
+                { id: '3', name: 'G3', latitude: null, longitude: null, members: [] }
+            ]);
+            mockedPrisma.group.count.mockResolvedValueOnce(3);
+
+            await getGroups(mockReq, mockRes);
+
+            // With offset 1 and limit 1, we should get only the 2nd item ('2')
+            expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+                groups: [expect.objectContaining({ id: '2' })],
+                total: 3,
+                has_more: true
+            }));
+        });
     });
 
     describe('createGroup', () => {
