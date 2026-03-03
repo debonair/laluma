@@ -6,17 +6,19 @@ import prisma from '../utils/prisma';
 import { getIO } from '../socket';
 
 const createPostSchema = z.object({
-    content: z.string().min(1).max(5000),
-    isAnonymous: z.boolean().optional().default(false),
+    content: z.string().min(1, 'Post content cannot be empty').max(2000, 'Post content is too long'),
+    isAnonymous: z.boolean().optional(),
+    mediaUrls: z.array(z.string().url()).max(4, 'Maximum of 4 media attachments allowed').optional(),
     poll: z.object({
-        question: z.string().min(1).max(300),
+        question: z.string().min(1).max(255),
         options: z.array(z.string().min(1).max(100)).min(2).max(10)
     }).optional()
 });
 
 const createCommentSchema = z.object({
-    content: z.string().min(1).max(2000),
-    isAnonymous: z.boolean().optional().default(false)
+    content: z.string().min(1, 'Comment content cannot be empty').max(1000, 'Comment content is too long'),
+    isAnonymous: z.boolean().optional().default(false),
+    mediaUrls: z.array(z.string().url()).max(4, 'Maximum of 4 media attachments allowed').optional()
 });
 
 export const getGroupPosts = async (
@@ -148,6 +150,7 @@ export const createPost = async (
                 groupId: groupId,
                 authorId: req.user!.userId,
                 content: data.content,
+                mediaUrls: data.mediaUrls || [],
                 isAnonymous: data.isAnonymous || false,
                 poll: data.poll ? {
                     create: {
@@ -182,6 +185,7 @@ export const createPost = async (
             } : null),
             is_anonymous: post.isAnonymous,
             content: post.content,
+            media_urls: post.mediaUrls,
             likes_count: post.likesCount,
             comments_count: post.commentsCount,
             created_at: post.createdAt,
@@ -206,6 +210,7 @@ export const createPost = async (
                 } : null),
                 is_anonymous: post.isAnonymous,
                 content: post.content,
+                media_urls: post.mediaUrls,
                 likes_count: post.likesCount,
                 comments_count: post.commentsCount,
                 created_at: post.createdAt
@@ -423,6 +428,7 @@ export const createComment = async (
                     postId: post.id,
                     authorId: req.user!.userId,
                     content: data.content,
+                    mediaUrls: data.mediaUrls || [],
                     isAnonymous: data.isAnonymous || false
                 },
                 include: {
@@ -449,6 +455,7 @@ export const createComment = async (
             } : null),
             is_anonymous: comment.isAnonymous,
             content: comment.content,
+            media_urls: comment.mediaUrls,
             created_at: comment.createdAt
         });
 

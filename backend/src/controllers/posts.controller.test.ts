@@ -59,6 +59,7 @@ describe('Posts Controller', () => {
                 id: 'post-1',
                 groupId: 'g-1',
                 content: 'Hello world',
+                mediaUrls: ['https://example.com/image.png'],
                 isAnonymous: false,
                 likesCount: 0,
                 commentsCount: 0,
@@ -79,7 +80,8 @@ describe('Posts Controller', () => {
             expect(room.emit).toHaveBeenCalledWith('new_post', expect.objectContaining({
                 id: 'post-1',
                 group_id: 'g-1',
-                content: 'Hello world'
+                content: 'Hello world',
+                media_urls: ['https://example.com/image.png']
             }));
         });
     });

@@ -144,12 +144,13 @@ model Post {
   id            String   @id @default(uuid())
   groupId       String   @map("group_id")
   authorId      String?  @map("author_id")
-  content       String
+  content       String   @db.Text
   likesCount    Int      @default(0) @map("likes_count")
   commentsCount Int      @default(0) @map("comments_count")
+  mediaUrls     String[] @map("media_urls")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
-  isAnonymous    Boolean @default(false) @map("is_anonymous")
+  isAnonymous   Boolean  @default(false) @map("is_anonymous")
   identityLinkId String? @map("identity_link_id") // Reference to isolated anonymous identity store (Story 1.1)
 
   group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -167,13 +168,17 @@ model Comment {
   id          String   @id @default(uuid())
   postId      String   @map("post_id")
   authorId    String?  @map("author_id")
-  content     String
+  parentId    String?  @map("parent_id")
+  content     String   @db.Text
+  mediaUrls   String[] @map("media_urls")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   isAnonymous Boolean  @default(false) @map("is_anonymous")
 
   post   Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
   author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  parent Comment? @relation("ParentComments", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies Comment[] @relation("ParentComments")
 
   @@index([postId])
   @@map("comments")
