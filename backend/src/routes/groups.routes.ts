@@ -14,12 +14,12 @@ import {
     getGroupPosts,
     createPost
 } from '../controllers/posts.controller';
-import { authenticate } from '../middleware/auth';
+import { authenticate, requireRole } from '../middleware/auth';
 
 const router = Router();
 
 router.get('/', authenticate, getGroups);
-router.post('/', authenticate, createGroup);
+router.post('/', authenticate, requireRole('admin', 'app-admin', 'moderator'), createGroup);
 router.get('/recommended', authenticate, getRecommendedGroups);
 router.get('/:groupId', authenticate, getGroup);
 router.post('/:groupId/join', authenticate, joinGroup);
