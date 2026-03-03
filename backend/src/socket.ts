@@ -109,6 +109,18 @@ export function setupSocketIO(server: HttpServer) {
         // Join a private room unique to this user to receive direct messages
         socket.join(`user_${userId}`);
 
+        // Join all group rooms so user gets real-time new_post events
+        prisma.groupMember.findMany({
+            where: { userId },
+            select: { groupId: true }
+        }).then((memberships: { groupId: string }[]) => {
+            memberships.forEach(({ groupId }) => {
+                socket.join(`group_${groupId}`);
+            });
+        }).catch((err: any) => {
+            console.error('Failed to join group rooms on socket connect:', err);
+        });
+
         socket.on('disconnect', () => {
             console.log(`Socket disconnected: User ${socket.user?.username} (${socket.id})`);
         });

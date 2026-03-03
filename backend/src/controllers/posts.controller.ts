@@ -183,8 +183,25 @@ export const createPost = async (
             poll: (post as any).poll
         });
 
-        // Notify clients of a feed update
-        getIO().emit('feed_updated');
+        // Emit targeted real-time event to all members in this group's socket room
+        try {
+            getIO().to(`group_${groupId}`).emit('new_post', {
+                id: post.id,
+                group_id: post.groupId,
+                author: post.isAnonymous ? null : (post.author ? {
+                    id: post.author.id,
+                    username: post.author.username,
+                    display_name: post.author.displayName
+                } : null),
+                is_anonymous: post.isAnonymous,
+                content: post.content,
+                likes_count: post.likesCount,
+                comments_count: post.commentsCount,
+                created_at: post.createdAt
+            });
+        } catch {
+            // Socket not initialized in test/offline environments — safe to ignore
+        }
     } catch (error) {
         if (error instanceof z.ZodError) {
             res.status(400).json({
