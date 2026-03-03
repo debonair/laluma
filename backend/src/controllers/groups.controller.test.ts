@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getGroups, createGroup, getGroup, joinGroup, getRecommendedGroups } from './groups.controller';
+import { getGroups, createGroup, getGroup, joinGroup, leaveGroup, getRecommendedGroups } from './groups.controller';
 import prisma from '../utils/prisma';
 
 const mockedPrisma = prisma as any;
@@ -191,6 +191,29 @@ describe('Groups Controller', () => {
             mockedPrisma.groupMember.findUnique.mockResolvedValueOnce(null); // Not a member
 
             await joinGroup(mockReq, mockRes);
+
+            expect(mockedPrisma.$transaction).toHaveBeenCalled();
+            expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+                success: true
+            }));
+        });
+    });
+
+    describe('leaveGroup', () => {
+        it('returns 404 if group is not found', async () => {
+            mockReq.params.groupId = 'not-found';
+            mockedPrisma.group.findUnique.mockResolvedValueOnce(null);
+
+            await leaveGroup(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(404);
+        });
+
+        it('removes member in a transaction', async () => {
+            mockReq.params.groupId = 'g-1';
+            mockedPrisma.group.findUnique.mockResolvedValueOnce({ id: 'g-1' });
+
+            await leaveGroup(mockReq, mockRes);
 
             expect(mockedPrisma.$transaction).toHaveBeenCalled();
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
