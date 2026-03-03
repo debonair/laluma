@@ -12,7 +12,8 @@
         "prisma:studio": "prisma studio",
         "seed": "prisma db seed",
         "test": "vitest run",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "setup:keycloak": "bash ./scripts/setup-keycloak-roles.sh"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"

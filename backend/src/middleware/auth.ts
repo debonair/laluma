@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import prisma from '../utils/prisma';
+import { UserRole } from '@prisma/client';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -71,8 +72,12 @@ export const authenticate = async (
             const realmAccess = decoded.realm_access || {};
             const roles = realmAccess.roles || [];
 
-            // Derive local role from Keycloak realm roles
-            const localRole = roles.includes('app-admin') ? 'admin' : 'user';
+            // Derive local role from Keycloak realm roles (Story 1.1) using typed enum
+            let localRole: UserRole = UserRole.member; // Default JIT role
+            if (roles.includes('admin')) localRole = UserRole.admin;
+            else if (roles.includes('moderator')) localRole = UserRole.moderator;
+            else if (roles.includes('editorial')) localRole = UserRole.editorial;
+            else if (roles.includes('brand_partner')) localRole = UserRole.brand_partner;
 
             // JIT Provisioning: Sync user to local DB
             let user = await prisma.user.findUnique({
@@ -147,7 +152,12 @@ export const optionalAuthenticate = async (
                 if (keycloakId) {
                     const realmAccess = decoded.realm_access || {};
                     const roles = realmAccess.roles || [];
-                    const localRole = roles.includes('app-admin') ? 'admin' : 'user';
+
+                    let localRole: UserRole = UserRole.member; // Default JIT role
+                    if (roles.includes('admin')) localRole = UserRole.admin;
+                    else if (roles.includes('moderator')) localRole = UserRole.moderator;
+                    else if (roles.includes('editorial')) localRole = UserRole.editorial;
+                    else if (roles.includes('brand_partner')) localRole = UserRole.brand_partner;
 
                     let user = await prisma.user.findUnique({
                         where: { keycloakId }

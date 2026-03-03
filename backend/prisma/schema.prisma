@@ -10,6 +10,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  member
+  moderator
+  editorial
+  admin
+  brand_partner
+
+  @@map("user_role")
+}
+
 model User {
   id                     String   @id @default(uuid())
   keycloakId             String?  @unique @map("keycloak_id")
@@ -20,10 +30,16 @@ model User {
   aboutMe                String?  @map("about_me")
   motherhoodStage        String?  @map("motherhood_stage")
   profileImageUrl        String?  @map("profile_image_url")
-  role                   String   @default("user")
+  role                   UserRole @default(member) @map("role")
   isVerified             Boolean  @default(false) @map("is_verified")
   verificationMethod     String?  @map("verification_method")
   hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
+
+  // Profile Fields (Story 1.1 - using existing columns where possible)
+  // Note: profileImageUrl (profile_image_url) serves as avatar; aboutMe (about_me) serves as bio
+  lifeStage              String?  @map("life_stage")
+  journeyContext         String?  @map("journey_context")
+
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
 
@@ -96,6 +112,9 @@ model Group {
   members   GroupMember[]
   posts     Post[]
 
+  // Moderation settings
+  moderationSettings Json? @map("moderation_settings")
+
   latitude  Float?
   longitude Float?
   city      String?
@@ -129,7 +148,8 @@ model Post {
   commentsCount Int      @default(0) @map("comments_count")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
-  isAnonymous   Boolean  @default(false) @map("is_anonymous")
+  isAnonymous    Boolean @default(false) @map("is_anonymous")
+  identityLinkId String? @map("identity_link_id") // Reference to isolated anonymous identity store (Story 1.1)
 
   group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
   author   User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)

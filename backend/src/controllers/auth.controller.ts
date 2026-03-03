@@ -133,34 +133,39 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
         const keycloakUserId = locationHeader.split('/').pop();
 
         if (keycloakUserId) {
-            // Explicitly clear any realm-level default required actions (e.g. VERIFY_EMAIL)
-            // Keycloak may apply realm defaults even when we send requiredActions: [] at create time
+            // Explicitly clear any realm-level default required actions and assign roles
             try {
                 await axios.put(
                     `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${keycloakUserId}`,
                     { requiredActions: [], emailVerified: true, enabled: true },
                     { headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' } }
                 );
-            } catch (patchErr: any) {
-                console.warn('Could not clear required actions:', patchErr.response?.data || patchErr.message);
-            }
 
-            // Assign realm roles
-            try {
                 const rolesResponse = await axios.get(
                     `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/roles`,
                     { headers: { Authorization: `Bearer ${adminToken}` } }
                 );
-                const appUserRole = rolesResponse.data.find((r: any) => r.name === 'app-user');
+
+                const appUserRole = rolesResponse.data.find((r: any) => r.name === 'member');
                 if (appUserRole) {
                     await axios.post(
                         `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${keycloakUserId}/role-mappings/realm`,
                         [appUserRole],
                         { headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' } }
                     );
+                } else {
+                    throw new Error('Member role not found in Keycloak realm');
                 }
-            } catch (roleErr: any) {
-                console.warn('Could not assign realm roles:', roleErr.response?.data || roleErr.message);
+            } catch (setupErr: any) {
+                console.error('Critical: Account created but role/action assignment failed:', setupErr.response?.data || setupErr.message);
+                // Even though the user is created in Keycloak, we must fail the request here so the 
+                // client knows it didn't complete successfully. The JIT sync will not happen.
+                res.status(500).json({
+                    error: 'Internal Server Error',
+                    message: 'Account created but initialization failed. Please contact support.',
+                    code: 'ACCOUNT_INIT_FAILED'
+                });
+                return;
             }
         }
 
@@ -318,4 +323,26 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
         }
     }
     res.status(204).send();
+};
+
+export const oauthRedirect = async (req: Request, res: Response): Promise<void> => {
+    const { provider } = req.params;
+
+    // In a real application, you would generate the Keycloak Authorization URL
+    // specifically for the requested provider (google, apple).
+    // The redirect_uri would correspond to your Capacitor app deep link.
+
+    // For now, this is a placeholder acknowledging the architecture design
+    // that Social Logins happen at the Keycloak realm level using PKCE.
+    const keycloakAuthUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth` +
+        `?client_id=${KEYCLOAK_CLIENT_ID}` +
+        `&redirect_uri=lumaapp://oauth/callback` +
+        `&response_type=code` +
+        `&scope=openid email profile` +
+        `&kc_idp_hint=${provider}`;
+
+    res.json({
+        redirectUrl: keycloakAuthUrl,
+        message: `Redirecting to Keycloak identity provider: ${provider}`
+    });
 };

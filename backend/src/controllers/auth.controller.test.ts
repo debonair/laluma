@@ -52,7 +52,7 @@ describe('Auth Controller', () => {
 
             // Mock role assignment and actions patch
             mockedAxios.put.mockResolvedValueOnce({});
-            mockedAxios.get.mockResolvedValueOnce({ data: [{ name: 'app-user' }] });
+            mockedAxios.get.mockResolvedValueOnce({ data: [{ name: 'member' }] });
             mockedAxios.post.mockResolvedValueOnce({});
 
             // Mock user sign-in token retrieval
@@ -143,6 +143,49 @@ describe('Auth Controller', () => {
             expect(mockRes.status).toHaveBeenCalledWith(401);
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
                 code: 'INVALID_CREDENTIALS'
+            }));
+        });
+    });
+
+    describe('refreshToken', () => {
+        it('validates missing refresh token', async () => {
+            mockReq.body = {};
+            await refreshToken(mockReq, mockRes);
+            expect(mockRes.status).toHaveBeenCalledWith(400);
+            expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+                code: 'VALIDATION_ERROR'
+            }));
+        });
+
+        it('returns new tokens on successful refresh', async () => {
+            mockReq.body = { refreshToken: 'valid-refresh-token' };
+
+            mockedAxios.post.mockResolvedValueOnce({
+                data: {
+                    access_token: 'new-access',
+                    refresh_token: 'new-refresh',
+                    expires_in: 3600
+                }
+            });
+
+            await refreshToken(mockReq, mockRes);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                accessToken: 'new-access',
+                refreshToken: 'new-refresh',
+                expiresIn: 3600
+            });
+        });
+
+        it('handles expired/invalid refresh token', async () => {
+            mockReq.body = { refreshToken: 'invalid-token' };
+            const error = new Error('Request failed') as any;
+            error.response = { data: { error: 'invalid_grant' } };
+            mockedAxios.post.mockRejectedValueOnce(error);
+
+            await refreshToken(mockReq, mockRes);
+            expect(mockRes.status).toHaveBeenCalledWith(401);
+            expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+                code: 'TOKEN_EXPIRED'
             }));
         });
     });
