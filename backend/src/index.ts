@@ -22,6 +22,7 @@ import submissionsRoutes from './routes/submissions.routes';
 import adminRoutes from './routes/admin.routes';
 import connectionRoutes from './routes/connection.routes';
 import pollsRoutes from './routes/polls.routes';
+import statusRoutes from './routes/status.routes';
 
 // Load environment variables
 dotenv.config();
@@ -65,6 +66,7 @@ app.use('/api/connections', connectionRoutes);
 app.use('/api/polls', pollsRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/directory', directoryRoutes);
+app.use('/api/status', statusRoutes);
 
 // 404 handler
 app.use((req, res) => {

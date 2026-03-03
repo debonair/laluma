@@ -62,6 +62,11 @@ export const prismaMock = {
         delete: vi.fn(),
         findMany: vi.fn(),
     },
+    systemStatus: {
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        updateMany: vi.fn(),
+    },
     $transaction: vi.fn((val) => Promise.resolve(val))
 };
 
