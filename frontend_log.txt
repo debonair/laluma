@@ -1,0 +1,15 @@
+
+> luma@0.0.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 190 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+10:42:12 AM [vite] (client) hmr update /src/pages/ConversationDetail.tsx
+10:54:00 AM [vite] (client) hmr update /src/components/BottomNav.tsx
+10:54:10 AM [vite] (client) hmr update /src/components/BottomNav.tsx
+12:03:44 PM [vite] changed tsconfig file detected: /Users/duma/Projects/luma/frontend/tsconfig.app.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+12:04:15 PM [vite] vite.config.ts changed, restarting server...
+12:04:15 PM [vite] server restarted.

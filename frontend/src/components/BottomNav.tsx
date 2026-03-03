@@ -2,37 +2,57 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/api';
 
 const BottomNav: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { socket } = useSocket();
     const { user } = useAuth();
-    const [unreadCount, setUnreadCount] = React.useState(0);
+    const [unreadNotifications, setUnreadNotifications] = React.useState(0);
+    const [unreadMessages, setUnreadMessages] = React.useState(0);
 
     React.useEffect(() => {
-        const fetchUnreadCount = async () => {
+        const fetchCounts = async () => {
             try {
+                // Notifications
                 const { notificationService } = await import('../services/notification.service');
-                const data = await notificationService.getAll({ limit: 1 });
-                setUnreadCount(data.unreadCount);
+                const notifData = await notificationService.getAll({ limit: 1 });
+                setUnreadNotifications(notifData.unreadCount);
+
+                // Messages
+                const response = await apiClient.get<{ unreadCount: number }>('/messages/unread-count');
+                setUnreadMessages(response.data.unreadCount);
             } catch (error) {
-                console.error('Failed to fetch unread count', error);
+                console.error('Failed to fetch unread counts', error);
             }
         };
 
-        fetchUnreadCount();
-        const interval = setInterval(fetchUnreadCount, 60000);
+        fetchCounts();
+        const interval = setInterval(fetchCounts, 60000);
         return () => clearInterval(interval);
     }, []);
 
     // Real-time: increment on new_notification socket event
     React.useEffect(() => {
         if (!socket) return;
-        const handler = () => setUnreadCount(prev => prev + 1);
-        socket.on('new_notification', handler);
-        return () => { socket.off('new_notification', handler); };
-    }, [socket]);
+
+        const handleNotification = () => setUnreadNotifications(prev => prev + 1);
+        const handleMessage = (msg: any) => {
+            // Only increment if we aren't currently viewing the conversation
+            if (!location.pathname.includes(`/messages/${msg.conversationId}`)) {
+                setUnreadMessages(prev => prev + 1);
+            }
+        };
+
+        socket.on('new_notification', handleNotification);
+        socket.on('new_message', handleMessage);
+
+        return () => {
+            socket.off('new_notification', handleNotification);
+            socket.off('new_message', handleMessage);
+        };
+    }, [socket, location.pathname]);
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -71,15 +91,29 @@ const BottomNav: React.FC = () => {
             </div>
 
             <div
+                className={`nav-item ${isActive('/messages') || location.pathname.startsWith('/messages/') ? 'active' : ''}`}
+                onClick={() => navigate('/messages')}
+                style={{ position: 'relative' }}
+            >
+                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>💬</div>
+                <span>Chat</span>
+                {unreadMessages > 0 && (
+                    <span className="nav-badge">
+                        {unreadMessages > 99 ? '99+' : unreadMessages}
+                    </span>
+                )}
+            </div>
+
+            <div
                 className={`nav-item ${isActive('/notifications') ? 'active' : ''}`}
                 onClick={() => navigate('/notifications')}
                 style={{ position: 'relative' }}
             >
                 <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>🔔</div>
                 <span>Alerts</span>
-                {unreadCount > 0 && (
+                {unreadNotifications > 0 && (
                     <span className="nav-badge">
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {unreadNotifications > 99 ? '99+' : unreadNotifications}
                     </span>
                 )}
             </div>

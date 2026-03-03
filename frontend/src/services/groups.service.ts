@@ -6,6 +6,10 @@ export interface Group {
     description: string;
     image_emoji?: string;
     image_url?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    city?: string | null;
+    country?: string | null;
     member_count: number;
     is_member: boolean;
     created_at: string;
@@ -27,6 +31,10 @@ export interface CreateGroupData {
     description: string;
     image_emoji?: string;
     is_private?: boolean;
+    latitude?: number;
+    longitude?: number;
+    city?: string;
+    country?: string;
 }
 
 export const groupsService = {
@@ -35,6 +43,11 @@ export const groupsService = {
         search?: string;
         limit?: number;
         offset?: number;
+        latitude?: number;
+        longitude?: number;
+        radius?: number;
+        city?: string;
+        country?: string;
     }): Promise<GroupsResponse> => {
         const response = await apiClient.get<GroupsResponse>('/groups', { params });
         return response.data;

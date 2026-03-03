@@ -86,9 +86,9 @@ const Notifications: React.FC = () => {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'like': return <Heart size={20} className="text-pink-500" strokeWidth={2.5} color="#EC4899" />;
+            case 'like': return <Heart size={20} className="text-pink-500" strokeWidth={2.5} color="var(--primary-hover)" />;
             case 'comment': return <MessageCircle size={20} className="text-blue-500" strokeWidth={2.5} color="#3B82F6" />;
-            case 'reply': return <CornerDownRight size={20} className="text-purple-500" strokeWidth={2.5} color="#8B5CF6" />;
+            case 'reply': return <CornerDownRight size={20} className="text-teal-500" strokeWidth={2.5} color="var(--primary-color)" />;
             case 'system': return <Bell size={20} className="text-yellow-500" strokeWidth={2.5} color="#F59E0B" />;
             default: return <Bell size={20} strokeWidth={2.5} color="#6B7280" />;
         }

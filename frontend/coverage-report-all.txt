@@ -1,0 +1,115 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/duma/Projects/luma/frontend[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mrenders empty state if no content is returned
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mrenders featured and regular content correctly
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/pages/ContentDetail.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 163[2mms[22m[39m
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mfilters content by category when category buttons are clicked
+[22m[39m[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/Discover.test.tsx[2m > [22m[2mDiscover Page[2m > [22m[2mshould render the top-level marketplace and directory buttons
+[22m[39m[API Request] GET /users/me
+
+[90mstdout[2m | src/pages/Discover.test.tsx[2m > [22m[2mDiscover Page[2m > [22m[2mshould correctly apply the unified layout classes to avoid horizontal overflow
+[22m[39m[API Request] GET /users/me
+
+[90mstdout[2m | src/pages/Discover.test.tsx[2m > [22m[2mDiscover Page[2m > [22m[2mshould correctly apply the unified layout classes to avoid horizontal overflow
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+ [32m✓[39m src/pages/Discover.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 124[2mms[22m[39m
+[90mstdout[2m | src/pages/CreateGroup.test.tsx[2m > [22m[2mCreateGroup[2m > [22m[2msubmits basic group information successfully
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mnavigates to content detail when a card is clicked
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/components/PollUI.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 390[2mms[22m[39m
+ [32m✓[39m src/pages/MyLuma.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 384[2mms[22m[39m
+[90mstdout[2m | src/pages/CreateGroup.test.tsx[2m > [22m[2mCreateGroup[2m > [22m[2mallows fetching and submitting precise geolocation coordinates
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/pages/Profile.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 534[2mms[22m[39m
+     [33m[2m✓[22m[39m enters edit mode, updates inputs, and saves profile [33m 400[2mms[22m[39m
+ [32m✓[39m src/pages/CreateGroup.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 910[2mms[22m[39m
+     [33m[2m✓[22m[39m submits basic group information successfully [33m 377[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m23 passed[39m[22m[90m (23)[39m
+[2m   Start at [22m 21:51:42
+[2m   Duration [22m 2.48s[2m (transform 721ms, setup 1.54s, import 1.09s, tests 2.50s, environment 4.09s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   11.79 |    12.73 |    8.67 |   12.27 |                   
+ src               |       0 |        0 |       0 |       0 |                   
+  App.tsx          |       0 |        0 |       0 |       0 | 40-60             
+ src/components    |    34.4 |    46.15 |   33.33 |   33.62 |                   
+  AdminRoute.tsx   |       0 |        0 |       0 |       0 | 10-30             
+  BottomNav.tsx    |   61.11 |    54.54 |    37.5 |   63.33 | 18,32-34,43-98    
+  ...rBoundary.tsx |       0 |        0 |       0 |       0 | 13-71             
+  PollUI.tsx       |   94.73 |       80 |     100 |     100 | 17-26,81          
+  Skeleton.tsx     |     100 |    71.42 |     100 |     100 | 23-25             
+  VideoUpload.tsx  |       0 |        0 |       0 |       0 | 10-84             
+ src/context       |       0 |        0 |       0 |       0 |                   
+  AuthContext.tsx  |       0 |        0 |       0 |       0 | 45-247            
+  GroupContext.tsx |       0 |        0 |       0 |       0 | 31-299            
+  ...etContext.tsx |       0 |        0 |       0 |       0 | 14-73             
+  ToastContext.tsx |       0 |        0 |       0 |       0 | 17-86             
+ src/pages         |   11.02 |    10.87 |    7.65 |   11.72 |                   
+  AdminContent.tsx |       0 |        0 |       0 |       0 | 26-222            
+  ...Dashboard.tsx |       0 |        0 |       0 |       0 | 13-112            
+  ...bmissions.tsx |       0 |        0 |       0 |       0 | 7-148             
+  ...entDetail.tsx |   38.77 |    30.18 |   22.22 |    41.3 | ...22-225,235-484 
+  ContentForm.tsx  |       0 |        0 |       0 |       0 | 32-483            
+  ...ionDetail.tsx |       0 |        0 |       0 |       0 | 27-308            
+  CreateGroup.tsx  |    75.6 |       85 |      60 |    75.6 | ...-55,65,129-141 
+  Directory.tsx    |       0 |        0 |       0 |       0 | 9-79              
+  Discover.tsx     |   19.81 |     6.45 |    6.81 |   21.78 | ...06-111,119-480 
+  GroupDetail.tsx  |       0 |        0 |       0 |       0 | 24-671            
+  Groups.tsx       |       0 |        0 |       0 |       0 | 6-206             
+  Home.tsx         |       0 |        0 |       0 |       0 | 9-142             
+  ...nSettings.tsx |       0 |        0 |       0 |       0 | 5-45              
+  LookingFor.tsx   |       0 |        0 |       0 |       0 | 4-54              
+  Marketplace.tsx  |       0 |        0 |       0 |       0 | 9-83              
+  Messages.tsx     |       0 |        0 |       0 |       0 | 28-116            
+  MyBookmarks.tsx  |       0 |        0 |       0 |       0 | 8-56              
+  MyLuma.tsx       |   97.22 |    55.26 |    90.9 |   97.22 | 93                
+  ...fications.tsx |       0 |        0 |       0 |       0 | 10-139            
+  Onboarding.tsx   |       0 |        0 |       0 |       0 | 4-44              
+  Profile.tsx      |   59.61 |    68.57 |    42.1 |   64.44 | ...01-139,209-262 
+  ...icProfile.tsx |       0 |        0 |       0 |       0 | 11-112            
+  Search.tsx       |       0 |        0 |       0 |       0 | 8-288             
+  SignIn.tsx       |       0 |        0 |       0 |       0 | 5-117             
+  SignUp.tsx       |       0 |        0 |       0 |       0 | 5-211             
+  ...itContent.tsx |       0 |        0 |       0 |       0 | 6-179             
+  ...ptionPage.tsx |       0 |        0 |       0 |       0 | 7-78              
+  Welcome.tsx      |       0 |      100 |       0 |       0 | 4-11              
+ src/services      |   22.58 |    22.85 |   10.76 |   22.82 |                   
+  api.ts           |      50 |    36.36 |      50 |   51.06 | ...,76-77,100-104 
+  auth.service.ts  |   32.14 |        0 |   22.22 |   33.33 | 23-38,49-54,57-62 
+  ...on.service.ts |   14.28 |      100 |       0 |   14.28 | 26-37             
+  ...nt.service.ts |    6.25 |        0 |       0 |    6.25 | 12-48             
+  ...ry.service.ts |       0 |      100 |       0 |       0 | 33-48             
+  feed.service.ts  |       0 |      100 |       0 |       0 | 18-21             
+  ...ps.service.ts |    9.09 |      100 |       0 |    9.09 | 52-73             
+  keycloak.ts      |       0 |      100 |     100 |       0 | 3                 
+  ...ce.service.ts |       0 |      100 |       0 |       0 | 24-38             
+  ...on.service.ts |      60 |      100 |   33.33 |      60 | 11-15             
+  polls.service.ts |       0 |      100 |       0 |       0 | 4-11              
+  posts.service.ts |    6.66 |      100 |       0 |    6.66 | 69-103            
+  ...on.service.ts |       0 |        0 |       0 |       0 | 17-36             
+  ...on.service.ts |       0 |        0 |       0 |       0 | 13-26             
+  user.service.ts  |   15.38 |      100 |   16.66 |   15.38 | 78-103            
+ src/utils         |    6.66 |        0 |       0 |    6.66 |                   
+  share.ts         |    6.66 |        0 |       0 |    6.66 | 10-34             
+-------------------|---------|----------|---------|---------|-------------------

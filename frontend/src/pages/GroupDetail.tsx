@@ -408,8 +408,8 @@ const GroupDetail: React.FC = () => {
                                                     </span>
                                                     <span style={{
                                                         marginLeft: '0.5rem', fontSize: '0.7rem', padding: '1px 6px',
-                                                        borderRadius: '8px', backgroundColor: m.role === 'admin' ? '#8B5CF620' : '#6B728020',
-                                                        color: m.role === 'admin' ? '#8B5CF6' : '#6B7280'
+                                                        borderRadius: '8px', backgroundColor: m.role === 'admin' ? 'var(--primary-color)20' : '#6B728020',
+                                                        color: m.role === 'admin' ? 'var(--primary-color)' : '#6B7280'
                                                     }}>
                                                         {m.role}
                                                     </span>

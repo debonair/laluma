@@ -11,7 +11,7 @@
 .back-button {
     background: none;
     border: none;
-    color: #8B5CF6;
+    color: var(--primary-color);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -83,7 +83,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #8B5CF6;
+    border-color: var(--primary-color);
 }
 
 .form-group textarea {
@@ -149,7 +149,7 @@
 }
 
 .btn-save {
-    background: #8B5CF6;
+    background: var(--primary-color);
     color: white;
     border: none;
     padding: 0.75rem 2rem;

@@ -252,11 +252,11 @@ const ContentDetail: React.FC = () => {
                             <div className="article-info">
                                 <span className="author">By {content.authorName}</span>
                                 <span className="date">
-                                    {new Date(content.publishedAt).toLocaleDateString('en-US', {
+                                    {content.publishedAt ? new Date(content.publishedAt).toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric'
-                                    })}
+                                    }) : ''}
                                 </span>
                             </div>
 
@@ -334,7 +334,7 @@ const ContentDetail: React.FC = () => {
                         {content.contentType !== 'video' && (
                             <div className="article-body">
                                 {content.hasAccess ? (
-                                    <div dangerouslySetInnerHTML={{ __html: content.body.replace(/\n/g, '<br/>') }} />
+                                    <div dangerouslySetInnerHTML={{ __html: (content.body || '').replace(/\n/g, '<br/>') }} />
                                 ) : (
                                     <div className="locked-content">
                                         <div className="locked-message" style={{
@@ -355,7 +355,7 @@ const ContentDetail: React.FC = () => {
                                                 className="btn-primary"
                                                 onClick={() => navigate('/subscription')}
                                                 style={{
-                                                    background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
+                                                    background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%)',
                                                     padding: '0.75rem 2rem',
                                                     fontSize: '1rem'
                                                 }}

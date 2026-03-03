@@ -1,27 +1,5 @@
 # ============================================
-# Stage 1: Builder
-# ============================================
-FROM node:20.18.3-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies (including dev dependencies for build)
-RUN npm ci
-
-# Copy source code and prisma schema
-COPY . .
-
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build TypeScript
-RUN npm run build
-
-# ============================================
-# Stage 2: Production
+# Production Stage
 # ============================================
 FROM node:20.18.3-alpine AS production
 
@@ -31,17 +9,21 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
+# Improve npm stability for slow network environments (even if just for Prisma)
+ENV NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=600000
+ENV NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=100000
+ENV NPM_CONFIG_FETCH_RETRIES=10
+
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && \
-    npm cache clean --force
+# Copy pre-built application from host
+COPY dist ./dist
+COPY node_modules ./node_modules
+COPY prisma ./prisma
 
-# Copy built application from builder
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+# Ensure Prisma client is regenerated for target OS
+RUN npx prisma generate
 
 # Create uploads directory with proper permissions
 RUN mkdir -p ./uploads/videos && chown -R nodejs:nodejs ./uploads

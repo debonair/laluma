@@ -1,0 +1,232 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/duma/Projects/luma/frontend[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mrenders empty state if no content is returned
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mrenders featured and regular content correctly
+[22m[39m[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mfilters content by category when category buttons are clicked
+[22m[39m[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/CreateGroup.test.tsx[2m > [22m[2mCreateGroup[2m > [22m[2msubmits basic group information successfully
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+ [32m✓[39m src/pages/SignIn.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 323[2mms[22m[39m
+[90mstdout[2m | src/pages/ContentForm.test.tsx[2m > [22m[2mContentForm[2m > [22m[2msubmits form to create new content
+[22m[39m--- HANDLE SUBMIT TRIGGERED ---
+--- ABOUT TO FETCH --- http://localhost:3000/api/content POST {
+  title: [32m'New Test Content'[39m,
+  body: [32m''[39m,
+  excerpt: [32m'New Test Body'[39m,
+  category: [32m'Wellness'[39m,
+  authorName: [32m''[39m,
+  videoUrl: [32m''[39m,
+  contentType: [32m'article'[39m,
+  isPremium: [33mfalse[39m,
+  isFeatured: [33mfalse[39m,
+  status: [32m'draft'[39m,
+  latitude: [33mNaN[39m,
+  longitude: [33mNaN[39m,
+  publishedAt: [90mundefined[39m,
+  eventDate: [90mundefined[39m
+}
+MOCK CALLS: [
+  [
+    [32m'http://localhost:3000/api/content'[39m,
+    {
+      method: [32m'POST'[39m,
+      headers: [36m[Object][39m,
+      body: [32m'{"title":"New Test Content","body":"","excerpt":"New Test Body","category":"Wellness","authorName":"","videoUrl":"","contentType":"article","isPremium":false,"isFeatured":false,"status":"draft","latitude":null,"longitude":null}'[39m
+    }
+  ]
+]
+--- FETCH COMPLETE ---
+
+[90mstdout[2m | src/pages/ContentForm.test.tsx[2m > [22m[2mContentForm[2m > [22m[2msubmits form to update existing content
+[22m[39m--- HANDLE SUBMIT TRIGGERED ---
+--- ABOUT TO FETCH --- http://localhost:3000/api/content/content-123 PUT {
+  title: [32m'Updated Title'[39m,
+  body: [32m''[39m,
+  excerpt: [32m'Updated Body'[39m,
+  category: [32m'Parenting'[39m,
+  authorName: [32m''[39m,
+  videoUrl: [32m''[39m,
+  contentType: [32m'article'[39m,
+  isPremium: [33mfalse[39m,
+  premiumTier: [90mundefined[39m,
+  isFeatured: [33mfalse[39m,
+  status: [32m'draft'[39m,
+  sponsorName: [32m''[39m,
+  sponsorLogoUrl: [32m''[39m,
+  sponsorLink: [32m''[39m,
+  discountCode: [32m''[39m,
+  discountValue: [32m''[39m,
+  eventDate: [90mundefined[39m,
+  eventLocation: [32m''[39m,
+  latitude: [1mnull[22m,
+  longitude: [1mnull[22m,
+  publishedAt: [90mundefined[39m
+}
+
+[90mstdout[2m | src/pages/ContentForm.test.tsx[2m > [22m[2mContentForm[2m > [22m[2msubmits form to update existing content
+[22m[39m--- FETCH COMPLETE ---
+
+[90mstdout[2m | src/pages/ContentForm.test.tsx[2m > [22m[2mContentForm[2m > [22m[2mdisplays error message on submission failure
+[22m[39m--- HANDLE SUBMIT TRIGGERED ---
+--- ABOUT TO FETCH --- http://localhost:3000/api/content POST {
+  title: [32m'New Test Content'[39m,
+  body: [32m''[39m,
+  excerpt: [32m'New Test Body'[39m,
+  category: [32m'Wellness'[39m,
+  authorName: [32m''[39m,
+  videoUrl: [32m''[39m,
+  contentType: [32m'article'[39m,
+  isPremium: [33mfalse[39m,
+  isFeatured: [33mfalse[39m,
+  status: [32m'draft'[39m,
+  latitude: [33mNaN[39m,
+  longitude: [33mNaN[39m,
+  publishedAt: [90mundefined[39m,
+  eventDate: [90mundefined[39m
+}
+
+[90mstdout[2m | src/pages/ContentForm.test.tsx[2m > [22m[2mContentForm[2m > [22m[2mdisplays error message on submission failure
+[22m[39m--- FETCH COMPLETE ---
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mnavigates to content detail when a card is clicked
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/pages/ContentForm.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 545[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the form in create mode with default values [33m 336[2mms[22m[39m
+ [32m✓[39m src/components/PollUI.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 653[2mms[22m[39m
+     [33m[2m✓[22m[39m successful voting disables further voting and updates state [33m 352[2mms[22m[39m
+ [32m✓[39m src/pages/MyLuma.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 638[2mms[22m[39m
+     [33m[2m✓[22m[39m filters content by category when category buttons are clicked [33m 387[2mms[22m[39m
+ [32m✓[39m src/pages/GroupDetail.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 782[2mms[22m[39m
+     [33m[2m✓[22m[39m toggles member view and fetches members [33m 389[2mms[22m[39m
+[90mstdout[2m | src/pages/CreateGroup.test.tsx[2m > [22m[2mCreateGroup[2m > [22m[2mallows fetching and submitting precise geolocation coordinates
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/pages/Profile.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 855[2mms[22m[39m
+     [33m[2m✓[22m[39m enters edit mode, updates inputs, and saves profile [33m 698[2mms[22m[39m
+ [32m✓[39m src/pages/CreateGroup.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1418[2mms[22m[39m
+     [33m[2m✓[22m[39m submits basic group information successfully [33m 696[2mms[22m[39m
+     [33m[2m✓[22m[39m allows fetching and submitting precise geolocation coordinates [33m 498[2mms[22m[39m
+ [32m✓[39m src/pages/Discover.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1330[2mms[22m[39m
+     [33m[2m✓[22m[39m prompts the user to enable location if they have no location configured [33m 593[2mms[22m[39m
+     [33m[2m✓[22m[39m submits connection accept/decline when responding to incoming waves [33m 379[2mms[22m[39m
+ [32m✓[39m src/pages/Groups.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 1580[2mms[22m[39m
+     [33m[2m✓[22m[39m allows joining a group from the Discover tab [33m 305[2mms[22m[39m
+     [33m[2m✓[22m[39m requests geolocation and calls refreshGroups when Near Me is saved [33m 362[2mms[22m[39m
+ [32m✓[39m src/pages/SignUp.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 194[2mms[22m[39m
+ [32m✓[39m src/pages/Marketplace.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m src/pages/ContentDetail.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 139[2mms[22m[39m
+ [32m✓[39m src/context/AuthContext.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/pages/Directory.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32m✓[39m src/pages/Home.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 568[2mms[22m[39m
+[90mstdout[2m | src/services/auth.service.test.ts[2m > [22m[2mtokenStorage[2m > [22m[2msaves and retrieves tokens correctly
+[22m[39m[Auth] Saving tokens: { accessToken: [32m'acc'[39m, refreshToken: [32m'ref'[39m, expiresIn: [33m3600[39m }
+[Auth] Calculated expiry: [33m1772056958087[39m
+
+[90mstdout[2m | src/services/auth.service.test.ts[2m > [22m[2mtokenStorage[2m > [22m[2mclears tokens correctly
+[22m[39m[Auth] Saving tokens: { accessToken: [32m'acc'[39m, refreshToken: [32m'ref'[39m, expiresIn: [33m3600[39m }
+[Auth] Calculated expiry: [33m1772056958088[39m
+
+[90mstdout[2m | src/services/auth.service.test.ts[2m > [22m[2mtokenStorage[2m > [22m[2mchecks expiration correctly
+[22m[39m[Auth] isExpired check. Value in storage: [1mnull[22m
+[Auth] Saving tokens: { accessToken: [32m'a'[39m, refreshToken: [32m'r'[39m, expiresIn: [33m1000[39m }
+[Auth] Calculated expiry: [33m1772054358088[39m
+[Auth] isExpired check. Value in storage: 1772054358088
+[Auth] Saving tokens: { accessToken: [32m'a'[39m, refreshToken: [32m'r'[39m, expiresIn: [33m-100[39m }
+[Auth] Calculated expiry: [33m1772053258088[39m
+[Auth] isExpired check. Value in storage: 1772053258088
+
+ [32m✓[39m src/services/content.service.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/services/user.service.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/auth.service.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/services/directory.service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/posts.service.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/groups.service.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/polls.service.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/notification.service.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/feed.service.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/services/api.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/App.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 54[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m      Tests [22m [1m[32m108 passed[39m[22m[90m (108)[39m
+[2m   Start at [22m 23:02:34
+[2m   Duration [22m 5.05s[2m (transform 2.02s, setup 4.59s, import 3.67s, tests 9.34s, environment 12.92s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   36.35 |    37.12 |   30.79 |   37.66 |                   
+ src               |   77.77 |       50 |     100 |   77.77 |                   
+  App.tsx          |   77.77 |       50 |     100 |   77.77 | 44,54             
+ src/components    |    36.8 |    46.15 |   33.33 |    36.2 |                   
+  AdminRoute.tsx   |   11.11 |        0 |       0 |   11.11 | 11-30             
+  BottomNav.tsx    |   63.88 |    54.54 |    37.5 |   66.66 | 32-34,43-98       
+  ...rBoundary.tsx |       0 |        0 |       0 |       0 | 13-71             
+  PollUI.tsx       |   94.73 |       80 |     100 |     100 | 17-26,81          
+  Skeleton.tsx     |     100 |    71.42 |     100 |     100 | 23-25             
+  VideoUpload.tsx  |    2.08 |        0 |       0 |    2.12 | 11-84             
+ src/context       |   16.61 |    29.16 |   13.55 |    16.9 |                   
+  AuthContext.tsx  |   48.54 |    56.75 |   53.33 |   48.97 | ...87,191-219,245 
+  GroupContext.tsx |       0 |        0 |       0 |       0 | 31-299            
+  ...etContext.tsx |       0 |        0 |       0 |       0 | 14-73             
+  ToastContext.tsx |       0 |        0 |       0 |       0 | 17-86             
+ src/pages         |   36.08 |    36.38 |   26.41 |   37.73 |                   
+  AdminContent.tsx |    2.38 |        0 |       0 |    2.43 | 27-222            
+  ...Dashboard.tsx |    4.76 |        0 |       0 |    4.76 | 14-112            
+  ...bmissions.tsx |    2.17 |        0 |       0 |    2.38 | 8-148             
+  ...entDetail.tsx |   38.77 |    30.18 |   22.22 |    41.3 | ...22-225,235-484 
+  ContentForm.tsx  |      60 |    71.57 |   22.58 |   61.76 | ...65,220,235-487 
+  ...ionDetail.tsx |    1.06 |        0 |       0 |    1.17 | 28-308            
+  CreateGroup.tsx  |    75.6 |       85 |      60 |    75.6 | ...-55,65,129-141 
+  Directory.tsx    |   77.77 |    67.64 |   85.71 |   77.77 | 22-24,27,32,52    
+  Discover.tsx     |   48.64 |    69.35 |   31.81 |   50.49 | ...71-350,401-480 
+  GroupDetail.tsx  |   44.44 |    30.52 |   22.03 |   47.82 | ...04-429,481-671 
+  Groups.tsx       |   94.87 |    81.81 |   89.47 |   94.59 | 87,161            
+  Home.tsx         |    64.7 |    58.33 |   55.55 |   73.33 | 75,83-142         
+  ...nSettings.tsx |    5.55 |        0 |       0 |    5.55 | 6-45              
+  LookingFor.tsx   |    5.88 |        0 |       0 |    6.25 | 5-54              
+  Marketplace.tsx  |   75.86 |     62.5 |      75 |   75.86 | 24-26,29,34,46,56 
+  Messages.tsx     |    2.32 |        0 |       0 |    2.56 | 29-116            
+  MyBookmarks.tsx  |       5 |        0 |       0 |       5 | 9-56              
+  MyLuma.tsx       |   97.22 |    55.26 |    90.9 |   97.22 | 93                
+  ...fications.tsx |    1.58 |        0 |       0 |    1.75 | 11-139            
+  Onboarding.tsx   |    8.33 |        0 |       0 |    8.33 | 5-44              
+  Profile.tsx      |   59.61 |    68.57 |    42.1 |   64.44 | ...01-139,209-262 
+  ...icProfile.tsx |    1.96 |        0 |       0 |    2.08 | 12-112            
+  Search.tsx       |    2.59 |        0 |       0 |    2.73 | 9-253,272-288     
+  SignIn.tsx       |    86.2 |    83.33 |   66.66 |   89.28 | 16,35,117         
+  SignUp.tsx       |   68.11 |    65.75 |   77.77 |   73.33 | ...1-62,65-66,159 
+  ...itContent.tsx |       4 |        0 |       0 |    4.25 | 9-179             
+  ...ptionPage.tsx |    6.25 |        0 |       0 |    6.66 | 8-78              
+  Welcome.tsx      |      20 |      100 |       0 |      20 | 5-11              
+ src/services      |   70.43 |       60 |   70.76 |   70.65 |                   
+  api.ts           |   58.33 |    54.54 |   66.66 |   59.57 | ...62,68-69,76-77 
+  auth.service.ts  |     100 |    83.33 |     100 |     100 | 52                
+  ...on.service.ts |   14.28 |      100 |       0 |   14.28 | 26-37             
+  ...nt.service.ts |     100 |      100 |     100 |     100 |                   
+  ...ry.service.ts |     100 |      100 |     100 |     100 |                   
+  feed.service.ts  |     100 |      100 |     100 |     100 |                   
+  ...ps.service.ts |     100 |      100 |     100 |     100 |                   
+  keycloak.ts      |       0 |      100 |     100 |       0 | 3                 
+  ...ce.service.ts |    12.5 |      100 |       0 |    12.5 | 26-38             
+  ...on.service.ts |     100 |      100 |     100 |     100 |                   
+  polls.service.ts |     100 |      100 |     100 |     100 |                   
+  posts.service.ts |   86.66 |      100 |   85.71 |   86.66 | 102-103           
+  ...on.service.ts |    9.09 |        0 |       0 |    9.09 | 19-36             
+  ...on.service.ts |       0 |        0 |       0 |       0 | 13-26             
+  user.service.ts  |   84.61 |      100 |   83.33 |   84.61 | 102-103           
+ src/utils         |    6.66 |        0 |       0 |    6.66 |                   
+  share.ts         |    6.66 |        0 |       0 |    6.66 | 10-34             
+-------------------|---------|----------|---------|---------|-------------------

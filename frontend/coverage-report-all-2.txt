@@ -1,0 +1,87 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/duma/Projects/luma/frontend[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | src/services/auth.service.test.ts[2m > [22m[2mAuth Service[2m > [22m[2mtokenStorage[2m > [22m[2msaves and retrieves tokens correctly
+[22m[39m[Auth] Saving tokens: { accessToken: [32m'acc'[39m, refreshToken: [32m'ref'[39m, expiresIn: [33m3600[39m }
+[Auth] Calculated expiry: [33m1772052920117[39m
+
+[90mstdout[2m | src/services/auth.service.test.ts[2m > [22m[2mAuth Service[2m > [22m[2mtokenStorage[2m > [22m[2mclears tokens correctly
+[22m[39m[Auth] Saving tokens: { accessToken: [32m'acc'[39m, refreshToken: [32m'ref'[39m, expiresIn: [33m3600[39m }
+[Auth] Calculated expiry: [33m1772052920121[39m
+
+[90mstdout[2m | src/services/auth.service.test.ts[2m > [22m[2mAuth Service[2m > [22m[2mtokenStorage[2m > [22m[2mchecks expiration correctly
+[22m[39m[Auth] isExpired check. Value in storage: [90mundefined[39m
+[Auth] Saving tokens: { accessToken: [32m'a'[39m, refreshToken: [32m'r'[39m, expiresIn: [33m1000[39m }
+[Auth] Calculated expiry: [33m1772050320121[39m
+[Auth] isExpired check. Value in storage: [90mundefined[39m
+
+ [32m✓[39m src/services/content.service.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/services/user.service.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [31m❯[39m src/services/posts.service.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 7[2mms[22m[39m
+     [32m✓[39m getGroupPosts fetches posts for a specific group[32m 2[2mms[22m[39m
+     [32m✓[39m createPost posts new post data[32m 0[2mms[22m[39m
+     [32m✓[39m likePost posts to the like endpoint[32m 0[2mms[22m[39m
+     [32m✓[39m unlikePost deletes to the like endpoint[32m 0[2mms[22m[39m
+     [32m✓[39m getComments fetches comments for a specific post[32m 0[2mms[22m[39m
+     [32m✓[39m createComment posts new comment data[32m 0[2mms[22m[39m
+[31m     [31m×[31m moderatePost posts to the moderate endpoint[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m pinPost posts to the pin endpoint[39m[32m 0[2mms[22m[39m
+ [31m❯[39m src/services/auth.service.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 11[2mms[22m[39m
+       [32m✓[39m signUp should post to /auth/signup and return data[32m 2[2mms[22m[39m
+       [32m✓[39m signIn should post to /auth/signin and return data[32m 0[2mms[22m[39m
+       [32m✓[39m refresh should post to /auth/refresh and return data[32m 0[2mms[22m[39m
+       [32m✓[39m signOut should post to /auth/signout[32m 0[2mms[22m[39m
+[31m       [31m×[31m saves and retrieves tokens correctly[39m[32m 5[2mms[22m[39m
+[31m       [31m×[31m clears tokens correctly[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m checks expiration correctly[39m[32m 1[2mms[22m[39m
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mrenders empty state if no content is returned
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mrenders featured and regular content correctly
+[22m[39m[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mfilters content by category when category buttons are clicked
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/pages/ContentDetail.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 185[2mms[22m[39m
+[90mstdout[2m | src/pages/CreateGroup.test.tsx[2m > [22m[2mCreateGroup[2m > [22m[2msubmits basic group information successfully
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+[90mstdout[2m | src/pages/MyLuma.test.tsx[2m > [22m[2mMyLuma[2m > [22m[2mnavigates to content detail when a card is clicked
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/pages/MyLuma.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 437[2mms[22m[39m
+ [32m✓[39m src/components/PollUI.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 499[2mms[22m[39m
+[90mstdout[2m | src/pages/CreateGroup.test.tsx[2m > [22m[2mCreateGroup[2m > [22m[2mallows fetching and submitting precise geolocation coordinates
+[22m[39m[API Request] GET /notifications
+
+ [32m✓[39m src/services/groups.service.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/pages/Profile.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 755[2mms[22m[39m
+     [33m[2m✓[22m[39m enters edit mode, updates inputs, and saves profile [33m 572[2mms[22m[39m
+ [32m✓[39m src/services/notification.service.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/directory.service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/api.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+[90mstdout[2m | src/pages/Discover.test.tsx[2m > [22m[2mDiscover Page[2m > [22m[2mshould render the top-level marketplace and directory buttons
+[22m[39m[API Request] GET /users/me
+
+[90mstdout[2m | src/pages/Discover.test.tsx[2m > [22m[2mDiscover Page[2m > [22m[2mshould correctly apply the unified layout classes to avoid horizontal overflow
+[22m[39m[API Request] GET /users/me
+
+[90mstdout[2m | src/pages/Discover.test.tsx[2m > [22m[2mDiscover Page[2m > [22m[2mshould correctly apply the unified layout classes to avoid horizontal overflow
+[22m[39m[API Request] GET /notifications
+[API Request] GET /notifications
+
+ [32m✓[39m src/pages/Discover.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 101[2mms[22m[39m
+ [32m✓[39m src/pages/CreateGroup.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1125[2mms[22m[39m
+     [33m[2m✓[22m[39m submits basic group information successfully [33m 633[2mms[22m[39m
+ [32m✓[39m src/services/polls.service.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/services/feed.service.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m14 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m65 passed[39m[22m[90m (70)[39m
+[2m   Start at [22m 21:55:18
+[2m   Duration [22m 2.99s[2m (transform 1.37s, setup 3.49s, import 1.39s, tests 3.15s, environment 9.88s)[22m
+

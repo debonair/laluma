@@ -1,0 +1,15 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/duma/Projects/luma/frontend[39m
+
+ [31m❯[39m src/pages/Discover.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 3337[2mms[22m[39m
+[31m     [31m×[31m prompts the user to enable location if they have no location configured[39m[33m 1053[2mms[22m[39m
+     [32m✓[39m bypasses the location prompt and fetches specific coordinates if user location is already set[32m 21[2mms[22m[39m
+[31m     [31m×[31m requests geolocation and updates user profile when "Share Your Location" is clicked[39m[33m 1010[2mms[22m[39m
+[31m     [31m×[31m renders nearby users list successfully[39m[33m 1009[2mms[22m[39m
+[31m     [31m×[31m submits connection accept/decline when responding to incoming waves[39m[32m 242[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 22:58:24
+[2m   Duration [22m 4.37s[2m (transform 116ms, setup 188ms, import 180ms, tests 3.34s, environment 525ms)[22m
+

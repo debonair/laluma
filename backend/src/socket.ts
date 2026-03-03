@@ -7,9 +7,13 @@ import jwksClient from 'jwks-rsa';
 
 dotenv.config();
 
+// Keycloak Configuration
+const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM || 'luma-realm';
+const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:8080';
+
 // JWKS Client to fetch Keycloak public keys
 const client = jwksClient({
-    jwksUri: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/certs`,
+    jwksUri: `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs`,
     cache: true,
     rateLimit: true,
 });

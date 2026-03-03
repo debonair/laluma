@@ -1,0 +1,17 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/duma/Projects/luma/frontend[39m
+
+ [31m❯[39m src/pages/GroupDetail.test.tsx [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1273[2mms[22m[39m
+     [32m✓[39m renders skeleton loading state initially[32m 23[2mms[22m[39m
+     [32m✓[39m renders "Group Not Found" when getting group fails[32m 18[2mms[22m[39m
+     [32m✓[39m renders group information correctly when found[32m 12[2mms[22m[39m
+[31m     [31m×[31m toggles member view and fetches members[39m[33m 1106[2mms[22m[39m
+     [32m✓[39m posts standard post with group context[32m 48[2mms[22m[39m
+     [32m✓[39m joins and leaves the group toggling state[32m 64[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m     Errors [22m [1m[31m1 error[39m[22m
+[2m   Start at [22m 21:59:12
+[2m   Duration [22m 2.16s[2m (transform 117ms, setup 184ms, import 72ms, tests 1.27s, environment 502ms)[22m
+

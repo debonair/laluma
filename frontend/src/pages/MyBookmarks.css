@@ -27,7 +27,7 @@
 }
 
 .browse-btn {
-  background: #8B5CF6;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 8px 16px;

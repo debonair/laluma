@@ -4,13 +4,13 @@ import { tokenStorage, authService } from './auth.service';
 import { Capacitor } from '@capacitor/core';
 
 const getBaseUrl = () => {
-    if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL;
-    }
-
     // In Android emulator, localhost points to the emulator itself. We need to use 10.0.2.2 to reach the host machine.
     if (Capacitor.getPlatform() === 'android') {
         return 'http://10.0.2.2:3000';
+    }
+
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
     }
 
     return 'http://localhost:3000';
@@ -30,6 +30,7 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor — attach token from localStorage (with silent refresh if needed)
 apiClient.interceptors.request.use(
     async (config) => {
+        console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
         // Don't add auth header for auth endpoints themselves
         const isAuthEndpoint = config.url?.startsWith('/auth/');
         if (isAuthEndpoint) return config;
@@ -63,13 +64,20 @@ apiClient.interceptors.request.use(
 
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        console.error('[API Request Error]', error);
+        return Promise.reject(error);
+    }
 );
 
 // Response interceptor — handle 401 globally
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log(`[API Response Success] ${response.config.url}`, response.status);
+        return response;
+    },
     (error: AxiosError) => {
+        console.error(`[API Response Error] ${error.config?.url}`, error.message, error.response?.data);
         if (error.response?.status === 401) {
             const isAuthEndpoint = error.config?.url?.startsWith('/auth/');
             if (!isAuthEndpoint) {

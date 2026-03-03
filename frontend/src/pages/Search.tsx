@@ -103,7 +103,7 @@ const Search: React.FC = () => {
     const hasLocationConfigured = locationShared;
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-color)' }}>
+        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-color)' }}>
             <header className="page-header" style={{ paddingBottom: '0', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10 }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Discover</h1>
 
@@ -272,7 +272,7 @@ const renderUserCard = (resultUser: UserSearchResult | UserNearbyResult, navigat
     return (
         <div
             key={resultUser.id}
-            onClick={() => navigate(`/ users / ${resultUser.id} `)}
+            onClick={() => navigate(`/users/${resultUser.id}`)}
             style={{
                 display: 'flex',
                 alignItems: 'center',

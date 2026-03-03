@@ -69,8 +69,7 @@
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 900px;
-    /* Force scrolling on small screens */
+    /* Force scrolling on small screens via parent container instead */
 }
 
 thead {

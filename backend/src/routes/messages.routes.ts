@@ -49,6 +49,31 @@ router.get('/conversations', authenticate, async (req: express.Request, res: exp
     }
 });
 
+// Get total unread message count for current user
+router.get('/unread-count', authenticate, async (req: express.Request, res: express.Response) => {
+    const authReq = req as AuthRequest;
+    try {
+        const userId = authReq.user!.userId;
+
+        const unreadCount = await prisma.message.count({
+            where: {
+                conversation: {
+                    participants: {
+                        some: { userId }
+                    }
+                },
+                senderId: { not: userId },
+                isRead: false
+            }
+        });
+
+        res.json({ unreadCount });
+    } catch (error) {
+        console.error('Error fetching unread count:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Get messages for a specific conversation
 router.get('/conversations/:id', authenticate, async (req: express.Request, res: express.Response) => {
     const authReq = req as AuthRequest;

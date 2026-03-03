@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 
 const Groups: React.FC = () => {
-    const { groups, userGroups, joinGroup, isLoading } = useGroup();
+    const { groups, userGroups, joinGroup, isLoading, refreshGroups } = useGroup();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'my-groups' | 'discover'>('my-groups');
     const [searchTerm, setSearchTerm] = useState('');
+    const [cityFilter, setCityFilter] = useState('');
+    const [nearMe, setNearMe] = useState(false);
+    const [isLocating, setIsLocating] = useState(false);
 
     const isMember = (groupId: string) => userGroups.some(g => g.id === groupId);
 
@@ -20,15 +23,35 @@ const Groups: React.FC = () => {
         g.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleJoin = (e: React.MouseEvent, groupId: string) => {
+    const handleJoin = async (e: React.MouseEvent, groupId: string) => {
         e.stopPropagation();
-        joinGroup(groupId);
+        await joinGroup(groupId);
     };
 
-    // const handleLeave = (e: React.MouseEvent, groupId: string) => {
-    //     e.stopPropagation();
-    //     leaveGroup(groupId);
-    // };
+    const handleApplyFilters = () => {
+        if (nearMe) {
+            setIsLocating(true);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setIsLocating(false);
+                    refreshGroups({
+                        city: cityFilter || undefined,
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        radius: 50 // default to 50km
+                    });
+                },
+                (error) => {
+                    console.error("Error getting location", error);
+                    setIsLocating(false);
+                    // Fallback to just city
+                    refreshGroups({ city: cityFilter || undefined });
+                }
+            );
+        } else {
+            refreshGroups({ city: cityFilter || undefined });
+        }
+    };
 
     return (
         <div className="page-container">
@@ -90,6 +113,46 @@ const Groups: React.FC = () => {
                     </button>
                 </div>
 
+                {/* Geography Filters (Only on Discover) */}
+                {activeTab === 'discover' && (
+                    <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                placeholder="City (e.g. Austin)"
+                                value={cityFilter}
+                                onChange={(e) => setCityFilter(e.target.value)}
+                                style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                            />
+                            <button
+                                onClick={() => setNearMe(!nearMe)}
+                                style={{
+                                    padding: '0.5rem 0.75rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border-color)',
+                                    backgroundColor: nearMe ? '#dcfce7' : 'var(--bg-color)',
+                                    color: nearMe ? '#15803d' : 'var(--text-primary)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                <span>📍</span> {nearMe ? 'Near Me Active' : 'Near Me'}
+                            </button>
+                        </div>
+                        <button
+                            onClick={handleApplyFilters}
+                            disabled={isLocating}
+                            className="btn-primary"
+                            style={{ padding: '0.5rem', fontSize: '0.9rem' }}
+                        >
+                            {isLocating ? 'Locating...' : 'Search Location'}
+                        </button>
+                    </div>
+                )}
+
                 {/* Group List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {isLoading ? (
@@ -126,9 +189,16 @@ const Groups: React.FC = () => {
                                     <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                         {group.description}
                                     </p>
-                                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                        {group.member_count} members
-                                    </p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                            {group.member_count} members
+                                        </p>
+                                        {(group.city) && (
+                                            <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-color)', padding: '0.1rem 0.4rem', borderRadius: '100px', border: '1px solid var(--border-color)' }}>
+                                                📍 {group.city}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 {activeTab === 'discover' ? (
                                     <button

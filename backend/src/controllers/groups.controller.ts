@@ -8,7 +8,11 @@ const createGroupSchema = z.object({
     name: z.string().max(200),
     description: z.string(),
     image_emoji: z.string().optional(),
-    is_private: z.boolean().default(false)
+    is_private: z.boolean().default(false),
+    latitude: z.number().optional().nullable(),
+    longitude: z.number().optional().nullable(),
+    city: z.string().optional().nullable(),
+    country: z.string().optional().nullable()
 });
 
 export const getGroups = async (
@@ -20,6 +24,11 @@ export const getGroups = async (
         const search = (typeof req.query.search === 'string' ? req.query.search : undefined);
         const limit = parseInt((typeof req.query.limit === 'string' ? req.query.limit : '20')) || 20;
         const offset = parseInt((typeof req.query.offset === 'string' ? req.query.offset : '0')) || 0;
+        const userLat = req.query.latitude ? parseFloat(req.query.latitude as string) : undefined;
+        const userLng = req.query.longitude ? parseFloat(req.query.longitude as string) : undefined;
+        const radiusKm = parseInt((typeof req.query.radius === 'string' ? req.query.radius : '50')) || 50;
+        const cityFilter = (typeof req.query.city === 'string' ? req.query.city : undefined);
+        const countryFilter = (typeof req.query.country === 'string' ? req.query.country : undefined);
 
         let where: any = {};
 
@@ -30,17 +39,22 @@ export const getGroups = async (
             ];
         }
 
+        if (cityFilter) {
+            where.city = { contains: cityFilter, mode: 'insensitive' };
+        }
+        if (countryFilter) {
+            where.country = { contains: countryFilter, mode: 'insensitive' };
+        }
+
         if (filter === 'my-groups') {
             where.members = {
                 some: { userId: req.user!.userId }
             };
         }
 
-        const [groups, total] = await Promise.all([
+        const [groupsRaw, total] = await Promise.all([
             prisma.group.findMany({
                 where,
-                take: limit,
-                skip: offset,
                 orderBy: { createdAt: 'desc' },
                 include: {
                     members: {
@@ -51,23 +65,65 @@ export const getGroups = async (
             prisma.group.count({ where })
         ]);
 
+        let groups = groupsRaw;
+
+        // Apply geographic filtering and sorting if coordinates provided
+        if (userLat !== undefined && userLng !== undefined && !isNaN(userLat) && !isNaN(userLng)) {
+            groups = groups.filter(group => {
+                if (group.latitude === null || group.longitude === null) return true; // Include if no coords set
+                // Haversine formula
+                const R = 6371; // Earth radius in km
+                const dLat = (group.latitude - userLat) * Math.PI / 180;
+                const dLon = (group.longitude - userLng) * Math.PI / 180;
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(userLat * Math.PI / 180) * Math.cos(group.latitude * Math.PI / 180) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const distance = R * c;
+
+                return distance <= radiusKm;
+            });
+
+            // Sort by distance
+            groups.sort((a, b) => {
+                if (a.latitude === null || a.longitude === null) return 1;
+                if (b.latitude === null || b.longitude === null) return -1;
+
+                const getDistance = (lat: number, lng: number) => {
+                    const R = 6371;
+                    const dLat = (lat - userLat) * Math.PI / 180;
+                    const dLon = (lng - userLng) * Math.PI / 180;
+                    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(userLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+                };
+
+                return getDistance(a.latitude, a.longitude) - getDistance(b.latitude, b.longitude);
+            });
+        }
+
+        // Apply pagination after filtering
+        const paginatedGroups = groups.slice(offset, offset + limit);
+
         res.json({
-            groups: groups.map((group: Prisma.GroupGetPayload<{
-                include: {
-                    members: true
-                }
-            }>) => ({
+            groups: paginatedGroups.map((group) => ({
                 id: group.id,
                 name: group.name,
                 description: group.description,
                 image_emoji: group.imageEmoji,
                 image_url: group.imageUrl,
+                latitude: group.latitude,
+                longitude: group.longitude,
+                city: group.city,
+                country: group.country,
                 member_count: group.memberCount,
                 is_member: group.members.length > 0,
                 created_at: group.createdAt
             })),
-            total,
-            has_more: offset + limit < total
+            total: groups.length,
+            has_more: offset + limit < groups.length
         });
     } catch (error) {
         console.error('Get groups error:', error);
@@ -92,6 +148,10 @@ export const createGroup = async (
                 description: data.description,
                 imageEmoji: data.image_emoji,
                 isPrivate: data.is_private,
+                latitude: data.latitude,
+                longitude: data.longitude,
+                city: data.city,
+                country: data.country,
                 createdById: req.user!.userId,
                 memberCount: 1,
                 members: {

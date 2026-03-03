@@ -20,6 +20,10 @@ const config: CapacitorConfig = {
       style: "LIGHT",
       overlaysWebView: true
     }
+  },
+  server: {
+    androidScheme: 'http',
+    cleartext: true
   }
 };
 

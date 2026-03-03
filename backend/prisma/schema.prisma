@@ -96,7 +96,13 @@ model Group {
   members   GroupMember[]
   posts     Post[]
 
+  latitude  Float?
+  longitude Float?
+  city      String?
+  country   String?
+
   @@index([name])
+  @@index([latitude, longitude])
   @@map("groups")
 }
 

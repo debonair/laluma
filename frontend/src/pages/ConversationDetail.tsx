@@ -64,7 +64,13 @@ const ConversationDetail: React.FC = () => {
 
         const handleNewMessage = (incomingMsg: Message & { conversationId: string }) => {
             if (incomingMsg.conversationId === id) {
-                setMessages(prev => [...prev, incomingMsg]);
+                setMessages(prev => {
+                    // Avoid duplicates (e.g. if we already added it locally after sending)
+                    if (prev.some(m => m.id === incomingMsg.id)) {
+                        return prev;
+                    }
+                    return [...prev, incomingMsg];
+                });
 
                 // If I am receiving a new message while looking at this screen, mark it as read
                 if (incomingMsg.senderId !== user?.id) {
@@ -143,14 +149,20 @@ const ConversationDetail: React.FC = () => {
                 if (contentToAuth) formData.append('content', contentToAuth);
                 formData.append('attachment', attachment);
 
-                await apiClient.post('/messages/send/attachment', formData, {
+                const response = await apiClient.post<{ message: Message }>('/messages/send/attachment', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
+
+                // Add message to local state for immediate feedback
+                setMessages(prev => [...prev, response.data.message]);
             } else {
-                await apiClient.post('/messages/send', {
+                const response = await apiClient.post<{ message: Message }>('/messages/send', {
                     recipientId: recipientCandidate,
                     content: contentToAuth
                 });
+
+                // Add message to local state for immediate feedback
+                setMessages(prev => [...prev, response.data.message]);
             }
 
             setNewMessage('');
@@ -164,7 +176,7 @@ const ConversationDetail: React.FC = () => {
     };
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: 0 }}>
+        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', paddingBottom: 0 }}>
             {/* Header */}
             <header className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center' }}>
                 <button

@@ -113,7 +113,7 @@ const Discover: React.FC = () => {
     };
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-color)' }}>
+        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-color)' }}>
             <header className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Discover</h1>
                 <button onClick={() => navigate('/search')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.5rem' }}>
@@ -121,51 +121,51 @@ const Discover: React.FC = () => {
                 </button>
             </header>
 
-            <main className="page-content" style={{ padding: '1rem', flex: 1, overflowY: 'auto' }}>
+            <main className="page-content">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                     <button
                         onClick={() => navigate('/marketplace')}
                         style={{
-                            padding: '1.5rem 1rem',
+                            padding: '1rem',
                             backgroundColor: 'var(--card-bg)',
-                            border: '4px solid #000',
-                            borderRadius: '12px',
-                            boxShadow: '4px 4px 0px 0px #000',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '16px',
+                            boxShadow: 'var(--shadow-sm)',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             gap: '0.5rem',
                             cursor: 'pointer',
-                            transition: 'transform 0.1s linear, box-shadow 0.1s linear'
+                            transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
-                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(4px, 4px)'; e.currentTarget.style.boxShadow = '0px 0px 0px 0px #000'; }}
-                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
+                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translateY(1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
                     >
                         <div style={{ fontSize: '2rem' }}>🛒</div>
-                        <span style={{ fontWeight: 800 }}>Marketplace</span>
+                        <span style={{ fontWeight: 600 }}>Marketplace</span>
                     </button>
                     <button
                         onClick={() => navigate('/directory')}
                         style={{
-                            padding: '1.5rem 1rem',
+                            padding: '1rem',
                             backgroundColor: 'var(--card-bg)',
-                            border: '4px solid #000',
-                            borderRadius: '12px',
-                            boxShadow: '4px 4px 0px 0px #000',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '16px',
+                            boxShadow: 'var(--shadow-sm)',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             gap: '0.5rem',
                             cursor: 'pointer',
-                            transition: 'transform 0.1s linear, box-shadow 0.1s linear'
+                            transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
-                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(4px, 4px)'; e.currentTarget.style.boxShadow = '0px 0px 0px 0px #000'; }}
-                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000'; }}
+                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translateY(1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
                     >
                         <div style={{ fontSize: '2rem' }}>📖</div>
-                        <span style={{ fontWeight: 800 }}>Directory</span>
+                        <span style={{ fontWeight: 600 }}>Directory</span>
                     </button>
                 </div>
                 {!locationShared ? (
@@ -207,7 +207,7 @@ const Discover: React.FC = () => {
                         {isLoading ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className="skeleton" style={{ height: '300px', width: '100%', border: '4px solid #000' }}></div>
+                                    <div key={i} className="skeleton" style={{ height: '300px', width: '100%', borderRadius: '16px' }}></div>
                                 ))}
                             </div>
                         ) : (
@@ -220,8 +220,8 @@ const Discover: React.FC = () => {
                                             {pendingRequests.map(req => (
                                                 <div key={req.id} style={{
                                                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                    padding: '1rem', backgroundColor: 'var(--card-bg)', border: '2px solid #000',
-                                                    boxShadow: '2px 2px 0px 0px #000', borderRadius: '12px'
+                                                    padding: '1rem', backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)',
+                                                    boxShadow: 'var(--shadow-sm)', borderRadius: '16px'
                                                 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate(`/users/${req.requesterId}`)}>
                                                         <div style={{
@@ -261,10 +261,11 @@ const Discover: React.FC = () => {
                                             gap: '1rem',
                                             overflowX: 'auto',
                                             paddingBottom: '1rem',
-                                            margin: '0 -1rem',
-                                            padding: '0 1rem 1rem 1rem',
+                                            margin: '0 -1.5rem',
+                                            padding: '0 1.5rem 1rem 1.5rem',
                                             scrollSnapType: 'x mandatory',
-                                            WebkitOverflowScrolling: 'touch'
+                                            WebkitOverflowScrolling: 'touch',
+                                            maxWidth: '100vw'
                                         }}>
                                             {discoverContent.events.map(event => (
                                                 <div
@@ -273,35 +274,36 @@ const Discover: React.FC = () => {
                                                     style={{
                                                         minWidth: '280px',
                                                         backgroundColor: 'var(--card-bg)',
-                                                        border: '4px solid #000',
+                                                        border: '1px solid var(--border-color)',
                                                         padding: '1rem',
-                                                        boxShadow: '4px 4px 0px 0px #000',
+                                                        boxShadow: 'var(--shadow-sm)',
+                                                        borderRadius: '16px',
                                                         scrollSnapAlign: 'start',
                                                         cursor: 'pointer',
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                         gap: '0.5rem',
-                                                        transition: 'transform 0.1s linear, box-shadow 0.1s linear'
+                                                        transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                                                     }}
                                                     onMouseDown={(e) => {
-                                                        e.currentTarget.style.transform = 'translate(4px, 4px)';
-                                                        e.currentTarget.style.boxShadow = '0px 0px 0px 0px #000';
+                                                        e.currentTarget.style.transform = 'translateY(1px)';
+                                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                                                     }}
                                                     onMouseUp={(e) => {
                                                         e.currentTarget.style.transform = 'initial';
-                                                        e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000';
+                                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                                                     }}
                                                     onMouseLeave={(e) => {
                                                         e.currentTarget.style.transform = 'initial';
-                                                        e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000';
+                                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                                                     }}
                                                 >
                                                     <span style={{
-                                                        backgroundColor: '#FF6B6B',
-                                                        color: '#000',
-                                                        border: '2px solid #000',
+                                                        backgroundColor: 'var(--primary-color)',
+                                                        color: 'white',
+                                                        border: 'none',
                                                         padding: '0.25rem 0.5rem',
-                                                        fontWeight: 800,
+                                                        fontWeight: 600,
                                                         fontSize: '0.75rem',
                                                         display: 'inline-block',
                                                         alignSelf: 'flex-start'
@@ -325,10 +327,11 @@ const Discover: React.FC = () => {
                                                     onClick={() => navigate(`/content/${promo.id}`)}
                                                     style={{
                                                         minWidth: '280px',
-                                                        backgroundColor: '#FCC419',
-                                                        border: '4px solid #000',
+                                                        backgroundColor: 'var(--accent-color)',
+                                                        border: '1px solid var(--border-color)',
                                                         padding: '1rem',
-                                                        boxShadow: '4px 4px 0px 0px #000',
+                                                        boxShadow: 'var(--shadow-sm)',
+                                                        borderRadius: '16px',
                                                         scrollSnapAlign: 'start',
                                                         cursor: 'pointer',
                                                         display: 'flex',

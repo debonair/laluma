@@ -97,6 +97,7 @@ const ContentForm: React.FC = () => {
 
 
     const handleSubmit = async (e: React.FormEvent) => {
+        console.log('--- HANDLE SUBMIT TRIGGERED ---');
         e.preventDefault();
 
         try {
@@ -116,6 +117,8 @@ const ContentForm: React.FC = () => {
                 eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : undefined
             };
 
+            console.log('--- ABOUT TO FETCH ---', url, method, payload);
+
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -124,6 +127,7 @@ const ContentForm: React.FC = () => {
                 },
                 body: JSON.stringify(payload)
             });
+            console.log('--- FETCH COMPLETE ---');
 
             if (response.ok) {
                 navigate('/admin/content');

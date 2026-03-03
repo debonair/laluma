@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import BottomNav from '../components/BottomNav';
 import { directoryService, type DirectoryListing } from '../services/directory.service';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,6 @@ import Skeleton from '../components/Skeleton';
 const Directory: React.FC = () => {
     const { user } = useAuth();
     const { addToast } = useToast();
-    const navigate = useNavigate();
     const [listings, setListings] = useState<DirectoryListing[]>([]);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState<string>('');
@@ -39,7 +38,7 @@ const Directory: React.FC = () => {
     }, [user, category, addToast]);
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-color)' }}>
+        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-color)' }}>
             <header className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10 }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Local Directory</h1>
                 <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Trusted recommendations from local moms</p>

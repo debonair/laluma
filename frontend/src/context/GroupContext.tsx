@@ -15,7 +15,7 @@ interface GroupContextType {
     error: string | null;
     joinGroup: (groupId: string) => Promise<void>;
     leaveGroup: (groupId: string) => Promise<void>;
-    createGroup: (name: string, description: string, emoji?: string) => Promise<void>;
+    createGroup: (name: string, description: string, emoji?: string, location?: { latitude?: number; longitude?: number; city?: string; country?: string; is_private?: boolean }) => Promise<void>;
     createPost: (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }) => Promise<void>;
     addComment: (postId: string, content: string) => Promise<void>;
     likePost: (postId: string) => Promise<void>;
@@ -23,7 +23,7 @@ interface GroupContextType {
     getGroup: (groupId: string) => Promise<Group | null>;
     getGroupPosts: (groupId: string) => Promise<Post[]>;
     getPostComments: (postId: string) => Promise<Comment[]>;
-    refreshGroups: () => Promise<void>;
+    refreshGroups: (params?: { filter?: 'all' | 'my-groups' | 'discover', search?: string, limit?: number, offset?: number, latitude?: number, longitude?: number, radius?: number, city?: string, country?: string }) => Promise<void>;
     refreshFeed: () => Promise<void>;
     clearError: () => void;
 }
@@ -40,13 +40,24 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [error, setError] = useState<string | null>(null);
 
     // Fetch all groups
-    const refreshGroups = useCallback(async () => {
+    const refreshGroups = useCallback(async (params?: {
+        filter?: 'all' | 'my-groups' | 'discover';
+        search?: string;
+        limit?: number;
+        offset?: number;
+        latitude?: number;
+        longitude?: number;
+        radius?: number;
+        city?: string;
+        country?: string;
+    }) => {
         if (!isAuthenticated) return;
 
         try {
             setError(null);
             setIsLoading(true);
-            const response = await groupsService.getGroups({ limit: 100 });
+            const mergedParams = { limit: 100, ...params };
+            const response = await groupsService.getGroups(mergedParams);
             setGroups(response.groups);
         } catch (err) {
             const errorMessage = handleAPIError(err);
@@ -131,7 +142,7 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
-    const createGroup = async (name: string, description: string, emoji?: string) => {
+    const createGroup = async (name: string, description: string, emoji?: string, location?: { latitude?: number; longitude?: number; city?: string; country?: string; is_private?: boolean }) => {
         try {
             setError(null);
             setIsLoading(true);
@@ -139,6 +150,11 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 name,
                 description,
                 image_emoji: emoji || '✨',
+                latitude: location?.latitude,
+                longitude: location?.longitude,
+                city: location?.city,
+                country: location?.country,
+                is_private: location?.is_private,
             });
             // Refresh groups and user groups
             await Promise.all([refreshGroups(), refreshUserGroups()]);

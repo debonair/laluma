@@ -1,24 +1,5 @@
 # ============================================
-# Stage 1: Builder
-# ============================================
-FROM node:20.18.3-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy source code
-COPY . .
-
-# Build production bundle
-RUN npm run build
-
-# ============================================
-# Stage 2: Production with Nginx
+# Production Stage with Nginx
 # ============================================
 FROM nginx:1.27-alpine AS production
 
@@ -29,11 +10,16 @@ RUN chown -R nginx:nginx /var/cache/nginx && \
     touch /var/run/nginx.pid && \
     chown -R nginx:nginx /var/run/nginx.pid
 
-# Copy built app from builder
-COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
+WORKDIR /usr/share/nginx/html
+
+# Copy pre-built application from host
+COPY dist ./
 
 # Copy nginx configuration
-COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Fix permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html
 
 # Switch to non-root user
 USER nginx

@@ -75,7 +75,7 @@ const PublicProfile: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 <p>Loading profile...</p>
             </div>
         );
@@ -83,7 +83,7 @@ const PublicProfile: React.FC = () => {
 
     if (error || !profile) {
         return (
-            <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-color)' }}>
+            <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-color)' }}>
                 <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
                     <h1>Error</h1>
                 </div>
@@ -107,7 +107,7 @@ const PublicProfile: React.FC = () => {
     const isOwnProfile = profile.id === currentUser?.id;
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
+        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', backgroundColor: 'var(--bg-color)' }}>
             <div className="page-header" style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10 }}>
                 <button onClick={() => navigate(-1)} className="icon-btn" aria-label="Go back">
                     <ArrowLeft size={24} />

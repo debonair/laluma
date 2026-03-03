@@ -62,7 +62,7 @@
 }
 
 .tier-card.premium-plus {
-    border: 2px solid #8B5CF6;
+    border: 2px solid var(--primary-color);
     background: linear-gradient(to bottom, #ffffff, #F9FAFB);
 }
 
@@ -71,7 +71,7 @@
     top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     color: white;
     padding: 4px 12px;
     border-radius: 20px;
@@ -152,7 +152,7 @@
 }
 
 .btn-subscribe.highlight {
-    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     border: none;
     color: white;
 }

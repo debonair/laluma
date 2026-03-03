@@ -37,7 +37,7 @@ setupSocketIO(server);
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+    origin: true,
     credentials: true
 }));
 app.use(globalLimiter);

@@ -72,15 +72,15 @@ const MyLuma: React.FC = () => {
     };
 
     return (
-        <div className="my-luma">
-            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
-                <h1>My Luma</h1>
+        <div className="page-container" style={{ backgroundColor: 'var(--bg-color)' }}>
+            <div className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>My Luma</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>
                     Your creations and activities
                 </p>
             </div>
 
-            <main>
+            <main className="page-content">
                 {/* Featured Content Carousel */}
                 {featuredContent.length > 0 && (
                     <div className="featured-section">
