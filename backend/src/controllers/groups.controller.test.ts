@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getGroups, createGroup, getGroup, joinGroup } from './groups.controller';
+import { getGroups, createGroup, getGroup, joinGroup, getRecommendedGroups } from './groups.controller';
 import prisma from '../utils/prisma';
 
 const mockedPrisma = prisma as any;
@@ -151,6 +151,60 @@ describe('Groups Controller', () => {
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
                 success: true
             }));
+        });
+    });
+
+    describe('getRecommendedGroups', () => {
+        it('returns 401 if user is not authenticated', async () => {
+            mockReq.user = undefined;
+            await getRecommendedGroups(mockReq, mockRes);
+            expect(mockRes.status).toHaveBeenCalledWith(401);
+        });
+
+        it('returns up to 3 recommended groups based on lifeStage and fallback', async () => {
+            mockedPrisma.user.findUnique.mockResolvedValueOnce({
+                lifeStage: 'new_mom',
+                journeyContext: 'solo_by_choice'
+            });
+
+            // Mock 1 matched group
+            mockedPrisma.group.findMany.mockResolvedValueOnce([
+                { id: 'g-match-1', name: 'New Mom Group', memberCount: 10, members: [] }
+            ]);
+
+            // Mock 2 fallback groups to reach 3 total
+            mockedPrisma.group.findMany.mockResolvedValueOnce([
+                { id: 'g-fall-1', name: 'General Support', memberCount: 100, members: [] },
+                { id: 'g-fall-2', name: 'Local Meetups', memberCount: 50, members: [] }
+            ]);
+
+            await getRecommendedGroups(mockReq, mockRes);
+
+            // First query checks match
+            expect(mockedPrisma.group.findMany).toHaveBeenNthCalledWith(1, expect.objectContaining({
+                where: expect.objectContaining({
+                    OR: [
+                        { name: { contains: 'new mom', mode: 'insensitive' } },
+                        { description: { contains: 'new mom', mode: 'insensitive' } }
+                    ]
+                })
+            }));
+
+            // Second query fetches fallbacks not in matched list
+            expect(mockedPrisma.group.findMany).toHaveBeenNthCalledWith(2, expect.objectContaining({
+                take: 2,
+                where: expect.objectContaining({
+                    id: { notIn: ['g-match-1'] }
+                })
+            }));
+
+            expect(mockRes.json).toHaveBeenCalledWith({
+                groups: [
+                    expect.objectContaining({ id: 'g-match-1' }),
+                    expect.objectContaining({ id: 'g-fall-1' }),
+                    expect.objectContaining({ id: 'g-fall-2' })
+                ]
+            });
         });
     });
 });

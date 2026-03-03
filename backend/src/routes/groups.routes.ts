@@ -5,6 +5,7 @@ import {
     getGroup,
     joinGroup,
     leaveGroup,
+    getRecommendedGroups,
     getGroupMembers,
     removeMember,
     updateMemberRole
@@ -19,6 +20,7 @@ const router = Router();
 
 router.get('/', authenticate, getGroups);
 router.post('/', authenticate, createGroup);
+router.get('/recommended', authenticate, getRecommendedGroups);
 router.get('/:groupId', authenticate, getGroup);
 router.post('/:groupId/join', authenticate, joinGroup);
 router.post('/:groupId/leave', authenticate, leaveGroup);

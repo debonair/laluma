@@ -135,6 +135,76 @@ export const getGroups = async (
     }
 };
 
+export const getRecommendedGroups = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { lifeStage: true, journeyContext: true }
+        });
+
+        // 1. Find 3 groups roughly matching life stage using text search as a proxy
+        let recommended = await prisma.group.findMany({
+            where: {
+                ...(user?.lifeStage && {
+                    OR: [
+                        { name: { contains: user.lifeStage.replace('_', ' '), mode: 'insensitive' } },
+                        { description: { contains: user.lifeStage.replace('_', ' '), mode: 'insensitive' } }
+                    ]
+                }),
+                isPrivate: false,
+                members: {
+                    none: { userId } // exclude already joined
+                }
+            },
+            take: 3,
+            orderBy: { memberCount: 'desc' }
+        });
+
+        // 2. Fallback: if < 3 groups matched, fill with largest popular public groups
+        if (recommended.length < 3) {
+            const excludeIds = recommended.map(g => g.id);
+            const fallback = await prisma.group.findMany({
+                where: {
+                    isPrivate: false,
+                    id: { notIn: excludeIds },
+                    members: { none: { userId } }
+                },
+                take: 3 - recommended.length,
+                orderBy: { memberCount: 'desc' }
+            });
+            recommended = [...recommended, ...fallback];
+        }
+
+        res.json({
+            groups: recommended.map(group => ({
+                id: group.id,
+                name: group.name,
+                description: group.description,
+                image_emoji: group.imageEmoji,
+                member_count: group.memberCount,
+                is_member: false, // by definition of recommendation
+                created_at: group.createdAt
+            }))
+        });
+    } catch (error) {
+        console.error('Get recommended groups error:', error);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: 'An error occurred',
+            code: 'INTERNAL_ERROR'
+        });
+    }
+};
+
 export const createGroup = async (
     req: AuthRequest,
     res: Response
