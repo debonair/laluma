@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getCurrentUser, updateOnboardingContext } from './user.controller';
+import { getCurrentUser, updateOnboardingContext, updateCurrentUser, uploadProfileImage } from './user.controller';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middleware/auth';
 import { Response } from 'express';
@@ -10,6 +10,9 @@ vi.mock('../utils/prisma', () => ({
             findUnique: vi.fn(),
             update: vi.fn(),
         },
+        userPreference: {
+            upsert: vi.fn(),
+        }
     },
 }));
 
@@ -154,6 +157,87 @@ describe('User Controller - Onboarding', () => {
 
             expect(statusMock).toHaveBeenCalledWith(401);
             expect(jsonMock).toHaveBeenCalledWith({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+        });
+    });
+
+    describe('updateCurrentUser', () => {
+        it('should update user profile including displayName and aboutMe', async () => {
+            mockReq.body = {
+                display_name: 'New Name',
+                about_me: 'A bit about me'
+            };
+
+            const updatedUserMock = {
+                id: 'user-123',
+                username: 'testu',
+                email: 'test@example.com',
+                displayName: 'New Name',
+                aboutMe: 'A bit about me',
+                hasCompletedOnboarding: true,
+                role: 'member',
+                isVerified: false,
+                createdAt: new Date(),
+                preferences: null
+            };
+
+            vi.mocked(prisma.user.update).mockResolvedValueOnce(updatedUserMock as any);
+            vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(updatedUserMock as any);
+
+            await updateCurrentUser(mockReq as AuthRequest, mockRes as Response);
+
+            expect(prisma.user.update).toHaveBeenCalledWith({
+                where: { id: 'user-123' },
+                data: {
+                    displayName: 'New Name',
+                    aboutMe: 'A bit about me',
+                    motherhoodStage: undefined,
+                    hasCompletedOnboarding: undefined
+                }
+            });
+
+            expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({
+                display_name: 'New Name',
+                about_me: 'A bit about me'
+            }));
+        });
+
+        it('should return 400 for validation errors', async () => {
+            mockReq.body = {
+                display_name: 'A'.repeat(150), // Exceeds 100 max
+            };
+
+            await updateCurrentUser(mockReq as AuthRequest, mockRes as Response);
+
+            expect(statusMock).toHaveBeenCalledWith(400);
+            expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({
+                code: 'VALIDATION_ERROR'
+            }));
+        });
+    });
+
+    describe('uploadProfileImage', () => {
+        it('should handle successful avatar upload', async () => {
+            (mockReq as any).file = { filename: 'avatar123.png' } as any;
+
+            await uploadProfileImage(mockReq as AuthRequest, mockRes as Response);
+
+            expect(prisma.user.update).toHaveBeenCalledWith({
+                where: { id: 'user-123' },
+                data: { profileImageUrl: '/uploads/images/avatar123.png' }
+            });
+
+            expect(jsonMock).toHaveBeenCalledWith({
+                profileImageUrl: '/uploads/images/avatar123.png'
+            });
+        });
+
+        it('should return 400 if no file provided', async () => {
+            (mockReq as any).file = undefined;
+
+            await uploadProfileImage(mockReq as AuthRequest, mockRes as Response);
+
+            expect(statusMock).toHaveBeenCalledWith(400);
+            expect(jsonMock).toHaveBeenCalledWith({ error: 'No image file provided' });
         });
     });
 });
