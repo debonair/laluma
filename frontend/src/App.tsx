@@ -33,6 +33,8 @@ import Directory from './pages/Directory';
 import SubmitContent from './pages/SubmitContent';
 import AdminSubmissions from './pages/AdminSubmissions';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminCommunityGuidelines from './pages/admin/CommunityGuidelines';
+import CommunityGuidelines from './pages/CommunityGuidelines';
 
 import { ToastProvider } from './context/ToastContext';
 import Skeleton from './components/Skeleton';
@@ -66,6 +68,7 @@ const App: React.FC = () => {
               <Routes>
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
+                <Route path="/community-guidelines" element={<CommunityGuidelines />} />
                 <Route
                   path="/welcome"
                   element={
@@ -281,6 +284,14 @@ const App: React.FC = () => {
                   element={
                     <AdminRoute>
                       <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/community-guidelines"
+                  element={
+                    <AdminRoute>
+                      <AdminCommunityGuidelines />
                     </AdminRoute>
                   }
                 />

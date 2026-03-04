@@ -24,6 +24,11 @@ import connectionRoutes from './routes/connection.routes';
 import pollsRoutes from './routes/polls.routes';
 import statusRoutes from './routes/status.routes';
 import mediaRoutes from './routes/media.routes';
+import moderationRoutes from './routes/moderation.routes';
+import communityGuidelinesRoutes from './routes/communityGuidelines.routes';
+
+// Initialize background workers
+import { stopModerationWorker } from './workers/moderationWorker';
 
 // Load environment variables
 dotenv.config();
@@ -69,6 +74,8 @@ app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/directory', directoryRoutes);
 app.use('/api/status', statusRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/moderation', moderationRoutes);
+app.use('/api/community-guidelines', communityGuidelinesRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -92,4 +99,16 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 server.listen(PORT, () => {
     console.log(`🚀 HTTP Server running on http://localhost:${PORT}`);
     console.log(`🔌 WebSocket Server initialized`);
+    console.log(`👷 Background Workers initialized`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    server.close(async () => {
+        console.log('HTTP server closed');
+        await stopModerationWorker();
+        console.log('Background workers stopped');
+        process.exit(0);
+    });
 });

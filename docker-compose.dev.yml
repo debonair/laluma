@@ -18,6 +18,18 @@ services:
       retries: 5
       start_period: 10s
 
+  # Redis for BullMQ + Caching
+  redis:
+    image: redis:7-alpine
+    container_name: luma-redis-dev
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Backend API (Development with hot reload)
   backend:
     build:
@@ -38,7 +50,8 @@ services:
       postgres:
         condition: service_healthy
     command: >
-      sh -c "npx prisma migrate deploy && npm run dev"
+      sh -c "npx prisma db push --accept-data-loss && npm run dev"
+
     volumes:
       - ./backend:/app
       - /app/node_modules

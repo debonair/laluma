@@ -31,6 +31,9 @@ describe('Feed Controller', () => {
             json: vi.fn(),
             send: vi.fn()
         };
+        mockedPrisma.userBlock = {
+            findMany: vi.fn().mockResolvedValue([])
+        };
         vi.clearAllMocks();
     });
 
@@ -56,7 +59,7 @@ describe('Feed Controller', () => {
 
         expect(mockedPrisma.post.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
-                where: { groupId: { in: ['g-1', 'g-2'] } },
+                where: expect.objectContaining({ groupId: { in: ['g-1', 'g-2'] } }),
                 orderBy: { createdAt: 'desc' }
             })
         );

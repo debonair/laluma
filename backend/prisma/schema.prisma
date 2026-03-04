@@ -37,19 +37,20 @@ model User {
 
   // Profile Fields (Story 1.1 - using existing columns where possible)
   // Note: profileImageUrl (profile_image_url) serves as avatar; aboutMe (about_me) serves as bio
-  lifeStage              String?  @map("life_stage")
-  journeyContext         String?  @map("journey_context")
-  isActive               Boolean  @default(true) @map("is_active")
+  lifeStage      String? @map("life_stage")
+  journeyContext String? @map("journey_context")
+  isActive       Boolean @default(true) @map("is_active")
 
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   preferences      UserPreference?
-  createdGroups    Group[]         @relation("GroupCreator")
+  createdGroups    Group[]           @relation("GroupCreator")
   groupMemberships GroupMember[]
   posts            Post[]
   comments         Comment[]
   postLikes        PostLike[]
+  commentLikes     CommentLike[]
   marketplaceItems MarketplaceItem[]
   directoryReviews DirectoryReview[]
 
@@ -68,9 +69,21 @@ model User {
   conversations ConversationParticipant[]
   messagesSent  Message[]                 @relation("MessageSender")
 
+  // Push Notification Tokens
+  pushDeviceTokens PushDeviceToken[]
+
   // Connections / Friend Requests
   connectionsSent     Connection[] @relation("ConnectionRequester")
   connectionsReceived Connection[] @relation("ConnectionRecipient")
+
+  // Moderation / Reporting
+  reports         Report[]
+  blockedUsers    UserBlock[]          @relation("BlockedUsers")
+  blockedBy       UserBlock[]          @relation("BlockedBy")
+  moderationAudit ModerationAuditLog[] @relation("ModerationAuditModerator")
+
+  // Community Guidelines versions
+  communityGuidelines CommunityGuidelines[] @relation("CommunityGuidelinesCreator")
 
   @@index([username])
   @@index([email])
@@ -89,8 +102,15 @@ model UserPreference {
   country            String?
   interestedInEvents Boolean  @default(true) @map("interested_in_events")
   interestedInPromos Boolean  @default(true) @map("interested_in_promos")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  // Push notification preferences (Story 5.4)
+  notifyDms        Boolean @default(true) @map("notify_dms")
+  notifyGroups     Boolean @default(true) @map("notify_groups")
+  notifyEvents     Boolean @default(true) @map("notify_events")
+  notifyModeration Boolean @default(true) @map("notify_moderation")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -141,23 +161,25 @@ model GroupMember {
 }
 
 model Post {
-  id            String   @id @default(uuid())
-  groupId       String   @map("group_id")
-  authorId      String?  @map("author_id")
-  content       String   @db.Text
-  likesCount    Int      @default(0) @map("likes_count")
-  commentsCount Int      @default(0) @map("comments_count")
-  mediaUrls     String[] @map("media_urls")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  isAnonymous   Boolean  @default(false) @map("is_anonymous")
-  identityLinkId String? @map("identity_link_id") // Reference to isolated anonymous identity store (Story 1.1)
+  id             String    @id @default(uuid())
+  groupId        String    @map("group_id")
+  authorId       String?   @map("author_id")
+  content        String    @db.Text
+  likesCount     Int       @default(0) @map("likes_count")
+  commentsCount  Int       @default(0) @map("comments_count")
+  mediaUrls      String[]  @map("media_urls")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  isAnonymous    Boolean   @default(false) @map("is_anonymous")
+  identityLinkId String?   @map("identity_link_id") // Reference to isolated anonymous identity store (Story 1.1)
 
-  group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  author   User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  comments Comment[]
-  likes    PostLike[]
-  poll     Poll?
+  group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author         User?           @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  comments       Comment[]
+  likes          PostLike[]
+  poll           Poll?
+  moderationItem ModerationItem?
 
   @@index([groupId])
   @@index([createdAt])
@@ -165,36 +187,55 @@ model Post {
 }
 
 model Comment {
-  id          String   @id @default(uuid())
-  postId      String   @map("post_id")
-  authorId    String?  @map("author_id")
-  parentId    String?  @map("parent_id")
-  content     String   @db.Text
-  mediaUrls   String[] @map("media_urls")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  isAnonymous Boolean  @default(false) @map("is_anonymous")
+  id          String    @id @default(uuid())
+  postId      String    @map("post_id")
+  authorId    String?   @map("author_id")
+  parentId    String?   @map("parent_id")
+  content     String    @db.Text
+  likesCount  Int       @default(0) @map("likes_count")
+  mediaUrls   String[]  @map("media_urls")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  isAnonymous Boolean   @default(false) @map("is_anonymous")
 
-  post   Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  parent Comment? @relation("ParentComments", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  replies Comment[] @relation("ParentComments")
+  post           Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author         User?           @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  parent         Comment?        @relation("ParentComments", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies        Comment[]       @relation("ParentComments")
+  likes          CommentLike[]
+  moderationItem ModerationItem?
 
   @@index([postId])
   @@map("comments")
 }
 
 model PostLike {
-  id        String   @id @default(uuid())
-  postId    String   @map("post_id")
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  postId       String   @map("post_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@map("post_likes")
+}
+
+model CommentLike {
+  id           String   @id @default(uuid())
+  commentId    String   @map("comment_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@map("comment_likes")
 }
 
 model MarketplaceItem {
@@ -235,13 +276,13 @@ model DirectoryListing {
 }
 
 model DirectoryReview {
-  id          String   @id @default(uuid())
-  listingId   String   @map("listing_id")
-  authorId    String   @map("author_id")
-  rating      Int
-  content     String
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(uuid())
+  listingId String   @map("listing_id")
+  authorId  String   @map("author_id")
+  rating    Int
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   listing DirectoryListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
   author  User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -286,11 +327,12 @@ model Content {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  author    User?             @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  comments  ContentComment[]
-  likes     ContentLike[]
-  bookmarks ContentBookmark[]
-  poll      Poll?
+  author         User?             @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  comments       ContentComment[]
+  likes          ContentLike[]
+  bookmarks      ContentBookmark[]
+  poll           Poll?
+  moderationItem ModerationItem?
 
   @@index([category])
   @@index([isPremium])
@@ -329,6 +371,16 @@ model ContentLike {
   @@unique([contentId, userId])
   @@index([userId])
   @@map("content_likes")
+}
+
+model AnonymousPostLink {
+  id              String   @id @default(uuid())
+  identityLinkId  String   @unique @map("identity_link_id")
+  encryptedUserId String   @map("encrypted_user_id") // AES-256 encrypted userId
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([identityLinkId])
+  @@map("anonymous_post_links")
 }
 
 model ContentBookmark {
@@ -467,6 +519,20 @@ model Connection {
   @@map("connections")
 }
 
+model PushDeviceToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  platform  String // 'ios' | 'android' | 'web'
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_device_tokens")
+}
+
 // --- Phase 2: Interactive Polls ---
 
 model Poll {
@@ -526,3 +592,94 @@ model SystemStatus {
   @@map("system_status")
 }
 
+// ─── Moderation System ────────────────────────────────────────────────────────
+
+model ModerationItem {
+  id     String @id @default(uuid())
+  status String @default("pending") // 'pending', 'resolved', 'ignored'
+
+  postId    String? @unique @map("post_id")
+  commentId String? @unique @map("comment_id")
+  contentId String? @unique @map("content_id") // My Luma support
+
+  aiScore    Float?   @map("ai_score")
+  aiCategory String?  @map("ai_category")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  content   Content? @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  reports   Report[]
+  auditLogs ModerationAuditLog[]
+
+  @@map("moderation_items")
+}
+
+model Report {
+  id               String   @id @default(uuid())
+  moderationItemId String   @map("moderation_item_id")
+  reporterId       String   @map("reporter_id")
+  reason           String   @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  moderationItem ModerationItem @relation(fields: [moderationItemId], references: [id], onDelete: Cascade)
+  reporter       User           @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([moderationItemId, reporterId])
+  @@index([reporterId])
+  @@map("reports")
+}
+
+model UserBlock {
+  id        String   @id @default(uuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker User @relation("BlockedUsers", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("user_blocks")
+}
+
+// ─── Moderation Audit Log (Story 6.7) ────────────────────────────────────────
+
+model ModerationAuditLog {
+  id               String   @id @default(uuid())
+  moderationItemId String   @map("moderation_item_id")
+  moderatorId      String   @map("moderator_id")
+  action           String   // 'remove', 'warn', 'watchlist', 'clear', 'escalate'
+  reason           String?  @db.Text
+  metadata         Json?    // Additional context (previous status, target user, etc.)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  moderationItem ModerationItem @relation(fields: [moderationItemId], references: [id], onDelete: Cascade)
+  moderator      User           @relation("ModerationAuditModerator", fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  @@index([moderationItemId])
+  @@index([moderatorId])
+  @@index([createdAt])
+  @@map("moderation_audit_logs")
+}
+
+// ─── Community Guidelines (Story 6.8) ──────────────────────────────────────────
+
+model CommunityGuidelines {
+  id          String   @id @default(uuid())
+  content     String   @db.Text // Markdown/text content
+  version     Int      @default(1) // Auto-incremented version number
+  publishedAt DateTime @map("published_at") // Timestamp when published
+  createdBy   String   @map("created_by") // Admin user ID who created this version
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator User @relation("CommunityGuidelinesCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([publishedAt])
+  @@index([createdBy])
+  @@map("community_guidelines")
+}

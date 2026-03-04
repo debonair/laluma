@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
+import { generateAnonymousProfile } from '../utils/anonymousProfile';
 
 /**
  * GET /feed
@@ -30,9 +31,31 @@ export const getFeed = async (
             return;
         }
 
+        // Get blocked users (both directions)
+        const blocks = await prisma.userBlock.findMany({
+            where: {
+                OR: [
+                    { blockerId: req.user!.userId },
+                    { blockedId: req.user!.userId }
+                ]
+            }
+        });
+        const blockedUserIds = blocks.map(b => b.blockerId === req.user!.userId ? b.blockedId : b.blockerId);
+
         // Build Prisma query with optional cursor for pagination
         const posts = await prisma.post.findMany({
-            where: { groupId: { in: groupIds } },
+            where: {
+                groupId: { in: groupIds },
+                deletedAt: null,
+                authorId: { notIn: blockedUserIds },
+                NOT: {
+                    moderationItem: {
+                        reports: {
+                            some: { reporterId: req.user!.userId }
+                        }
+                    }
+                }
+            },
             take: limit + 1, // Fetch one extra to detect if there are more
             ...(cursor
                 ? { cursor: { id: cursor }, skip: 1 }
@@ -59,16 +82,26 @@ export const getFeed = async (
                     name: post.group.name,
                     image_emoji: post.group.imageEmoji
                 },
-                author: post.author ? {
+                author: post.isAnonymous ? (() => {
+                    const anonProfile = generateAnonymousProfile(post.identityLinkId || post.id);
+                    return {
+                        id: 'anonymous',
+                        username: 'anonymous',
+                        display_name: anonProfile.displayName,
+                        profile_image_url: anonProfile.avatarUrl
+                    };
+                })() : (post.author ? {
                     id: post.author.id,
                     username: post.author.username,
                     display_name: post.author.displayName,
                     profile_image_url: post.author.profileImageUrl
-                } : null,
+                } : null),
+                is_anonymous: post.isAnonymous,
                 content: post.content,
                 likes_count: post.likesCount,
                 comments_count: post.commentsCount,
                 is_liked: post.likes.length > 0,
+                user_reaction_type: post.likes[0]?.reactionType || null,
                 created_at: post.createdAt
             })),
             next_cursor: nextCursor,

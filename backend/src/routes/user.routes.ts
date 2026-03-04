@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getCurrentUser, updateCurrentUser, searchUsers, getPublicProfile, getNearbyUsers, uploadProfileImage, verifyUser, updateOnboardingContext } from '../controllers/user.controller';
+import { getCurrentUser, updateCurrentUser, searchUsers, getPublicProfile, getNearbyUsers, uploadProfileImage, verifyUser, updateOnboardingContext, blockUser, unblockUser } from '../controllers/user.controller';
 import { authenticate } from '../middleware/auth';
 import { imageUpload } from '../middleware/upload';
 
@@ -13,5 +13,6 @@ router.post('/me/verify', authenticate, verifyUser);
 router.get('/search', authenticate, searchUsers);
 router.get('/nearby', authenticate, getNearbyUsers);
 router.get('/:id', authenticate, getPublicProfile);
-
+router.post('/:id/block', authenticate, blockUser);
+router.delete('/:id/block', authenticate, unblockUser);
 export default router;

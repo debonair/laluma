@@ -494,3 +494,75 @@ export const updateOnboardingContext = async (
         res.status(500).json({ error: 'Internal Server Error', code: 'INTERNAL_ERROR' });
     }
 };
+
+export const blockUser = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const blockerId = req.user?.userId;
+        const blockedId = req.params.id as string;
+
+        if (!blockerId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
+
+        if (blockerId === blockedId) {
+            res.status(400).json({ error: 'Bad Request', message: 'You cannot block yourself', code: 'INVALID_REQUEST' });
+            return;
+        }
+
+        const targetUser = await prisma.user.findUnique({ where: { id: blockedId } });
+        if (!targetUser) {
+            res.status(404).json({ error: 'Not Found', message: 'User not found', code: 'USER_NOT_FOUND' });
+            return;
+        }
+
+        await prisma.userBlock.upsert({
+            where: {
+                blockerId_blockedId: {
+                    blockerId,
+                    blockedId
+                }
+            },
+            create: {
+                blockerId,
+                blockedId
+            },
+            update: {}
+        });
+
+        res.json({ success: true, message: 'User blocked successfully', code: 'USER_BLOCKED' });
+    } catch (error) {
+        console.error('Block user error:', error);
+        res.status(500).json({ error: 'Internal Server Error', message: 'An error occurred', code: 'INTERNAL_ERROR' });
+    }
+};
+
+export const unblockUser = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+    try {
+        const blockerId = req.user?.userId;
+        const blockedId = req.params.id as string;
+
+        if (!blockerId) {
+            res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+            return;
+        }
+
+        await prisma.userBlock.deleteMany({
+            where: {
+                blockerId,
+                blockedId
+            }
+        });
+
+        res.json({ success: true, message: 'User unblocked successfully', code: 'USER_UNBLOCKED' });
+    } catch (error) {
+        console.error('Unblock user error:', error);
+        res.status(500).json({ error: 'Internal Server Error', message: 'An error occurred', code: 'INTERNAL_ERROR' });
+    }
+};
