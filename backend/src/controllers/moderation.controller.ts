@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
+import type { Prisma } from '@prisma/client';
 import { AuthRequest, requireRole } from '../middleware/auth';
 import { createAuditEntry, ModerationAction } from '../services/moderationAudit.service';
 
@@ -39,12 +40,15 @@ export const reportContent = async (req: AuthRequest, res: Response): Promise<vo
         }
 
         // 2. Upsert the ModerationItem transactionally
+        // Build the where clause based on entity type (using unique inputs)
+        const whereClause: Prisma.ModerationItemWhereUniqueInput = data.entityType === 'post'
+            ? { postId: data.entityId }
+            : data.entityType === 'comment'
+                ? { commentId: data.entityId }
+                : { contentId: data.entityId };
+
         const moderationItem = await prisma.moderationItem.upsert({
-            where: {
-                ...(data.entityType === 'post' ? { postId: data.entityId } : {}),
-                ...(data.entityType === 'comment' ? { commentId: data.entityId } : {}),
-                ...(data.entityType === 'content' ? { contentId: data.entityId } : {}),
-            } as any,
+            where: whereClause,
             create: {
                 ...(data.entityType === 'post' ? { postId: data.entityId } : {}),
                 ...(data.entityType === 'comment' ? { commentId: data.entityId } : {}),
@@ -239,9 +243,16 @@ export const applyModerationAction = async (req: AuthRequest, res: Response): Pr
         const newStatus = ACTION_TO_STATUS[action];
 
         // 2. Update the moderation item status
+        const updateData: Record<string, unknown> = { status: newStatus };
+
+        // For escalate action, also set the escalation flag
+        if (action === 'escalate') {
+            updateData.isEscalated = true;
+        }
+
         await prisma.moderationItem.update({
             where: { id },
-            data: { status: newStatus }
+            data: updateData
         });
 
         // 3. Handle content-specific side effects
@@ -277,6 +288,7 @@ export const applyModerationAction = async (req: AuthRequest, res: Response): Pr
             metadata: {
                 previousStatus,
                 newStatus,
+                isEscalated: action === 'escalate',
                 targetPostId: moderationItem.postId,
                 targetCommentId: moderationItem.commentId,
                 targetContentId: moderationItem.contentId

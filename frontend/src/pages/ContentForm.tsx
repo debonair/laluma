@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoUpload from '../components/VideoUpload';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import Skeleton from '../components/Skeleton';
 import './ContentForm.css';
 import { SERVER_URL } from '../services/api';
@@ -160,13 +161,12 @@ const ContentForm: React.FC = () => {
     return (
 
         <div className="page-container">
-            {/* Header */}
-            <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
-                <button type="button" onClick={() => navigate(-1)} className="btn-link">
-                    ←
-                </button>
-                <h1>{id ? 'Edit Content' : 'Create New Content'}</h1>
-            </div>
+            <Header 
+                title={id ? 'Edit Content' : 'Create New Content'} 
+                subtitle={id ? 'Refine your masterpiece' : 'Share something new'}
+                showBack={true}
+                onBack={() => navigate(-1)}
+            />
 
             <main className="page-content">
                 {error && (

@@ -5,20 +5,32 @@
 
   color-scheme: light;
 
-  /* --- Soft Turquoise & Glass Palette --- */
-  --primary-color: #2DD4BF;
-  /* Soft turquoise */
-  --primary-hover: #14B8A6;
-  /* Deep teal */
-  --secondary-color: #FF9F9F;
-  /* Soft coral/peach accent */
-  --accent-color: #E6FFFA;
-  /* Very light mint background accent */
+  /* --- Brand Palette: LUMA Sage & Cream --- */
+  --primary-color: #52796f; /* Sage Forest */
+  --primary-hover: #354f52; /* Deep Sage */
+  --primary-light: #cad2c5; /* Sage Tint */
+  --secondary-color: #84a59d; /* Muted Mint */
+  --accent-color: #a3d9c9;
+  --gold-color: #c98020;
+  --text-primary: #1b3022;  /* Dark Moss */
+  --message-text: #2f3e33;  /* High contrast dark green */
+
+  /* Semantic Colors */
+  --success-color: #22c55e;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #3b82f6;
+
+  /* Gradients */
+  --brand-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  --accent-gradient: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
 
   /* --- Light Theme Variables --- */
   --bg-color: #F8FAFC;
   /* Pearl / off-white background */
   --bg-gradient: var(--bg-color);
+  --bg-secondary: #F1F5F9;
+  /* Slightly more defined background */
   --card-bg: #FFFFFF;
   --input-bg: #FFFFFF;
   --border-color: #E2E8F0;
@@ -99,30 +111,33 @@ h6 {
 }
 
 h1 {
-  font-size: 1.75rem;
-  /* Scaled down for mobile density */
+  font-size: 1.25rem;
+  /* Reduced from 1.75rem */
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
+  /* Reduced from 1.5rem */
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 h3 {
-  font-size: 1.125rem;
+  font-size: 1rem;
+  /* Reduced from 1.125rem */
   font-weight: 600;
 }
 
 p {
-  margin: 0 0 0.75rem 0;
-  /* Reduced margin */
+  margin: 0 0 0.5rem 0;
+  /* Reduced from 0.75rem */
   color: var(--text-secondary);
-  line-height: 1.4;
-  /* Tighter line height */
-  font-size: 0.95rem;
+  line-height: 1.5;
+  /* Improved from 1.4 for readability */
+  font-size: 0.875rem;
+  /* Reduced from 0.95rem */
 }
 
 a {
@@ -188,18 +203,16 @@ a:hover {
 
 .page-content {
   flex: 1;
-  padding: 1rem max(1rem, calc((100% - 800px) / 2));
-  padding-left: max(1rem, env(safe-area-inset-left));
-  padding-right: max(1rem, env(safe-area-inset-right));
-  padding-bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 70px) !important;
+  padding: 0.75rem max(0.75rem, calc((100% - 800px) / 2));
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+  padding-bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 60px) !important;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  /* Tighter gap */
+  gap: 0.75rem;
+  /* Tighter gap (from 1rem) */
   width: 100%;
   min-width: 0;
 }
@@ -219,9 +232,9 @@ a:hover {
 .auth-card,
 .content-card {
   background-color: var(--card-bg);
-  padding: 1rem;
-  border-radius: 16px;
-  /* Apple-style rounding */
+  padding: 0.875rem;
+  border-radius: 12px;
+  /* Slightly tighter rounding (from 16px) */
   box-shadow: var(--shadow-sm);
   /* Soft default shadow */
   width: 100%;
@@ -261,8 +274,7 @@ a:hover {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  border-radius: 0;
+  border-radius: 8px;
   transition: background-color 0.2s;
 }
 
@@ -477,8 +489,7 @@ select:focus {
 
 .status-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0;
+  border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 500;
   background-color: #ECFDF5;
@@ -816,8 +827,7 @@ select:focus {
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 0;
+  border-radius: 8px;
 }
 
 @keyframes pulse-badge {
@@ -873,8 +883,7 @@ select:focus {
   .content-card,
   .card,
   .auth-card {
-    padding: 1rem;
-    border-radius: 0;
+    border-radius: 12px;
   }
 
   .bottom-nav {

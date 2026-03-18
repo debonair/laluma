@@ -28,13 +28,20 @@ import ConversationDetail from './pages/ConversationDetail';
 import Search from './pages/Search';
 import Discover from './pages/Discover';
 import PublicProfile from './pages/PublicProfile';
-import Marketplace from './pages/Marketplace';
 import Directory from './pages/Directory';
 import SubmitContent from './pages/SubmitContent';
 import AdminSubmissions from './pages/AdminSubmissions';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminCommunityGuidelines from './pages/admin/CommunityGuidelines';
+import EventManagement from './pages/admin/EventManagement';
 import CommunityGuidelines from './pages/CommunityGuidelines';
+import LumaSpaces from './pages/LumaSpaces';
+import EventDetail from './pages/EventDetail';
+import MyEvents from './pages/MyEvents';
+import InquiryForm from './pages/partnerships/InquiryForm';
+import BrandInquiries from './pages/admin/BrandInquiries';
+import ExploreHub from './pages/ExploreHub';
+import SocialHub from './pages/SocialHub';
 
 import { ToastProvider } from './context/ToastContext';
 import Skeleton from './components/Skeleton';
@@ -160,6 +167,14 @@ const App: React.FC = () => {
                   }
                 />
                 <Route
+                  path="/my-luma/events"
+                  element={
+                    <ProtectedRoute>
+                      <MyEvents />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/notifications"
                   element={
                     <ProtectedRoute>
@@ -192,10 +207,18 @@ const App: React.FC = () => {
                   }
                 />
                 <Route
-                  path="/marketplace"
+                  path="/explore"
                   element={
                     <ProtectedRoute>
-                      <Marketplace />
+                      <ExploreHub />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/social"
+                  element={
+                    <ProtectedRoute>
+                      <SocialHub />
                     </ProtectedRoute>
                   }
                 />
@@ -293,6 +316,39 @@ const App: React.FC = () => {
                     <AdminRoute>
                       <AdminCommunityGuidelines />
                     </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/events"
+                  element={
+                    <AdminRoute>
+                      <EventManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/brand-inquiries"
+                  element={
+                    <AdminRoute>
+                      <BrandInquiries />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/spaces"
+                  element={
+                    <ProtectedRoute>
+                      <LumaSpaces />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/partnerships/inquiry" element={<InquiryForm />} />
+                <Route
+                  path="/event/:id"
+                  element={
+                    <ProtectedRoute>
+                      <EventDetail />
+                    </ProtectedRoute>
                   }
                 />
               </Routes>

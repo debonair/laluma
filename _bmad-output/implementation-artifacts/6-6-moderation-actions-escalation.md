@@ -25,17 +25,17 @@ So that I can enforce the community guidelines accurately.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: API Endpoint Creation for Moderation Actions
-  - [ ] Subtask 1.1: Create `POST /api/moderation/queue/:id/action` in `moderation.routes.ts`.
-  - [ ] Subtask 1.2: Require `authenticate` and `requireRole(['admin', 'moderator'])` middleware.
-  - [ ] Subtask 1.3: Validate action payload using Zod (valid actions: remove, warn, watchlist, clear, escalate).
-- [ ] Task 2: Controller & Service Implementation
-  - [ ] Subtask 2.1: Implement action logic in `moderation.controller.ts` calling `moderationService.ts`.
-  - [ ] Subtask 2.2: Implement `remove` action - soft delete content and update placeholder text.
-  - [ ] Subtask 2.3: Implement `warn`/`watchlist` action - update User model or create moderation alerts.
-  - [ ] Subtask 2.4: Implement `escalate` action.
-- [ ] Task 3: Testing & Verification
-  - [ ] Subtask 3.1: Write unit tests in `moderation.controller.test.ts`.
+- [x] Task 1: API Endpoint Creation for Moderation Actions
+  - [x] Subtask 1.1: Create `POST /api/moderation/queue/:id/action` in `moderation.routes.ts`.
+  - [x] Subtask 1.2: Require `authenticate` and `requireRole(['admin', 'moderator'])` middleware.
+  - [x] Subtask 1.3: Validate action payload using Zod (valid actions: remove, warn, watchlist, clear, escalate).
+- [x] Task 2: Controller & Service Implementation
+  - [x] Subtask 2.1: Implement action logic in `moderation.controller.ts` calling `moderationService.ts`.
+  - [x] Subtask 2.2: Implement `remove` action - soft delete content and update placeholder text.
+  - [x] Subtask 2.3: Implement `warn`/`watchlist` action - update User model or create moderation alerts.
+  - [x] Subtask 2.4: Implement `escalate` action.
+- [x] Task 3: Testing & Verification
+  - [x] Subtask 3.1: Write unit tests in `moderation.controller.test.ts`.
 
 ## Dev Notes
 

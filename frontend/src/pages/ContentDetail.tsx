@@ -5,6 +5,7 @@ import { contentService } from '../services/content.service';
 import { useToast } from '../context/ToastContext';
 import apiClient from '../services/api';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import Skeleton from '../components/Skeleton';
 import { shareContent } from '../utils/share';
 import './ContentDetail.css';
@@ -230,11 +231,14 @@ const ContentDetail: React.FC = () => {
     return (
 
         <div className="page-container">
+            <Header 
+                title="Article" 
+                subtitle={content.category}
+                showBack={true}
+                onBack={() => navigate('/my-luma')}
+            />
             <main className="page-content">
                 <div className="content-detail">
-                    <button className="btn-neutral" onClick={() => navigate('/my-luma')} style={{ width: 'auto', marginBottom: '2rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
-                        ← Back to My Luma
-                    </button>
 
                     <article className="content-article">
                         <header className="article-header">

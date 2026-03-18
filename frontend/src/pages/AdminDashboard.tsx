@@ -120,6 +120,21 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div style={{ color: 'var(--primary-color)' }}>→</div>
                         </div>
+
+                        <div
+                            className="content-card"
+                            style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s' }}
+                            onClick={() => navigate('/admin/brand-inquiries')}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ fontSize: '1.5rem' }}>🤝</div>
+                                <div>
+                                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.1rem' }}>Brand Inquiries</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Review partnership requests & provision accounts</div>
+                                </div>
+                            </div>
+                            <div style={{ color: 'var(--primary-color)' }}>→</div>
+                        </div>
                     </div>
                 </section>
             </main>

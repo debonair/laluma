@@ -5,29 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { Users, Compass, BadgeCheck } from 'lucide-react';
 import PollUI from '../components/PollUI';
+import Header from '../components/Header';
 
 const Home: React.FC = () => {
-    const { user, signOut } = useAuth();
-    const { feed, isLoading } = useGroup();
+    const { user } = useAuth();
+    const { feed, isLoading, updatePollInFeed } = useGroup();
     const navigate = useNavigate();
-
-    const handleSignOut = () => {
-        signOut();
-        navigate('/signin');
-    };
 
     return (
         <div className="page-container">
-            <header className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1>Welcome, {user?.displayName || user?.username}!</h1>
-                <button
-                    onClick={() => navigate('/messages')}
-                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--primary-color)' }}
-                    title="Messages"
-                >
-                    💬
-                </button>
-            </header>
+            <Header title="Home" />
             <main className="page-content">
                 <div className="content-card">
                     <h3>Your Dashboard</h3>
@@ -43,11 +30,6 @@ const Home: React.FC = () => {
                         </div>
                     )}
 
-                    <div style={{ marginTop: '1.5rem', display: 'flex', justifySelf: 'center' }}>
-                        <button onClick={handleSignOut} className="btn-ghost" style={{ color: '#EF4444' }}>
-                            Sign Out
-                        </button>
-                    </div>
                 </div>
 
                 {user?.roles?.includes('app-admin') && (
@@ -105,7 +87,12 @@ const Home: React.FC = () => {
                                     <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                         {post.content}
                                     </div>
-                                    {post.poll && <PollUI poll={post.poll} />}
+                                    {post.poll && (
+                                        <PollUI 
+                                            poll={post.poll} 
+                                            onVote={(updatedPoll) => updatePollInFeed(post.id, updatedPoll)}
+                                        />
+                                    )}
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
                                         in {post.group?.name || 'a group'}
                                     </div>

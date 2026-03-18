@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BottomNav from '../components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 import { contentService } from '../services/content.service';
 import type { Content } from '../types/content';
 import './MyBookmarks.css'; // We'll reuse MyLuma styles or create specific ones
@@ -35,10 +36,12 @@ const MyBookmarks: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
-                <h1>My Bookmarks</h1>
-                <p>Your saved articles and videos</p>
-            </div>
+            <Header 
+                title="My Bookmarks" 
+                subtitle="Your saved articles and videos"
+                showBack={true}
+                onBack={() => navigate(-1)}
+            />
 
             {bookmarks.length === 0 ? (
                 <div className="empty-state">

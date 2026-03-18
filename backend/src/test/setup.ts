@@ -90,6 +90,17 @@ export const prismaMock = {
         create: vi.fn(),
         updateMany: vi.fn(),
     },
+    poll: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+    },
+    pollVote: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        upsert: vi.fn(),
+    },
     $transaction: vi.fn((val) => Promise.resolve(val))
 };
 

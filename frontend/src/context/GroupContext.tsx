@@ -25,6 +25,7 @@ interface GroupContextType {
     getPostComments: (postId: string) => Promise<Comment[]>;
     refreshGroups: (params?: { filter?: 'all' | 'my-groups' | 'discover', search?: string, limit?: number, offset?: number, latitude?: number, longitude?: number, radius?: number, city?: string, country?: string }) => Promise<void>;
     refreshFeed: () => Promise<void>;
+    updatePollInFeed: (postId: string, updatedPoll: any) => void;
     clearError: () => void;
 }
 
@@ -265,6 +266,14 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const clearError = () => setError(null);
 
+    const updatePollInFeed = useCallback((postId: string, updatedPoll: any) => {
+        setFeed(prev => prev.map(post =>
+            post.id === postId
+                ? { ...post, poll: updatedPoll }
+                : post
+        ));
+    }, []);
+
     return (
         <GroupContext.Provider value={{
             groups,
@@ -284,6 +293,7 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             getPostComments,
             refreshGroups,
             refreshFeed,
+            updatePollInFeed,
             clearError
         }}>
             {children}

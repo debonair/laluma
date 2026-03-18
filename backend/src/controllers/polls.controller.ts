@@ -99,27 +99,22 @@ export const votePoll = async (
             return;
         }
 
-        // Check if already voted
-        const existingVote = await prisma.pollVote.findUnique({
+        // Change or create vote (upsert-like behavior to allow vote changing)
+        await prisma.pollVote.upsert({
             where: {
                 pollId_userId: { pollId, userId }
-            }
-        });
-
-        if (existingVote) {
-            res.status(400).json({ error: 'Bad Request', message: 'You have already voted', code: 'ALREADY_VOTED' });
-            return;
-        }
-
-        await prisma.pollVote.create({
-            data: {
+            },
+            update: {
+                optionId: data.optionId
+            },
+            create: {
                 pollId,
                 userId,
                 optionId: data.optionId
             }
         });
 
-        res.json({ success: true });
+        res.json({ success: true, message: 'Vote recorded' });
 
         // Optionally notify socket that feed/poll updated
         getIO().emit('feed_updated');

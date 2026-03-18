@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { MessageCircle, MapPin, Search as SearchIcon, BadgeCheck } from 'lucide-react';
 import { SERVER_URL } from '../services/api';
+import Header from '../components/Header';
 
 const Discover: React.FC = () => {
     const [nearbyUsers, setNearbyUsers] = useState<UserNearbyResult[]>([]);
@@ -113,61 +114,22 @@ const Discover: React.FC = () => {
     };
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-color)' }}>
-            <header className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Discover</h1>
-                <button onClick={() => navigate('/search')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.5rem' }}>
-                    <SearchIcon size={24} />
-                </button>
-            </header>
+        <div className="page-container">
+            <Header 
+                title="Discover" 
+                subtitle="Connect with moms in your area"
+                rightAction={
+                    <button 
+                        onClick={() => navigate('/search')} 
+                        className="icon-btn"
+                        title="Search"
+                    >
+                        <SearchIcon size={24} />
+                    </button>
+                }
+            />
 
             <main className="page-content">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
-                    <button
-                        onClick={() => navigate('/marketplace')}
-                        style={{
-                            padding: '1rem',
-                            backgroundColor: 'var(--card-bg)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '16px',
-                            boxShadow: 'var(--shadow-sm)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            cursor: 'pointer',
-                            transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translateY(1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                    >
-                        <div style={{ fontSize: '2rem' }}>🛒</div>
-                        <span style={{ fontWeight: 600 }}>Marketplace</span>
-                    </button>
-                    <button
-                        onClick={() => navigate('/directory')}
-                        style={{
-                            padding: '1rem',
-                            backgroundColor: 'var(--card-bg)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '16px',
-                            boxShadow: 'var(--shadow-sm)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            cursor: 'pointer',
-                            transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                        onMouseDown={(e) => { e.currentTarget.style.transform = 'translateY(1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                        onMouseUp={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'initial'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                    >
-                        <div style={{ fontSize: '2rem' }}>📖</div>
-                        <span style={{ fontWeight: 600 }}>Directory</span>
-                    </button>
-                </div>
                 {!locationShared ? (
                     <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)', marginTop: '2rem' }}>
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📍</div>
@@ -235,7 +197,7 @@ const Discover: React.FC = () => {
                                                         <div>
                                                             <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                                 {req.requester.displayName || req.requester.username}
-                                                                {req.requester.isVerified && <BadgeCheck style={{ width: '1rem', height: '1rem', color: '#3b82f6' }} />}
+                                                                {req.requester.isVerified && <BadgeCheck style={{ width: '1rem', height: '1rem', color: 'var(--info-color)' }} />}
                                                             </div>
                                                             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>wants to connect</div>
                                                         </div>
@@ -327,7 +289,7 @@ const Discover: React.FC = () => {
                                                     onClick={() => navigate(`/content/${promo.id}`)}
                                                     style={{
                                                         minWidth: '280px',
-                                                        backgroundColor: 'var(--accent-color)',
+                                                        backgroundColor: 'var(--gold-color)',
                                                         border: '1px solid var(--border-color)',
                                                         padding: '1rem',
                                                         boxShadow: 'var(--shadow-sm)',
@@ -337,19 +299,20 @@ const Discover: React.FC = () => {
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                         gap: '0.5rem',
+                                                        color: 'white',
                                                         transition: 'transform 0.1s linear, box-shadow 0.1s linear'
                                                     }}
                                                     onMouseDown={(e) => {
-                                                        e.currentTarget.style.transform = 'translate(4px, 4px)';
-                                                        e.currentTarget.style.boxShadow = '0px 0px 0px 0px #000';
+                                                        e.currentTarget.style.transform = 'translateY(1px)';
+                                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                                                     }}
                                                     onMouseUp={(e) => {
                                                         e.currentTarget.style.transform = 'initial';
-                                                        e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000';
+                                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                                                     }}
                                                     onMouseLeave={(e) => {
                                                         e.currentTarget.style.transform = 'initial';
-                                                        e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000';
+                                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                                                     }}
                                                 >
                                                     <span style={{
@@ -437,7 +400,7 @@ const Discover: React.FC = () => {
                                                         }}>
                                                             <h3 style={{ margin: 0, color: 'white', fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                                 {resultUser.display_name || resultUser.username}
-                                                                {resultUser.isVerified && <BadgeCheck style={{ width: '1.25rem', height: '1.25rem', color: '#60a5fa' }} />}
+                                                                {resultUser.isVerified && <BadgeCheck style={{ width: '1.25rem', height: '1.25rem', color: 'var(--accent-color)' }} />}
                                                             </h3>
                                                             <p style={{ margin: '0.25rem 0 0 0', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                                 <MapPin size={14} /> {resultUser.distance_km} km away

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Header from '../components/Header';
 
 const LookingFor: React.FC = () => {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ const LookingFor: React.FC = () => {
 
     const handleSelect = (option: string) => {
         if (selectedOptions.includes(option)) {
-            setSelectedOptions(selectedOptions.filter(item => item !== option));
+            setSelectedOptions(selectedOptions.filter((item: string) => item !== option));
         } else {
             setSelectedOptions([...selectedOptions, option]);
         }
@@ -38,13 +39,13 @@ const LookingFor: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1>What are you looking for?</h1>
-            </div>
+            <Header 
+                title="Your Interests" 
+                subtitle="What are you looking for?"
+                showBack={true}
+                onBack={() => navigate(-1)}
+            />
             <main className="page-content">
-                <p className="auth-subtitle">
-                    Select all that apply
-                </p>
 
                 <div className="choice-list">
                     {options.map((option) => (

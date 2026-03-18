@@ -4,6 +4,7 @@ import { useGroup } from '../context/GroupContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import apiClient from '../services/api';
 import type { Group } from '../services/groups.service';
 import type { Post, Comment } from '../services/posts.service';
@@ -24,7 +25,7 @@ interface GroupMember {
 const GroupDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { getGroup, getGroupPosts, joinGroup, leaveGroup, createPost, addComment, likePost } = useGroup();
+    const { getGroup, getGroupPosts, joinGroup, leaveGroup, createPost, addComment, likePost, error, clearError } = useGroup();
     const [group, setGroup] = useState<Group | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
@@ -51,6 +52,10 @@ const GroupDetail: React.FC = () => {
     const [pullDistance, setPullDistance] = useState(0);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [startY, setStartY] = useState(0);
+
+    useEffect(() => {
+        clearError();
+    }, [clearError]);
 
     const handleTouchStart = (e: React.TouchEvent) => {
         if (window.scrollY <= 0) {
@@ -145,10 +150,7 @@ const GroupDetail: React.FC = () => {
     if (loading && !isRefreshing) {
         return (
             <div className="page-container">
-                <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className="skeleton" style={{ width: '24px', height: '24px', borderRadius: '50%' }}></div>
-                    <div className="skeleton" style={{ width: '150px', height: '24px', borderRadius: '4px' }}></div>
-                </div>
+                <Header title="Loading..." showBack={true} />
                 <main className="page-content">
                     <div className="content-card skeleton" style={{ height: '200px', width: '100%' }}></div>
                     <div className="content-card skeleton" style={{ height: '120px', width: '100%' }}></div>
@@ -179,14 +181,23 @@ const GroupDetail: React.FC = () => {
 
     const handleJoinLeave = async () => {
         if (!id) return;
-        if (isMember) {
-            await leaveGroup(id);
-        } else {
-            await joinGroup(id);
+        try {
+            if (isMember) {
+                await leaveGroup(id);
+            } else {
+                await joinGroup(id);
+            }
+            // Reload group data to update member count and join status
+            const groupData = await getGroup(id);
+            setGroup(groupData);
+            
+            // Reload members if newly joined
+            if (!isMember) {
+                loadMembers();
+            }
+        } catch (err) {
+            console.error('Join/Leave error:', err);
         }
-        // Reload group data
-        const groupData = await getGroup(id);
-        setGroup(groupData);
     };
 
     const handlePostSubmit = async (e: React.FormEvent) => {
@@ -333,12 +344,33 @@ const GroupDetail: React.FC = () => {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
-            <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <button onClick={() => navigate('/groups')} className="btn-link">
-                    ←
-                </button>
-                <h1>{group.name}</h1>
-            </div>
+            <Header 
+                title={group.name} 
+                showBack={true}
+                onBack={() => navigate('/groups')}
+            >
+                {error && (
+                    <div style={{
+                        margin: '0 1rem 1rem',
+                        padding: '0.75rem',
+                        backgroundColor: '#fee2e2',
+                        color: '#991b1b',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <span>{error}</span>
+                        <button 
+                            onClick={clearError}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#991b1b' }}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
+            </Header>
 
             <main className="page-content">
                 {/* Pull to refresh spinner */}
@@ -556,7 +588,16 @@ const GroupDetail: React.FC = () => {
                                 </span>
                             </div>
                             <p style={{ marginBottom: '1rem' }}>{post.content}</p>
-                            {post.poll && <PollUI poll={post.poll} />}
+                            {post.poll && (
+                                <PollUI 
+                                    poll={post.poll} 
+                                    onVote={(updatedPoll) => {
+                                        setPosts(prevPosts => prevPosts.map(p => 
+                                            p.id === post.id ? { ...p, poll: updatedPoll } : p
+                                        ));
+                                    }}
+                                />
+                            )}
 
                             <div style={{ display: 'flex', gap: '0.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginLeft: '-0.5rem' }}>
                                 <button

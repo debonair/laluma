@@ -121,34 +121,48 @@ export const getGroupPosts = async (
         ]);
 
         res.json({
-            posts: posts.map((post: Prisma.PostGetPayload<{
-                include: {
-                    author: true,
-                    likes: true
-                }
-            }>) => ({
-                id: post.id,
-                group_id: post.groupId,
-                author: post.isAnonymous && post.authorId !== req.user!.userId ? {
-                    id: 'anonymous',
-                    username: 'anonymous',
-                    display_name: 'Anonymous Mom',
-                    profile_image_url: undefined
-                } : (post.author ? {
-                    id: post.author.id,
-                    username: post.author.username,
-                    display_name: post.author.displayName,
-                    profile_image_url: post.author.profileImageUrl
-                } : null),
-                is_anonymous: post.isAnonymous,
-                content: post.content,
-                likes_count: post.likesCount,
-                comments_count: post.commentsCount,
-                is_liked: post.likes.length > 0,
-                user_reaction_type: post.likes[0]?.reactionType || null,
-                created_at: post.createdAt,
-                poll: (post as any).poll
-            })),
+            posts: posts.map((post: any) => {
+                const poll = post.poll ? {
+                    id: post.poll.id,
+                    question: post.poll.question,
+                    totalVotes: post.poll.options.reduce((sum: number, opt: any) => sum + opt._count.votes, 0),
+                    hasVoted: post.poll.votes.length > 0,
+                    userVoteOptionId: post.poll.votes.length > 0 ? post.poll.votes[0].optionId : null,
+                    options: post.poll.options.map((opt: any) => {
+                        const totalVotes = post.poll.options.reduce((sum: number, o: any) => sum + o._count.votes, 0);
+                        return {
+                            id: opt.id,
+                            text: opt.text,
+                            votes: opt._count.votes,
+                            percentage: totalVotes > 0 ? Math.round((opt._count.votes / totalVotes) * 100) : 0
+                        };
+                    })
+                } : null;
+
+                return {
+                    id: post.id,
+                    group_id: post.groupId,
+                    author: post.isAnonymous && post.authorId !== req.user!.userId ? {
+                        id: 'anonymous',
+                        username: 'anonymous',
+                        display_name: 'Anonymous Mom',
+                        profile_image_url: undefined
+                    } : (post.author ? {
+                        id: post.author.id,
+                        username: post.author.username,
+                        display_name: post.author.displayName,
+                        profile_image_url: post.author.profileImageUrl
+                    } : null),
+                    is_anonymous: post.isAnonymous,
+                    content: post.content,
+                    likes_count: post.likesCount,
+                    comments_count: post.commentsCount,
+                    is_liked: post.likes.length > 0,
+                    user_reaction_type: post.likes[0]?.reactionType || null,
+                    created_at: post.createdAt,
+                    poll
+                };
+            }),
             total,
             has_more: offset + limit < total
         });
@@ -285,7 +299,19 @@ export const createPost = async (
             created_at: post.createdAt,
             updated_at: post.updatedAt,
             deleted_at: post.deletedAt,
-            poll: post.poll
+            poll: post.poll ? {
+                id: post.poll.id,
+                question: post.poll.question,
+                totalVotes: 0,
+                hasVoted: false,
+                userVoteOptionId: null,
+                options: post.poll.options.map((opt: any) => ({
+                    id: opt.id,
+                    text: opt.text,
+                    votes: 0,
+                    percentage: 0
+                }))
+            } : null
         });
 
         // Emit targeted real-time event to all members in this group's socket room

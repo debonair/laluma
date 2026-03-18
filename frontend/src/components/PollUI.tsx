@@ -1,84 +1,157 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { pollsService } from '../services/polls.service';
 import type { Poll } from '../services/posts.service';
 import { useToast } from '../context/ToastContext';
 
 interface PollUIProps {
     poll: Poll;
-    onVote?: () => void;
+    onVote?: (updatedPoll: Poll) => void;
 }
 
 const PollUI: React.FC<PollUIProps> = ({ poll: initialPoll, onVote }) => {
-    const [poll, setPoll] = useState<Poll>(initialPoll);
-    const [isVoting, setIsVoting] = useState(false);
+    const [localPoll, setLocalPoll] = useState<Poll>(initialPoll);
+    const [votingId, setVotingId] = useState<string | null>(null);
     const { addToast } = useToast();
 
-    const handleVote = async (optionId: string) => {
-        if (poll.hasVoted || isVoting) return;
+    // Keep pulse with changes from props
+    useEffect(() => {
+        setLocalPoll(initialPoll);
+    }, [initialPoll]);
 
+    const handleVote = async (optionId: string) => {
+        // We allow changing votes now
+        setVotingId(optionId);
         try {
-            setIsVoting(true);
-            await pollsService.votePoll(poll.id, optionId);
-            const updatedPoll = await pollsService.getPoll(poll.id);
-            setPoll(updatedPoll);
-            if (onVote) onVote();
+            await pollsService.votePoll(localPoll.id, optionId);
+            const updatedPoll = await pollsService.getPoll(localPoll.id);
+            setLocalPoll(updatedPoll);
+            // Notify parent so it can sync its overall posts state
+            if (onVote) {
+                onVote(updatedPoll);
+            }
         } catch (error: any) {
-            addToast(error.response?.data?.message || error.message || 'Failed to vote', 'error');
+            addToast(error.response?.data?.message || 'Failed to record vote', 'error');
         } finally {
-            setIsVoting(false);
+            setVotingId(null);
         }
     };
 
     return (
-        <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.75rem', border: '1px solid var(--border-color)' }}>
-            <h4 style={{ marginBottom: '1rem', fontWeight: 600, fontSize: '1.05rem', color: 'var(--text-primary)' }}>{poll.question}</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {poll.options.map(opt => (
-                    <div key={opt.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '0.5rem', border: '1px solid var(--border-color)', background: 'var(--card-bg)' }}>
-                        {poll.hasVoted && (
-                            <div style={{
-                                position: 'absolute',
-                                left: 0,
-                                top: 0,
-                                bottom: 0,
-                                width: `${opt.percentage}%`,
-                                background: opt.id === poll.userVoteOptionId ? 'rgba(139, 92, 246, 0.2)' : 'rgba(107, 114, 128, 0.1)',
-                                zIndex: 0,
-                                transition: 'width 0.5s ease-out'
-                            }} />
-                        )}
+        <div className="poll-container" style={{
+            background: 'var(--bg-secondary)',
+            borderRadius: '1rem',
+            padding: '1.25rem',
+            border: '1px solid var(--border-color)',
+            marginTop: '1rem',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}>
+            <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', fontWeight: 600 }}>{localPoll.question}</h4>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {localPoll.options.map((option) => {
+                    const isVotedFor = localPoll.userVoteOptionId === option.id;
+                    const isVotingThis = votingId === option.id;
+
+                    return (
                         <button
-                            onClick={() => handleVote(opt.id)}
-                            disabled={poll.hasVoted || isVoting}
+                            key={option.id}
+                            onClick={() => handleVote(option.id)}
+                            disabled={!!votingId}
+                            className="poll-option-button"
                             style={{
-                                width: '100%',
-                                padding: '0.75rem 1rem',
-                                background: 'transparent',
-                                border: 'none',
-                                textAlign: 'left',
-                                position: 'relative',
-                                zIndex: 1,
-                                cursor: poll.hasVoted ? 'default' : 'pointer',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                color: 'var(--text-primary)'
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                border: '1px solid',
+                                borderColor: isVotedFor ? 'var(--primary-color)' : 'var(--border-color)',
+                                borderRadius: '0.75rem',
+                                background: isVotedFor ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-primary)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                position: 'relative',
+                                overflow: 'hidden'
                             }}
                         >
-                            <span style={{ fontWeight: opt.id === poll.userVoteOptionId ? 600 : 400 }}>
-                                {opt.text} {opt.id === poll.userVoteOptionId && '✓'}
+                            {/* Progress bar background */}
+                            {localPoll.hasVoted && (
+                                <div style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: `${option.percentage}%`,
+                                    background: isVotedFor ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 0, 0, 0.03)',
+                                    zIndex: 0,
+                                    transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                                }} />
+                            )}
+
+                            <span style={{ 
+                                fontWeight: 500, 
+                                color: isVotedFor ? 'var(--primary-color)' : 'var(--text-primary)',
+                                zIndex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                {option.text}
+                                {isVotedFor && <span aria-label="Selected" style={{ color: '#10b981' }}>✓</span>}
+                                {isVotingThis && <span className="animate-pulse">...</span>}
                             </span>
-                            {poll.hasVoted && (
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                    {opt.percentage}%
-                                </span>
+
+                            {localPoll.hasVoted && (
+                                <div style={{ 
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end',
+                                    zIndex: 1 
+                                }}>
+                                    <span style={{ 
+                                        fontSize: '0.85rem', 
+                                        fontWeight: 700,
+                                        color: isVotedFor ? 'var(--primary-color)' : 'var(--text-primary)'
+                                    }}>
+                                        {option.percentage}%
+                                    </span>
+                                    <span style={{ 
+                                        fontSize: '0.7rem', 
+                                        color: 'var(--text-secondary)'
+                                    }}>
+                                        {option.votes} {option.votes === 1 ? 'vote' : 'votes'}
+                                    </span>
+                                </div>
                             )}
                         </button>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
-            <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'right' }}>
-                {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''}
+
+            <div style={{ 
+                marginTop: '1.25rem', 
+                paddingTop: '0.75rem',
+                borderTop: '1px dashed var(--border-color)',
+                fontSize: '0.9rem', 
+                color: 'var(--text-primary)', 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontWeight: 600
+            }}>
+                <span>Total: {localPoll.totalVotes} {localPoll.totalVotes === 1 ? 'person' : 'people'} voted</span>
+                {localPoll.hasVoted && (
+                    <span style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: 400, 
+                        color: 'var(--primary-color)',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '0.4rem'
+                    }}>
+                        Vote Recorded
+                    </span>
+                )}
             </div>
         </div>
     );

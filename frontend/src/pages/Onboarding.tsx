@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 
 const Onboarding: React.FC = () => {
     const navigate = useNavigate();
@@ -28,13 +29,11 @@ const Onboarding: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1>Tell us about you</h1>
-            </div>
+            <Header 
+                title="Tell us about you" 
+                subtitle="I am..."
+            />
             <main className="page-content">
-                <p className="auth-subtitle">
-                    I am...
-                </p>
 
                 <div className="choice-list">
                     {options.map((option) => (

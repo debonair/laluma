@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import { useGroup } from '../context/GroupContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -61,12 +62,11 @@ const CreateGroup: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <button onClick={() => navigate(-1)} className="btn-link" style={{ marginRight: '1rem' }}>
-                    ←
-                </button>
-                <h1>Create New Group</h1>
-            </div>
+            <Header 
+                title="Create New Group" 
+                showBack={true}
+                onBack={() => navigate(-1)}
+            />
 
             <main className="page-content">
                 <form onSubmit={handleSubmit} className="auth-form">

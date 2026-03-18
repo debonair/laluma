@@ -1,0 +1,101 @@
+.conversation-list {
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    gap: 1.25rem;
+}
+
+.conversation-item:hover {
+    background-color: #fcfcfc;
+}
+
+.conversation-item:active {
+    background-color: #f8f8f8;
+    transform: scale(0.995);
+}
+
+.conversation-item.unread {
+    background-color: var(--primary-light);
+}
+
+.conversation-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px; /* Smoothed corner for modern feel */
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    font-family: 'Syne', sans-serif;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.15rem;
+}
+
+.conversation-name {
+    margin: 0;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.conversation-preview {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unread .conversation-preview {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.unread .conversation-name {
+    font-weight: 800;
+}
+
+.unread-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--gold-color);
+    flex-shrink: 0;
+}

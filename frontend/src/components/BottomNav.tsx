@@ -9,17 +9,11 @@ const BottomNav: React.FC = () => {
     const location = useLocation();
     const { socket } = useSocket();
     const { user } = useAuth();
-    const [unreadNotifications, setUnreadNotifications] = React.useState(0);
     const [unreadMessages, setUnreadMessages] = React.useState(0);
 
     React.useEffect(() => {
         const fetchCounts = async () => {
             try {
-                // Notifications
-                const { notificationService } = await import('../services/notification.service');
-                const notifData = await notificationService.getAll({ limit: 1 });
-                setUnreadNotifications(notifData.unreadCount);
-
                 // Messages
                 const response = await apiClient.get<{ unreadCount: number }>('/messages/unread-count');
                 setUnreadMessages(response.data.unreadCount);
@@ -37,7 +31,6 @@ const BottomNav: React.FC = () => {
     React.useEffect(() => {
         if (!socket) return;
 
-        const handleNotification = () => setUnreadNotifications(prev => prev + 1);
         const handleMessage = (msg: any) => {
             // Only increment if we aren't currently viewing the conversation
             if (!location.pathname.includes(`/messages/${msg.conversationId}`)) {
@@ -45,16 +38,16 @@ const BottomNav: React.FC = () => {
             }
         };
 
-        socket.on('new_notification', handleNotification);
         socket.on('new_message', handleMessage);
 
         return () => {
-            socket.off('new_notification', handleNotification);
             socket.off('new_message', handleMessage);
         };
     }, [socket, location.pathname]);
 
     const isActive = (path: string) => location.pathname === path;
+    const isExploreActive = ['/explore', '/discover', '/my-luma', '/spaces', '/directory'].some(p => location.pathname.startsWith(p));
+    const isSocialActive = ['/social', '/messages', '/groups'].some(p => location.pathname.startsWith(p));
 
     return (
         <div className="bottom-nav">
@@ -67,36 +60,12 @@ const BottomNav: React.FC = () => {
             </div>
 
             <div
-                className={`nav-item ${isActive('/groups') ? 'active' : ''}`}
-                onClick={() => navigate('/groups')}
-            >
-                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>👥</div>
-                <span>Groups</span>
-            </div>
-
-            <div
-                className={`nav-item ${isActive('/my-luma') ? 'active' : ''}`}
-                onClick={() => navigate('/my-luma')}
-            >
-                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>📚</div>
-                <span>My Luma</span>
-            </div>
-
-            <div
-                className={`nav-item ${isActive('/discover') ? 'active' : ''}`}
-                onClick={() => navigate('/discover')}
-            >
-                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>✨</div>
-                <span>Discover</span>
-            </div>
-
-            <div
-                className={`nav-item ${isActive('/messages') || location.pathname.startsWith('/messages/') ? 'active' : ''}`}
-                onClick={() => navigate('/messages')}
+                className={`nav-item ${isSocialActive ? 'active' : ''}`}
+                onClick={() => navigate('/social')}
                 style={{ position: 'relative' }}
             >
-                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>💬</div>
-                <span>Chat</span>
+                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>👥</div>
+                <span>Social</span>
                 {unreadMessages > 0 && (
                     <span className="nav-badge">
                         {unreadMessages > 99 ? '99+' : unreadMessages}
@@ -105,17 +74,11 @@ const BottomNav: React.FC = () => {
             </div>
 
             <div
-                className={`nav-item ${isActive('/notifications') ? 'active' : ''}`}
-                onClick={() => navigate('/notifications')}
-                style={{ position: 'relative' }}
+                className={`nav-item ${isExploreActive ? 'active' : ''}`}
+                onClick={() => navigate('/explore')}
             >
-                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>🔔</div>
-                <span>Alerts</span>
-                {unreadNotifications > 0 && (
-                    <span className="nav-badge">
-                        {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                    </span>
-                )}
+                <div className="nav-icon" style={{ backgroundColor: 'currentColor' }}>✨</div>
+                <span>Explore</span>
             </div>
 
             <div

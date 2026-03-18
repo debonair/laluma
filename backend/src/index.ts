@@ -26,9 +26,13 @@ import statusRoutes from './routes/status.routes';
 import mediaRoutes from './routes/media.routes';
 import moderationRoutes from './routes/moderation.routes';
 import communityGuidelinesRoutes from './routes/communityGuidelines.routes';
+import eventRoutes from './routes/event.routes';
+import brandPartnersRoutes from './routes/brandPartners.routes';
 
 // Initialize background workers
 import { stopModerationWorker } from './workers/moderationWorker';
+import { stopEventMaintenanceWorker } from './workers/eventMaintenanceWorker';
+import { initScheduler } from './scheduler';
 
 // Load environment variables
 dotenv.config();
@@ -76,6 +80,8 @@ app.use('/api/status', statusRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/community-guidelines', communityGuidelinesRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/brand-partners', brandPartnersRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -96,10 +102,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log(`🚀 HTTP Server running on http://localhost:${PORT}`);
     console.log(`🔌 WebSocket Server initialized`);
     console.log(`👷 Background Workers initialized`);
+    
+    // Initialize schedules
+    await initScheduler();
 });
 
 // Graceful shutdown
@@ -108,6 +117,7 @@ process.on('SIGTERM', async () => {
     server.close(async () => {
         console.log('HTTP server closed');
         await stopModerationWorker();
+        await stopEventMaintenanceWorker();
         console.log('Background workers stopped');
         process.exit(0);
     });

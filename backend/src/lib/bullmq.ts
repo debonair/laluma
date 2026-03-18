@@ -27,6 +27,7 @@ export const redisClient = new Redis(REDIS_URL, {
 });
 
 export const MODERATION_QUEUE_NAME = 'moderation-queue';
+export const EVENT_MAINTENANCE_QUEUE_NAME = 'event-maintenance-queue';
 
 export const moderationQueue = new Queue(MODERATION_QUEUE_NAME, {
     connection: redisConnection,
@@ -38,5 +39,18 @@ export const moderationQueue = new Queue(MODERATION_QUEUE_NAME, {
         },
         removeOnComplete: true, // Keep Redis clean
         removeOnFail: 100 // Keep last 100 failed jobs for debugging
+    }
+});
+
+export const eventMaintenanceQueue = new Queue(EVENT_MAINTENANCE_QUEUE_NAME, {
+    connection: redisConnection,
+    defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+            type: 'exponential',
+            delay: 1000
+        },
+        removeOnComplete: true,
+        removeOnFail: 100
     }
 });

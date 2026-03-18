@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BottomNav from '../components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 import { formatDistanceToNow } from 'date-fns';
 import { notificationService } from '../services/notification.service';
 import type { Notification } from '../types/notification';
@@ -78,9 +79,9 @@ const Notifications: React.FC = () => {
         handleMarkAsRead(notification.id, notification.isRead);
 
         if (notification.metadata?.contentId) {
-            navigate(`/my-luma/${notification.metadata.contentId}`);
-        } else if (notification.actor?.username) {
-            navigate(`/profile/${notification.actor.username}`);
+            navigate(`/content/${notification.metadata.contentId}`);
+        } else if (notification.actor?.id) {
+            navigate(`/users/${notification.actor.id}`);
         }
     };
 
@@ -97,19 +98,19 @@ const Notifications: React.FC = () => {
     if (loading && notifications.length === 0) {
         return (
             <div className="page-container">
-                <div className="notifications-header">
-                    <h1>Notifications</h1>
-                </div>
-                <div className="notifications-list">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="notification-item" style={{ border: 'none', background: 'transparent', padding: '1rem 0' }}>
-                            <div className="avatar skeleton"></div>
-                            <div className="notification-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <div className="skeleton" style={{ height: '16px', width: '80%', borderRadius: '4px' }}></div>
-                                <div className="skeleton" style={{ height: '12px', width: '40%', borderRadius: '4px' }}></div>
+                <Header title="Notifications" subtitle="Stay updated with your community" />
+                <div className="page-content">
+                    <div className="notifications-list">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="notification-item skeleton-item" style={{ border: 'none', background: 'transparent', padding: '1rem 0' }}>
+                                <div className="avatar skeleton"></div>
+                                <div className="notification-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <div className="skeleton" style={{ height: '16px', width: '80%', borderRadius: '4px' }}></div>
+                                    <div className="skeleton" style={{ height: '12px', width: '40%', borderRadius: '4px' }}></div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         );
@@ -117,63 +118,72 @@ const Notifications: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="notifications-header">
-                <h1>Notifications</h1>
-                {notifications.some(n => !n.isRead) && (
-                    <button onClick={handleMarkAllRead} className="mark-all-btn">
-                        Mark all as read
-                    </button>
-                )}
-            </div>
-
-            {notifications.length === 0 ? (
-                <div className="empty-state">
-                    <p>No notifications yet</p>
-                </div>
-            ) : (
-                <div className="notifications-list">
-                    {notifications.map(notification => (
-                        <div
-                            key={notification.id}
-                            className={`notification-item ${notification.isRead ? 'read' : 'unread'}`}
-                            onClick={() => handleNotificationClick(notification)}
-                        >
-                            <div className="notification-icon-badge">
-                                {getIcon(notification.type)}
-                            </div>
-                            <div className="avatar">
-                                {notification.actor?.profileImageUrl ? (
-                                    <img src={notification.actor.profileImageUrl} alt={notification.actor.username} />
-                                ) : (
-                                    <div className="avatar-placeholder">
-                                        {notification.actor?.username?.[0]?.toUpperCase() || '?'}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="notification-content">
-                                <p>
-                                    <span className="actor-name">{notification.actor?.displayName || notification.actor?.username || 'System'}</span>
-                                    {' '}{notification.message}
-                                </p>
-                                <span className="timestamp">
-                                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                                </span>
-                            </div>
-                            {!notification.isRead && <div className="unread-dot" />}
-                        </div>
-                    ))}
-
-                    {hasMore && (
-                        <button
-                            className="load-more-btn"
-                            onClick={handleLoadMore}
-                            disabled={loadingMore}
-                        >
-                            {loadingMore ? 'Loading...' : 'Load More'}
+            <Header 
+                title="Notifications" 
+                subtitle="Stay updated with your community"
+                rightAction={
+                    notifications.some(n => !n.isRead) && (
+                        <button onClick={handleMarkAllRead} className="btn-link" style={{ fontSize: '0.85rem' }}>
+                            Mark all as read
                         </button>
-                    )}
-                </div>
-            )}
+                    )
+                }
+            />
+
+            <main className="page-content">
+                {notifications.length === 0 ? (
+                    <div className="empty-state" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>🔔</div>
+                        <p style={{ color: 'var(--text-secondary)' }}>No notifications yet</p>
+                    </div>
+                ) : (
+                    <div className="notifications-list">
+                        {notifications.map(notification => (
+                            <div
+                                key={notification.id}
+                                className={`notification-item ${notification.isRead ? 'read' : 'unread'}`}
+                                onClick={() => handleNotificationClick(notification)}
+                            >
+                                <div className="notification-icon-badge">
+                                    {getIcon(notification.type)}
+                                </div>
+                                <div className="avatar">
+                                    {notification.actor?.profileImageUrl ? (
+                                        <div 
+                                            className="avatar-img" 
+                                            style={{ backgroundImage: `url(${notification.actor.profileImageUrl})` }} 
+                                        />
+                                    ) : (
+                                        <div className="avatar-placeholder">
+                                            {notification.actor?.username?.[0]?.toUpperCase() || '?'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="notification-content">
+                                    <p>
+                                        <span className="actor-name">{notification.actor?.displayName || notification.actor?.username || 'System'}</span>
+                                        {' '}{notification.message}
+                                    </p>
+                                    <span className="timestamp">
+                                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                    </span>
+                                </div>
+                                {!notification.isRead && <div className="unread-dot" />}
+                            </div>
+                        ))}
+
+                        {hasMore && (
+                            <button
+                                className="load-more-btn"
+                                onClick={handleLoadMore}
+                                disabled={loadingMore}
+                            >
+                                {loadingMore ? 'Loading...' : 'Load More'}
+                            </button>
+                        )}
+                    </div>
+                )}
+            </main>
             <BottomNav />
         </div>
     );

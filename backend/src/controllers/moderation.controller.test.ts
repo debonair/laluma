@@ -5,20 +5,28 @@ import {
     getAuditLog,
     exportAuditLog
 } from './moderation.controller';
-import prisma from '../utils/prisma';
+import { prisma } from '../db';
 
-vi.mock('../utils/prisma', () => {
-    return {
-        default: {
-            post: { count: vi.fn(), update: vi.fn() },
-            comment: { count: vi.fn(), update: vi.fn() },
-            content: { count: vi.fn() },
-            moderationItem: { upsert: vi.fn(), findMany: vi.fn(), findUnique: vi.fn(), count: vi.fn(), update: vi.fn() },
-            report: { findUnique: vi.fn(), create: vi.fn(), findMany: vi.fn() },
-            moderationAuditLog: { create: vi.fn(), findMany: vi.fn(), count: vi.fn() }
+vi.mock('../db', () => ({
+    prisma: {
+        post: { count: vi.fn(), update: vi.fn() },
+        comment: { count: vi.fn(), update: vi.fn() },
+        content: { count: vi.fn(), update: vi.fn() },
+        moderationItem: {
+            upsert: vi.fn(),
+            findMany: vi.fn(),
+            findUnique: vi.fn(),
+            count: vi.fn(),
+            update: vi.fn()
+        },
+        report: { findUnique: vi.fn(), create: vi.fn(), findMany: vi.fn() },
+        moderationAuditLog: {
+            create: vi.fn(),
+            findMany: vi.fn(),
+            count: vi.fn()
         }
-    };
-});
+    }
+}));
 
 vi.mock('../services/moderationAudit.service', () => ({
     createAuditEntry: vi.fn().mockResolvedValue({ id: 'audit-1', moderationItemId: 'mod-1', moderatorId: 'mod-user-1', action: 'remove', createdAt: new Date() })
@@ -241,6 +249,38 @@ describe('Moderation Controller', () => {
                 data: expect.objectContaining({
                     action: 'clear',
                     newStatus: 'cleared'
+                })
+            }));
+        });
+
+        it('applies escalate action and sets isEscalated flag', async () => {
+            mockReq.body = { action: 'escalate', reason: 'Requires admin review' };
+
+            mockedPrisma.moderationItem.findUnique.mockResolvedValueOnce({
+                id: 'mod-item-1',
+                status: 'pending',
+                postId: 'post-1',
+                commentId: null,
+                contentId: null,
+                post: { id: 'post-1', authorId: 'author-1' },
+                comment: null,
+                content: null
+            });
+            mockedPrisma.moderationItem.update.mockResolvedValueOnce({});
+
+            await applyModerationAction(mockReq, mockRes);
+
+            // Verify moderation item isEscalated is set to true
+            expect(mockedPrisma.moderationItem.update).toHaveBeenCalledWith({
+                where: { id: 'mod-item-1' },
+                data: { status: 'pending', isEscalated: true }
+            });
+
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
+                    action: 'escalate',
+                    newStatus: 'pending'
                 })
             }));
         });

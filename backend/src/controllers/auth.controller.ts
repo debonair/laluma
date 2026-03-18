@@ -141,23 +141,27 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
                     { headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' } }
                 );
 
+                console.log(`[Auth] Assigning roles to user ${keycloakUserId}`);
                 const rolesResponse = await axios.get(
                     `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/roles`,
                     { headers: { Authorization: `Bearer ${adminToken}` } }
                 );
+                console.log(`[Auth] Available roles: ${rolesResponse.data.map((r: any) => r.name).join(', ')}`);
 
-                const appUserRole = rolesResponse.data.find((r: any) => r.name === 'member');
+                const appUserRole = rolesResponse.data.find((r: any) => r.name === 'app-user');
                 if (appUserRole) {
                     await axios.post(
                         `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${keycloakUserId}/role-mappings/realm`,
                         [appUserRole],
                         { headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' } }
                     );
+                    console.log(`[Auth] Role 'app-user' assigned successfully`);
                 } else {
-                    throw new Error('Member role not found in Keycloak realm');
+                    throw new Error('app-user role not found in Keycloak realm');
                 }
             } catch (setupErr: any) {
                 console.error('Critical: Account created but role/action assignment failed:', setupErr.response?.data || setupErr.message);
+                if (setupErr.response) console.error('Full Keycloak Error:', JSON.stringify(setupErr.response.data));
                 // Even though the user is created in Keycloak, we must fail the request here so the 
                 // client knows it didn't complete successfully. The JIT sync will not happen.
                 res.status(500).json({

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService, type UserSearchResult, type UserNearbyResult } from '../services/user.service';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -72,7 +73,7 @@ const Search: React.FC = () => {
     const handleShareLocation = () => {
         if (!navigator.geolocation) {
             addToast('Geolocation is not supported by your browser', 'error');
-            setIsLocating(false); // Assuming this was the intent of setIsLoadingLocation
+            setIsLocating(false);
             return;
         }
         setIsLocating(true);
@@ -95,7 +96,7 @@ const Search: React.FC = () => {
             (error) => {
                 console.error('Geolocation error:', error);
                 addToast('Unable to retrieve your location. Please check your browser permissions.', 'error');
-                setIsLocating(false); // Assuming this was the intent of setIsLoadingLocation
+                setIsLocating(false);
             }
         );
     };
@@ -104,65 +105,68 @@ const Search: React.FC = () => {
 
     return (
         <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-color)' }}>
-            <header className="page-header" style={{ paddingBottom: '0', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'var(--bg-color)', zIndex: 10 }}>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Discover</h1>
-
-                <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem' }}>
-                    <button
-                        onClick={() => setActiveTab('search')}
-                        style={{
-                            flex: 1,
-                            padding: '0.75rem',
-                            background: 'none',
-                            border: 'none',
-                            borderBottom: activeTab === 'search' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                            color: activeTab === 'search' ? 'var(--primary-color)' : 'var(--text-secondary)',
-                            fontWeight: activeTab === 'search' ? 600 : 400,
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Search Name
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('nearby')}
-                        style={{
-                            flex: 1,
-                            padding: '0.75rem',
-                            background: 'none',
-                            border: 'none',
-                            borderBottom: activeTab === 'nearby' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                            color: activeTab === 'nearby' ? 'var(--primary-color)' : 'var(--text-secondary)',
-                            fontWeight: activeTab === 'nearby' ? 600 : 400,
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Moms Near Me
-                    </button>
-                </div>
-
-                {activeTab === 'search' && (
-                    <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                        <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '12px', fontSize: '1.2rem' }}>🔍</div>
-                        <input
-                            type="search"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search by name or username..."
+            <Header 
+                title="Discover" 
+                subtitle={activeTab === 'search' ? "Find other mothers by name" : "Moms in your community"}
+            >
+                <div style={{ padding: '0 1rem 1rem' }}>
+                    <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem' }}>
+                        <button
+                            onClick={() => setActiveTab('search')}
                             style={{
-                                width: '100%',
-                                padding: '0.75rem 1rem 0.75rem 40px',
-                                borderRadius: '12px',
-                                border: '1px solid var(--border-color)',
-                                backgroundColor: 'var(--card-bg)',
-                                fontSize: '1rem',
-                                color: 'var(--text-primary)',
-                                outline: 'none',
-                                transition: 'border-color 0.2s, box-shadow 0.2s',
+                                flex: 1,
+                                padding: '0.75rem',
+                                background: 'none',
+                                border: 'none',
+                                borderBottom: activeTab === 'search' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                                color: activeTab === 'search' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                fontWeight: activeTab === 'search' ? 600 : 400,
+                                cursor: 'pointer'
                             }}
-                        />
+                        >
+                            Search Name
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('nearby')}
+                            style={{
+                                flex: 1,
+                                padding: '0.75rem',
+                                background: 'none',
+                                border: 'none',
+                                borderBottom: activeTab === 'nearby' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                                color: activeTab === 'nearby' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                fontWeight: activeTab === 'nearby' ? 600 : 400,
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Moms Near Me
+                        </button>
                     </div>
-                )}
-            </header>
+
+                    {activeTab === 'search' && (
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '12px', fontSize: '1.2rem' }}>🔍</div>
+                            <input
+                                type="search"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Search by name or username..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem 1rem 0.75rem 40px',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--border-color)',
+                                    backgroundColor: 'var(--card-bg)',
+                                    fontSize: '1rem',
+                                    color: 'var(--text-primary)',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                                }}
+                            />
+                        </div>
+                    )}
+                </div>
+            </Header>
 
             <main className="page-content" style={{ padding: 0, flex: 1, overflowY: 'auto' }}>
                 <div style={{ padding: '0 1rem' }}>

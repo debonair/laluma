@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Send } from 'lucide-react';
+import { Send, Paperclip, X } from 'lucide-react';
 import { type UserProfile } from '../services/user.service';
-import { handleAPIError } from '../services/api';
-import { SERVER_URL } from '../services/api';
+import { handleAPIError, SERVER_URL } from '../services/api';
+import './ConversationDetail.css';
 
 interface Message {
     id: string;
@@ -65,14 +66,10 @@ const ConversationDetail: React.FC = () => {
         const handleNewMessage = (incomingMsg: Message & { conversationId: string }) => {
             if (incomingMsg.conversationId === id) {
                 setMessages(prev => {
-                    // Avoid duplicates (e.g. if we already added it locally after sending)
-                    if (prev.some(m => m.id === incomingMsg.id)) {
-                        return prev;
-                    }
+                    if (prev.some(m => m.id === incomingMsg.id)) return prev;
                     return [...prev, incomingMsg];
                 });
 
-                // If I am receiving a new message while looking at this screen, mark it as read
                 if (incomingMsg.senderId !== user?.id) {
                     apiClient.post('/messages/read', { conversationId: id }).catch(console.error);
                 }
@@ -80,12 +77,9 @@ const ConversationDetail: React.FC = () => {
         };
 
         const handleMessagesRead = (data: { conversationId: string, readBy: string, timestamp: string }) => {
-            // Update UI to show messages are read by the other person
             if (data.conversationId === id && data.readBy !== user?.id) {
                 setMessages(prev => prev.map(msg =>
-                    msg.senderId === user?.id && !msg.isRead
-                        ? { ...msg, isRead: true }
-                        : msg
+                    msg.senderId === user?.id && !msg.isRead ? { ...msg, isRead: true } : msg
                 ));
             }
         };
@@ -127,41 +121,34 @@ const ConversationDetail: React.FC = () => {
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if ((!newMessage.trim() && !attachment) || !user || sendingMessage) return;
 
         const contentToAuth = newMessage.trim();
-
         try {
             setSendingMessage(true);
             setMessageError(null);
 
-            const recipientCandidate = recipient?.id || messages.find(m => m.senderId !== user.id)?.senderId;
-
-            if (!recipientCandidate) {
-                setMessageError("Cannot determine recipient to reply to.");
+            const recipientId = recipient?.id || messages.find(m => m.senderId !== user.id)?.senderId;
+            if (!recipientId) {
+                setMessageError("Cannot determine recipient.");
                 return;
             }
 
             if (attachment) {
                 const formData = new FormData();
-                formData.append('recipientId', recipientCandidate);
+                formData.append('recipientId', recipientId);
                 if (contentToAuth) formData.append('content', contentToAuth);
                 formData.append('attachment', attachment);
 
                 const response = await apiClient.post<{ message: Message }>('/messages/send/attachment', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-
-                // Add message to local state for immediate feedback
                 setMessages(prev => [...prev, response.data.message]);
             } else {
                 const response = await apiClient.post<{ message: Message }>('/messages/send', {
-                    recipientId: recipientCandidate,
+                    recipientId,
                     content: contentToAuth
                 });
-
-                // Add message to local state for immediate feedback
                 setMessages(prev => [...prev, response.data.message]);
             }
 
@@ -176,101 +163,63 @@ const ConversationDetail: React.FC = () => {
     };
 
     return (
-        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', paddingBottom: 0 }}>
-            {/* Header */}
-            <header className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center' }}>
-                <button
-                    onClick={() => navigate('/messages')}
-                    className="btn-ghost"
-                    style={{ padding: '0.5rem', marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <div style={{ flex: 1 }}>
-                    <h2 style={{ margin: 0, fontSize: '1.2rem' }}>
-                        {recipient ? `Chat with ${recipient.display_name || recipient.username}` : 'Chat'}
-                    </h2>
-                </div>
-            </header>
+        <div className="conversation-detail-container">
+            <Header 
+                title={recipient ? `${recipient.display_name || recipient.username}` : 'Chat'} 
+                showBack={true}
+                onBack={() => navigate('/messages')}
+                showNavIcons={false}
+            />
 
-            {/* Messages Area */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+            <div className="messages-area">
                 {isLoading ? (
-                    <div style={{ margin: 'auto' }}>Loading messages...</div>
+                    <div style={{ margin: 'auto' }}>
+                        <div className="loading-spinner"></div>
+                    </div>
                 ) : (
                     <>
                         {messages.length === 0 && (
-                            <div style={{ margin: 'auto', color: 'var(--text-secondary)' }}>Send a message to start the conversation...</div>
+                            <div style={{ margin: 'auto', color: 'var(--text-secondary)' }}>
+                                Send a message to start the conversation...
+                            </div>
                         )}
                         {messages.map((msg, idx) => {
                             const isMine = msg.senderId === user?.id;
                             const showAvatar = !isMine && (idx === 0 || messages[idx - 1].senderId !== msg.senderId);
 
                             return (
-                                <div
-                                    key={msg.id}
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: isMine ? 'flex-end' : 'flex-start',
-                                        marginBottom: '0.5rem',
-                                        alignItems: 'flex-end'
-                                    }}
-                                >
+                                <div key={msg.id} className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
                                     {!isMine && (
-                                        <div style={{ width: '30px', marginRight: '0.5rem' }}>
-                                            {showAvatar && msg.sender && (
-                                                <div style={{
-                                                    width: '30px', height: '30px', borderRadius: '50%',
-                                                    backgroundColor: 'var(--primary-color)', color: 'white',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: '0.8rem', fontWeight: 'bold'
-                                                }}>
-                                                    {(recipient?.display_name || recipient?.username || 'Loading...').charAt(0).toUpperCase()}
-                                                </div>
-                                            )}
+                                        <div className="message-avatar">
+                                            {showAvatar && (recipient?.display_name || recipient?.username || 'U').charAt(0).toUpperCase()}
                                         </div>
                                     )}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
-                                        <div
-                                            style={{
-                                                padding: msg.attachmentUrl ? '0.25rem' : '0.75rem 1rem',
-                                                borderRadius: '16px',
-                                                backgroundColor: isMine ? 'var(--primary-color)' : '#F0F2F5',
-                                                color: isMine ? 'white' : 'var(--text-primary)',
-                                                borderBottomRightRadius: isMine ? '4px' : '16px',
-                                                borderBottomLeftRadius: !isMine ? '4px' : '16px',
-                                                wordBreak: 'break-word',
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                                                display: 'flex',
-                                                flexDirection: 'column'
-                                            }}
-                                        >
+                                    <div className="message-bubble-wrapper">
+                                        <div className="message-bubble">
                                             {msg.attachmentUrl && (
-                                                <div style={{
-                                                    width: '100%',
-                                                    marginBottom: msg.content ? '0.5rem' : '0',
-                                                    borderRadius: '12px',
-                                                    overflow: 'hidden'
-                                                }}>
+                                                <div className="message-attachment">
                                                     {msg.attachmentType === 'image' ? (
-                                                        <img src={`${SERVER_URL}${msg.attachmentUrl}`} alt="attachment" style={{ maxWidth: '100%', display: 'block' }} />
+                                                        <img src={`${SERVER_URL}${msg.attachmentUrl}`} alt="attachment" />
                                                     ) : (
-                                                        <a href={`${SERVER_URL}${msg.attachmentUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: isMine ? 'white' : 'var(--primary-color)', padding: '0.5rem', display: 'block', textDecoration: 'underline' }}>
+                                                        <a href={`${SERVER_URL}${msg.attachmentUrl}`} target="_blank" rel="noopener noreferrer" className="attachment-link">
                                                             📎 View Attachment
                                                         </a>
                                                     )}
                                                 </div>
                                             )}
-                                            {msg.content && (
-                                                <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.4, padding: msg.attachmentUrl ? '0 0.5rem 0.5rem' : 0 }}>{msg.content}</p>
-                                            )}
+                                            {msg.content && <p style={{ margin: 0 }}>{msg.content}</p>}
                                         </div>
-                                        {/* Read Receipt */}
-                                        {isMine && (
-                                            <div style={{ fontSize: '0.7rem', color: msg.isRead ? 'var(--primary-color)' : 'var(--text-secondary)', marginTop: '0.1rem', marginRight: '0.25rem' }}>
-                                                {msg.isRead ? '✓✓' : '✓'}
-                                            </div>
-                                        )}
+                                        
+                                        <div className="message-meta">
+                                            {isMine && (
+                                                <span className={`read-receipt ${msg.isRead ? 'read' : 'unread'}`}>
+                                                    {msg.isRead ? '✓✓' : '✓'}
+                                                </span>
+                                            )}
+                                            <span style={{ opacity: 0.6 }}>
+                                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -280,26 +229,23 @@ const ConversationDetail: React.FC = () => {
                 )}
             </div>
 
-            {/* Input Area */}
-            <div style={{ padding: '0 1rem 1rem', paddingBottom: 'calc(1rem + 60px)', borderTop: previewUrl ? 'none' : '1px solid var(--border-color)', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="chat-input-container">
                 {previewUrl && (
-                    <div style={{ position: 'relative', margin: '0.5rem 0', alignSelf: 'flex-start', maxWidth: '150px' }}>
-                        <img src={previewUrl} alt="Preview" style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
-                        <button
-                            type="button"
-                            onClick={clearAttachment}
-                            style={{ position: 'absolute', top: -10, right: -10, background: '#ff4444', color: 'white', width: '24px', height: '24px', borderRadius: '50%', border: '2px solid white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', lineHeight: 1 }}
-                        >
-                            ×
+                    <div className="attachment-preview">
+                        <img src={previewUrl} alt="Preview" />
+                        <button type="button" onClick={clearAttachment} className="remove-attachment">
+                            <X size={14} />
                         </button>
                     </div>
                 )}
+                
                 {messageError && (
-                    <div style={{ color: '#ff4444', fontSize: '0.85rem', padding: '0.5rem', background: 'rgba(255, 107, 107, 0.1)', borderRadius: '0.5rem', textAlign: 'center' }}>
+                    <div style={{ color: 'var(--error-color)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
                         {messageError}
                     </div>
                 )}
-                <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', paddingTop: previewUrl ? 0 : '1rem' }}>
+
+                <form onSubmit={handleSendMessage} className="chat-form">
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -310,44 +256,26 @@ const ConversationDetail: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     >
-                        <span style={{ fontSize: '1.25rem' }}>📎</span>
+                        <Paperclip size={20} />
                     </button>
+                    
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
                         disabled={sendingMessage}
-                        style={{
-                            flex: 1,
-                            padding: '0.75rem 1rem',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '24px',
-                            outline: 'none',
-                            fontSize: '0.95rem'
-                        }}
+                        className="chat-input"
                     />
+                    
                     <button
                         type="submit"
                         disabled={(!newMessage.trim() && !attachment) || sendingMessage}
-                        style={{
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: '50%',
-                            backgroundColor: (newMessage.trim() || attachment) ? 'var(--primary-color)' : '#E0E0E0',
-                            color: 'white',
-                            border: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: newMessage.trim() && !sendingMessage ? 'pointer' : 'default',
-                            transition: 'background-color 0.2s',
-                            opacity: sendingMessage ? 0.5 : 1
-                        }}
+                        className="send-btn"
                     >
-                        {sendingMessage ? '...' : <Send size={20} style={{ marginLeft: '-2px' }} />}
+                        {sendingMessage ? '...' : <Send size={20} />}
                     </button>
                 </form>
             </div>

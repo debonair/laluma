@@ -2,15 +2,21 @@ import React, { useState } from 'react';
 import { useGroup } from '../context/GroupContext';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import { Plus } from 'lucide-react';
+import Header from '../components/Header';
 
 const Groups: React.FC = () => {
-    const { groups, userGroups, joinGroup, isLoading, refreshGroups } = useGroup();
+    const { groups, userGroups, joinGroup, isLoading, refreshGroups, error, clearError } = useGroup();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'my-groups' | 'discover'>('my-groups');
     const [searchTerm, setSearchTerm] = useState('');
     const [cityFilter, setCityFilter] = useState('');
     const [nearMe, setNearMe] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
+
+    React.useEffect(() => {
+        clearError();
+    }, [clearError]);
 
     const isMember = (groupId: string) => userGroups.some(g => g.id === groupId);
 
@@ -55,21 +61,43 @@ const Groups: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
-                <h1>Community Groups</h1>
-                <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>
-                    Join groups to discover content and members
-                </p>
-                <button
-                    onClick={() => navigate('/groups/create')}
-                    className="btn-link"
-                    style={{ fontSize: '1.5rem', padding: '0 0.5rem', position: 'absolute', top: '1rem', right: '1rem' }}
-                >
-                    +
-                </button>
-            </div>
+            <Header 
+                title="Community Groups" 
+                subtitle="Join groups to discover content and members"
+                rightAction={
+                    <button
+                        onClick={() => navigate('/groups/create')}
+                        className="icon-btn"
+                        title="Create Group"
+                    >
+                        <Plus size={24} />
+                    </button>
+                }
+            />
 
             <main className="page-content">
+                {error && (
+                    <div style={{
+                        padding: '0.75rem',
+                        backgroundColor: '#fee2e2',
+                        color: '#991b1b',
+                        borderRadius: '12px',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '1rem'
+                    }}>
+                        <span>{error}</span>
+                        <button 
+                            onClick={clearError}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#991b1b' }}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
+
                 {/* Search Bar */}
                 <div className="search-pill">
                     <span style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginRight: '0.5rem' }}>🔍</span>

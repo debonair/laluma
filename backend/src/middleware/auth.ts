@@ -74,10 +74,19 @@ export const authenticate = async (
 
             // Derive local role from Keycloak realm roles (Story 1.1) using typed enum
             let localRole: UserRole = UserRole.member; // Default JIT role
-            if (roles.includes('admin')) localRole = UserRole.admin;
-            else if (roles.includes('moderator')) localRole = UserRole.moderator;
-            else if (roles.includes('editorial')) localRole = UserRole.editorial;
-            else if (roles.includes('brand_partner')) localRole = UserRole.brand_partner;
+            if (roles.includes('admin') || roles.includes('app-admin')) {
+                localRole = UserRole.admin;
+            } else if (roles.includes('moderator') || roles.includes('app-moderator')) {
+                localRole = UserRole.moderator;
+            } else if (roles.includes('editorial') || roles.includes('app-editorial')) {
+                localRole = UserRole.editorial;
+            } else if (roles.includes('brand_partner') || roles.includes('app-partner')) {
+                localRole = UserRole.brand_partner;
+            } else if (roles.includes('app-user')) {
+                localRole = UserRole.member;
+            }
+
+            console.log(`[Auth] Keycloak roles: [${roles.join(', ')}]. Mapped local role: ${localRole}`);
 
             // JIT Provisioning: Sync user to local DB
             let user = await prisma.user.findUnique({

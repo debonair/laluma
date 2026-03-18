@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { submissionService, type Submission } from '../services/submission.service';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import Skeleton from '../components/Skeleton';
 
 const CATEGORIES = ['Motherhood', 'Health & Wellness', 'Parenting Tips', 'Recipes', 'Mental Health', 'Fitness', 'Other'];
@@ -78,9 +79,10 @@ const SubmitContent: React.FC = () => {
 
     return (
         <div className="page-container">
-            <header className="page-header">
-                <h1>Submit Content</h1>
-            </header>
+            <Header 
+                title="Submit Content" 
+                subtitle="Share your voice with the community"
+            />
 
             <div style={{ display: 'flex', gap: '0.5rem', padding: '0 1rem', marginBottom: '1rem' }}>
                 <button

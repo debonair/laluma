@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import Header from '../components/Header';
 import './MyLuma.css';
 import { SERVER_URL } from '../services/api';
 
@@ -72,131 +73,125 @@ const MyLuma: React.FC = () => {
     };
 
     return (
-        <div className="page-container" style={{ backgroundColor: 'var(--bg-color)' }}>
-            <div className="page-header" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>My Luma</h1>
-                <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>
-                    Your creations and activities
-                </p>
-            </div>
+        <div className="page-container">
+            <Header 
+                title="My Luma" 
+                subtitle="Your personal discovery hub"
+            />
 
             <main className="page-content">
-                {/* Featured Content Carousel */}
-                {featuredContent.length > 0 && (
-                    <div className="featured-section">
-                        <h2>Featured Articles</h2>
-                        <div className="featured-carousel">
+                {/* Quick Actions Row */}
+                <div className="quick-actions-row">
+                    <button className="action-pill" onClick={() => navigate('/my-luma/events')}>
+                        <span className="action-icon">📅</span>
+                        <span className="action-label">My Events</span>
+                    </button>
+                    <button className="action-pill" onClick={() => navigate('/my-luma/bookmarks')}>
+                        <span className="action-icon">🔖</span>
+                        <span className="action-label">Bookmarks</span>
+                    </button>
+                    <button className="action-pill" onClick={() => navigate('/my-luma/drafts')}>
+                        <span className="action-icon">📝</span>
+                        <span className="action-label">Drafts</span>
+                    </button>
+                </div>
+
+                {/* Featured Content Area */}
+                {featuredContent.length > 0 && selectedCategory === 'All' && (
+                    <section className="featured-section">
+                        <h2 className="section-title">Editor's Picks</h2>
+                        <div className="featured-scroll">
                             {featuredContent.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="featured-card"
+                                    className="featured-glass-card"
                                     onClick={() => handleContentClick(item.id)}
                                 >
-                                    <div className="featured-card-content">
-                                        <div className="featured-badges">
-                                            {item.isPremium && (
-                                                <span className="premium-badge">
-                                                    {item.premiumTier === 'premium_plus' ? 'Premium+' : 'Premium'}
-                                                </span>
-                                            )}
-                                            <span className="category-badge">{item.category}</span>
+                                    <div className="featured-card-body">
+                                        <div className="card-top">
+                                            {item.isPremium && <span className="badge badge-premium">Premium</span>}
+                                            <span className="badge badge-category">{item.category}</span>
                                         </div>
-                                        <h3>{item.title}</h3>
-                                        <p>{item.excerpt}</p>
-                                        <div className="featured-meta">
+                                        <h3 className="featured-title">{item.title}</h3>
+                                        <p className="featured-excerpt">{item.excerpt}</p>
+                                        <div className="featured-footer">
                                             <span className="author">By {item.authorName}</span>
-                                            <span className="stats">
-                                                <span>👁 {item.viewCount}</span>
-                                                <span>❤️ {item.likesCount}</span>
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {/* Category Filter */}
-                <div className="category-filter">
+                {/* Category Navigation */}
+                <nav className="category-pill-nav">
                     {CATEGORIES.map((category) => (
                         <button
                             key={category}
-                            className={selectedCategory === category ? 'active' : ''}
+                            className={`pill-btn ${selectedCategory === category ? 'active' : ''}`}
                             onClick={() => setSelectedCategory(category)}
                         >
                             {category}
                         </button>
                     ))}
-                </div>
+                </nav>
 
-                {/* Content Grid */}
+                {/* Content Layout */}
                 {loading ? (
-                    <div className="loading">
+                    <div className="loading-state">
                         <div className="spinner"></div>
-                        <p>Loading content...</p>
+                        <p>Curating your feed...</p>
                     </div>
                 ) : (
-                    <div className="content-grid">
+                    <div className="content-vertical-list">
                         {content.map((item) => (
-                            <div
+                            <article
                                 key={item.id}
-                                className="content-card"
+                                className="content-card modern-card"
                                 onClick={() => handleContentClick(item.id)}
                             >
-                                {item.isPremium && (
-                                    <div className="premium-overlay">
-                                        <span className="premium-badge">
-                                            {item.premiumTier === 'premium_plus' ? 'Premium+' : 'Premium'}
-                                        </span>
-                                    </div>
-                                )}
+                                <div className="card-header">
+                                    <span className="badge badge-category">{item.category}</span>
+                                    {item.isPremium && <span className="badge badge-premium">★</span>}
+                                    <span className="timestamp">{new Date(item.publishedAt).toLocaleDateString()}</span>
+                                </div>
 
-                                <div className="content-card-header">
-                                    <span className="category-tag">{item.category}</span>
-                                    {(item.contentType === 'video' || item.contentType === 'mixed') && (
-                                        <span className="video-tag">🎬 Video</span>
+                                <div className="card-body">
+                                    <h3 className="card-title">{item.title}</h3>
+                                    <p className="card-excerpt">{item.excerpt}</p>
+                                    
+                                    {item.contentType === 'event' && item.eventDate && (
+                                        <div className="event-info">
+                                            <span className="event-loc">📍 {item.eventLocation || 'Online'}</span>
+                                            <span className="event-time">🕒 {new Date(item.eventDate).toLocaleDateString()}</span>
+                                        </div>
                                     )}
-                                    {item.contentType === 'event' && (
-                                        <span className="event-tag" style={{ backgroundColor: '#DBEAFE', color: '#1E3A8A', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>📅 Event</span>
-                                    )}
-                                    {item.contentType === 'promotion' && (
-                                        <span className="promo-tag" style={{ backgroundColor: '#FEF08A', color: '#92400E', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>🏷️ Promo</span>
+
+                                    {item.contentType === 'promotion' && item.discountValue && (
+                                        <div className="promo-banner">
+                                            Save {item.discountValue}
+                                        </div>
                                     )}
                                 </div>
 
-                                <h3 className="content-title">{item.title}</h3>
-
-                                {item.contentType === 'promotion' && item.discountValue && (
-                                    <div style={{ padding: '0.5rem', margin: '0.5rem 0', backgroundColor: 'var(--primary-color)', color: 'white', fontWeight: 800, textAlign: 'center', border: '2px solid black' }}>
-                                        {item.discountValue}
-                                    </div>
-                                )}
-
-                                {item.contentType === 'event' && item.eventDate && (
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                                        📍 {item.eventLocation || 'Location TBD'} | 🕒 {new Date(item.eventDate).toLocaleDateString()}
-                                    </div>
-                                )}
-
-                                <p className="content-excerpt">{item.excerpt}</p>
-
-                                <div className="content-footer">
-                                    <span className="author-name">{item.authorName}</span>
-                                    <div className="content-stats">
+                                <div className="card-footer">
+                                    <span className="author">{item.authorName}</span>
+                                    <div className="card-stats">
                                         <span>👁 {item.viewCount}</span>
                                         <span>❤️ {item.likesCount}</span>
-                                        <span>💬 {item.commentsCount}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
                         ))}
                     </div>
                 )}
 
                 {!loading && content.length === 0 && (
                     <div className="empty-state">
-                        <p>No content available in this category</p>
+                        <div className="empty-icon">🍃</div>
+                        <h3>Nothing here yet</h3>
+                        <p>Try exploring other categories or groups.</p>
                     </div>
                 )}
             </main>

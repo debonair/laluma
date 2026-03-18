@@ -64,7 +64,16 @@ export const getFeed = async (
             include: {
                 author: true,
                 group: true,
-                likes: { where: { userId: req.user!.userId } }
+                likes: { where: { userId: req.user!.userId } },
+                poll: {
+                    include: {
+                        options: {
+                            include: { _count: { select: { votes: true } } },
+                            orderBy: { order: 'asc' }
+                        },
+                        votes: { where: { userId: req.user?.userId || 'unknown' } }
+                    }
+                }
             }
         });
 
@@ -73,37 +82,55 @@ export const getFeed = async (
         const nextCursor = hasMore ? trimmedPosts[trimmedPosts.length - 1].id : null;
 
         res.json({
-            posts: trimmedPosts.map((post: Prisma.PostGetPayload<{
-                include: { author: true; group: true; likes: true }
-            }>) => ({
-                id: post.id,
-                group: {
-                    id: post.group.id,
-                    name: post.group.name,
-                    image_emoji: post.group.imageEmoji
-                },
-                author: post.isAnonymous ? (() => {
-                    const anonProfile = generateAnonymousProfile(post.identityLinkId || post.id);
-                    return {
-                        id: 'anonymous',
-                        username: 'anonymous',
-                        display_name: anonProfile.displayName,
-                        profile_image_url: anonProfile.avatarUrl
-                    };
-                })() : (post.author ? {
-                    id: post.author.id,
-                    username: post.author.username,
-                    display_name: post.author.displayName,
-                    profile_image_url: post.author.profileImageUrl
-                } : null),
-                is_anonymous: post.isAnonymous,
-                content: post.content,
-                likes_count: post.likesCount,
-                comments_count: post.commentsCount,
-                is_liked: post.likes.length > 0,
-                user_reaction_type: post.likes[0]?.reactionType || null,
-                created_at: post.createdAt
-            })),
+            posts: trimmedPosts.map((post: any) => {
+                const poll = post.poll ? {
+                    id: post.poll.id,
+                    question: post.poll.question,
+                    totalVotes: post.poll.options.reduce((sum: number, opt: any) => sum + opt._count.votes, 0),
+                    hasVoted: post.poll.votes.length > 0,
+                    userVoteOptionId: post.poll.votes.length > 0 ? post.poll.votes[0].optionId : null,
+                    options: post.poll.options.map((opt: any) => {
+                        const totalVotes = post.poll.options.reduce((sum: number, o: any) => sum + o._count.votes, 0);
+                        return {
+                            id: opt.id,
+                            text: opt.text,
+                            votes: opt._count.votes,
+                            percentage: totalVotes > 0 ? Math.round((opt._count.votes / totalVotes) * 100) : 0
+                        };
+                    })
+                } : null;
+
+                return {
+                    id: post.id,
+                    group: {
+                        id: post.group.id,
+                        name: post.group.name,
+                        image_emoji: post.group.imageEmoji
+                    },
+                    author: post.isAnonymous ? (() => {
+                        const anonProfile = generateAnonymousProfile(post.identityLinkId || post.id);
+                        return {
+                            id: 'anonymous',
+                            username: 'anonymous',
+                            display_name: anonProfile.displayName,
+                            profile_image_url: anonProfile.avatarUrl
+                        };
+                    })() : (post.author ? {
+                        id: post.author.id,
+                        username: post.author.username,
+                        display_name: post.author.displayName,
+                        profile_image_url: post.author.profileImageUrl
+                    } : null),
+                    is_anonymous: post.isAnonymous,
+                    content: post.content,
+                    likes_count: post.likesCount,
+                    comments_count: post.commentsCount,
+                    is_liked: post.likes.length > 0,
+                    user_reaction_type: post.likes[0]?.reactionType || null,
+                    created_at: post.createdAt,
+                    poll
+                };
+            }),
             next_cursor: nextCursor,
             has_more: hasMore
         });

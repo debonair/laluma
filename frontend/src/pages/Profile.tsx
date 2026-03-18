@@ -5,12 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { BadgeCheck } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import apiClient from '../services/api';
-
+import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import { SERVER_URL } from '../services/api';
 
 const Profile: React.FC = () => {
-    const { user, updateProfile } = useAuth();
+    const { user, updateProfile, signOut } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
@@ -75,6 +75,11 @@ const Profile: React.FC = () => {
         }
     };
 
+    const handleSignOut = () => {
+        signOut();
+        navigate('/signin');
+    };
+
     if (!user) {
         return (
             <div className="page-container" style={{ padding: '2rem' }}>
@@ -91,39 +96,44 @@ const Profile: React.FC = () => {
     const displayAboutMe = isEditing ? editForm.aboutMe : (user.aboutMe || '');
     const displayMotherhoodStage = isEditing ? editForm.motherhoodStage : (user.motherhoodStage || '');
 
+    const RightActions = (
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {user?.roles?.includes('app-admin') && (
+                <button
+                    onClick={() => navigate('/admin/content')}
+                    className="btn-secondary"
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                >
+                    Admin
+                </button>
+            )}
+            {!isEditing ? (
+                <button
+                    onClick={handleEditClick}
+                    className="btn-ghost"
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                >
+                    Edit
+                </button>
+            ) : (
+                <button
+                    onClick={handleSave}
+                    className="btn-primary"
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                >
+                    Save
+                </button>
+            )}
+        </div>
+    );
+
     return (
         <div className="page-container">
-            <div className="page-header profile-header-actions">
-                <h1>My Profile</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    {user?.roles?.includes('app-admin') && (
-                        <button
-                            onClick={() => navigate('/admin/content')}
-                            className="btn-secondary"
-                            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                        >
-                            Manage Content
-                        </button>
-                    )}
-                    {!isEditing ? (
-                        <button
-                            onClick={handleEditClick}
-                            className="btn-ghost"
-                            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                        >
-                            Edit
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleSave}
-                            className="btn-primary"
-                            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                        >
-                            Save
-                        </button>
-                    )}
-                </div>
-            </div>
+            <Header 
+                title="My Profile" 
+                subtitle={`@${user.username}`}
+                rightAction={RightActions}
+            />
 
             <main className="page-content">
                 <div className="content-card profile-avatar-section">
@@ -162,6 +172,7 @@ const Profile: React.FC = () => {
                                 value={editForm.displayName}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
                                 className="profile-name-input"
+                                style={{ textAlign: 'center', fontSize: '1.25rem', padding: '0.5rem', borderBottom: '2px solid var(--primary-color)' }}
                             />
                         ) : (
                             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
@@ -190,6 +201,8 @@ const Profile: React.FC = () => {
                             onChange={(e) => setEditForm(prev => ({ ...prev, aboutMe: e.target.value }))}
                             rows={4}
                             placeholder="Tell us a bit about yourself..."
+                            className="form-control"
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
                         />
                     ) : (
                         <p style={{ fontStyle: displayAboutMe ? 'normal' : 'italic', color: displayAboutMe ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
@@ -207,6 +220,8 @@ const Profile: React.FC = () => {
                             <select
                                 value={editForm.motherhoodStage}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, motherhoodStage: e.target.value }))}
+                                className="form-control"
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
                             >
                                 <option value="">Select...</option>
                                 <option value="A new mom">A new mom</option>
@@ -244,6 +259,7 @@ const Profile: React.FC = () => {
                                         value={editForm.radius}
                                         onChange={(e) => setEditForm(prev => ({ ...prev, radius: Number(e.target.value) }))}
                                         disabled={editForm.anywhere}
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
                             </div>
@@ -274,6 +290,26 @@ const Profile: React.FC = () => {
                         )}
                     </div>
                 </div>
+
+                {!isEditing && (
+                    <div style={{ marginTop: '2rem', padding: '0 1rem', display: 'flex', justifyContent: 'center' }}>
+                        <button 
+                            onClick={handleSignOut} 
+                            className="btn-ghost" 
+                            style={{ 
+                                color: '#EF4444', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.5rem',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid #FEE2E2'
+                            }}
+                        >
+                            Sign Out
+                        </button>
+                    </div>
+                )}
             </main >
             <BottomNav />
         </div >

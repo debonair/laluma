@@ -87,18 +87,18 @@ development_status:
   6-3-user-reporting-ui-placeholders: done
   6-4-member-mute-block: done
   6-5-moderation-queue-dashboard: done
-  6-6-moderation-actions-escalation: ready-for-dev
+  6-6-moderation-actions-escalation: done
   6-7-reporter-notification-audit-log: done
   6-8-publishing-community-guidelines: done
   epic-6-retrospective: optional
 
-  epic-7: backlog
-  7-1-physical-events-database-infrastructure: backlog
-  7-2-admin-event-creation-management: backlog
-  7-3-event-discovery-browsing: backlog
-  7-4-event-registration: backlog
-  7-5-event-waitlist-queueing: backlog
-  7-6-my-events-dashboard: backlog
+  epic-7: in-progress
+  7-1-physical-events-database-infrastructure: done
+  7-2-admin-event-creation-management: done
+  7-3-event-discovery-browsing: done
+  7-4-event-registration: done
+  7-5-event-waitlist-queueing: ready-for-dev
+  7-6-my-events-dashboard: in-progress
   epic-7-retrospective: optional
 
   epic-8: backlog

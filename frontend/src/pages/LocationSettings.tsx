@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Header from '../components/Header';
 
 const LocationSettings: React.FC = () => {
     const navigate = useNavigate();
@@ -44,13 +45,13 @@ const LocationSettings: React.FC = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1>Where do you want to connect?</h1>
-            </div>
+            <Header 
+                title="Your Connections" 
+                subtitle="Where do you want to connect?"
+                showBack={true}
+                onBack={() => navigate(-1)}
+            />
             <main className="page-content">
-                <p className="auth-subtitle">
-                    Set your preferred distance for meeting other mothers.
-                </p>
 
                 <div className="content-card" style={{ animation: 'slideUpFade 0.4s ease-out forwards' }}>
                     <div style={{ marginBottom: '2rem' }}>
