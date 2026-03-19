@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
-import { prisma } from './db';
+import prisma from './utils/prisma';
 import dotenv from 'dotenv';
 import jwksClient from 'jwks-rsa';
 
@@ -119,6 +119,17 @@ export function setupSocketIO(server: HttpServer) {
             });
         }).catch((err: any) => {
             console.error('Failed to join group rooms on socket connect:', err);
+        });
+
+        // Direct Messaging Typing Indicator
+        socket.on('typing', ({ conversationId, recipientId, isTyping }) => {
+            if (!userId || !recipientId) return;
+            // Send typing status to the recipient's private room
+            socket.to(`user_${recipientId}`).emit('is_typing', { 
+                conversationId, 
+                userId, 
+                isTyping 
+            });
         });
 
         socket.on('disconnect', () => {

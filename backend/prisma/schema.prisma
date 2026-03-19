@@ -57,6 +57,7 @@ model User {
   blockedBy              UserBlock[]               @relation("BlockedBy")
   blockedUsers           UserBlock[]               @relation("BlockedUsers")
   preferences            UserPreference?
+  brandProfile           BrandProfile?             @relation("UserBrandProfile")
 
   @@index([username])
   @@index([email])
@@ -712,4 +713,22 @@ enum RegistrationStatus {
   cancelled
 
   @@map("registration_status")
+}
+
+model BrandProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  companyName     String   @map("company_name")
+  logoUrl         String?  @map("logo_url")
+  website         String?
+  bio             String?
+  category        String?
+  instagramHandle String?  @map("instagram_handle")
+  facebookUrl     String?  @map("facebook_url")
+  isVerified      Boolean  @default(false) @map("is_verified")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  user            User     @relation("UserBrandProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("brand_profiles")
 }

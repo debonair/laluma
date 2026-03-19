@@ -81,8 +81,8 @@ export const provisionPartnerAccount = async (inquiryId: string) => {
     });
   }
 
-  // 3. Link to Prisma User Model (optional but good for tracking)
-  await prisma.user.create({
+  // 3. Link to Prisma User Model
+  const user = await prisma.user.create({
     data: {
       keycloakId: userId,
       username,
@@ -90,6 +90,11 @@ export const provisionPartnerAccount = async (inquiryId: string) => {
       displayName: inquiry.companyName,
       role: 'brand_partner',
       passwordHash: 'EXTERNAL', // Keycloak handles it
+      brandProfile: {
+        create: {
+          companyName: inquiry.companyName,
+        }
+      }
     },
   });
 
@@ -102,4 +107,48 @@ Temporary Password: ${tempPassword}
 Please log in and change your password.`);
 
   return { username, userId };
+};
+
+export const getPartnerProfile = async (userId: string) => {
+  return await prisma.brandProfile.findUnique({
+    where: { userId },
+  });
+};
+
+export const updatePartnerProfile = async (userId: string, data: any) => {
+  return await prisma.brandProfile.update({
+    where: { userId },
+    data: {
+      companyName: data.companyName,
+      logoUrl: data.logoUrl,
+      website: data.website,
+      bio: data.bio,
+      category: data.category,
+      instagramHandle: data.instagramHandle,
+      facebookUrl: data.facebookUrl,
+    },
+  });
+};
+
+export const getPublicPartnerProfile = async (id: string) => {
+  return await prisma.brandProfile.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      companyName: true,
+      logoUrl: true,
+      website: true,
+      bio: true,
+      category: true,
+      instagramHandle: true,
+      facebookUrl: true,
+      isVerified: true,
+      user: {
+        select: {
+          displayName: true,
+          profileImageUrl: true,
+        }
+      }
+    }
+  });
 };

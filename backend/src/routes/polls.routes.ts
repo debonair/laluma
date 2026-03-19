@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
-import { getPoll, votePoll } from '../controllers/polls.controller';
+import * as pollsController from '../controllers/polls.controller';
 
 const router = Router();
 
-router.get('/:pollId', authenticate, getPoll);
-router.post('/:pollId/vote', authenticate, votePoll);
+router.get('/:pollId', authenticate, (req, res) => pollsController.getPoll(req, res));
+router.post('/:pollId/vote', authenticate, (req, res) => pollsController.votePoll(req, res));
 
 export default router;

@@ -56,12 +56,18 @@ export const authenticate = async (
 
         try {
             // Extract user details from token
-            // `sub` is the standard OIDC subject identifier; fall back to jti+username if missing
             const keycloakId = decoded?.sub || decoded?.jti;
+            
+            console.log('[Auth] Token decoded:', { 
+                sub: decoded?.sub, 
+                jti: decoded?.jti, 
+                preferred_username: decoded?.preferred_username,
+                keycloakId 
+            });
 
-            if (!keycloakId) {
-                console.error('[Auth] Token missing sub and jti claims');
-                res.status(401).json({ error: 'Unauthorized', message: 'Invalid token structure' });
+            if (!keycloakId || typeof keycloakId !== 'string') {
+                console.error('[Auth] Token missing valid keycloakId (sub/jti). Value:', keycloakId);
+                res.status(401).json({ error: 'Unauthorized', message: 'Invalid token identity' });
                 return;
             }
 
@@ -158,7 +164,7 @@ export const optionalAuthenticate = async (
         if (!err && decoded) {
             try {
                 const keycloakId = decoded.sub || decoded.jti;
-                if (keycloakId) {
+                if (keycloakId && typeof keycloakId === 'string') {
                     const realmAccess = decoded.realm_access || {};
                     const roles = realmAccess.roles || [];
 

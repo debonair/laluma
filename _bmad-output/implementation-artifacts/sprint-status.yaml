@@ -59,12 +59,12 @@ development_status:
   2-7-system-status-display: done
   epic-2-retrospective: optional
 
-  epic-3: in-progress
+  epic-3: done
   3-1-named-post-creation: done
   3-2-media-uploads-posts-comments: done
   3-3-post-editing-deletion: done
   3-4-commenting-on-posts: done
-  3-5-post-and-comment-reactions: in-progress
+  3-5-post-and-comment-reactions: done
   epic-3-retrospective: optional
 
   epic-4: in-progress
@@ -81,7 +81,7 @@ development_status:
   5-5-system-event-push-notifications: done
   epic-5-retrospective: optional
 
-  epic-6: in-progress
+  epic-6: done
   6-1-real-time-keyword-blocklist: done
   6-2-ai-sentiment-pipeline-bullmq: done
   6-3-user-reporting-ui-placeholders: done
@@ -92,13 +92,13 @@ development_status:
   6-8-publishing-community-guidelines: done
   epic-6-retrospective: optional
 
-  epic-7: in-progress
+  epic-7: done
   7-1-physical-events-database-infrastructure: done
   7-2-admin-event-creation-management: done
   7-3-event-discovery-browsing: done
   7-4-event-registration: done
-  7-5-event-waitlist-queueing: ready-for-dev
-  7-6-my-events-dashboard: in-progress
+  7-5-event-waitlist-queueing: done
+  7-6-my-events-dashboard: done
   epic-7-retrospective: optional
 
   epic-8: backlog
