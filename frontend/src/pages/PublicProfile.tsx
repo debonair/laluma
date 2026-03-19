@@ -119,21 +119,21 @@ const PublicProfile: React.FC = () => {
 
             <main className="page-content" style={{ padding: '0', flex: 1 }}>
                 {/* Profile Header Block */}
-                <div style={{ backgroundColor: 'var(--card-bg)', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
+                <div className="card" style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div
                         style={{
                             width: '100px',
                             height: '100px',
                             borderRadius: '50%',
-                            backgroundColor: 'var(--primary-color)',
-                            color: 'white',
+                            backgroundColor: 'var(--primary-light)',
+                            color: 'var(--primary-dark)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: 'bold',
                             fontSize: '2.5rem',
                             marginBottom: '1rem',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            border: '3px solid var(--primary-color)',
                             backgroundImage: profile.profile_image_url ? `url(${profile.profile_image_url})` : 'none',
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
@@ -147,23 +147,23 @@ const PublicProfile: React.FC = () => {
                         {profile.isVerified && <BadgeCheck style={{ color: '#3b82f6', width: '1.25rem', height: '1.25rem' }} />}
                     </h2>
 
-                    <p style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)', fontSize: '1rem' }}>
+                    <p style={{ margin: '0 0 1.25rem 0', color: 'var(--text-secondary)', fontSize: '1rem' }}>
                         @{profile.username}
                     </p>
 
                     {profile.motherhood_stage && (
-                        <div style={{ display: 'inline-block', padding: '0.4rem 1rem', backgroundColor: 'var(--primary-light)', color: 'var(--primary-dark)', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 600, marginBottom: '1.5rem' }}>
+                        <div className="badge badge-primary" style={{ padding: '0.5rem 1.25rem', marginBottom: '1.5rem' }}>
                             {profile.motherhood_stage}
                         </div>
                     )}
 
                     {!isOwnProfile && (
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
                             <button
                                 onClick={handleMessageClick}
                                 disabled={isMessaging}
                                 className="btn-secondary"
-                                style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                             >
                                 <span style={{ fontSize: '1.2rem' }}>💬</span> Message
                             </button>
@@ -171,7 +171,7 @@ const PublicProfile: React.FC = () => {
                                 onClick={handleWaveClick}
                                 disabled={isWaving}
                                 className="btn-primary"
-                                style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                             >
                                 <span style={{ fontSize: '1.2rem' }}>👋</span> {isWaving ? "Waving..." : "Wave"}
                             </button>
@@ -180,30 +180,30 @@ const PublicProfile: React.FC = () => {
                 </div>
 
                 {/* Profile Details Block */}
-                <div style={{ padding: '1.5rem 1rem' }}>
-                    <div style={{ marginBottom: '2rem' }}>
+                <div style={{ padding: '0 1rem' }}>
+                    <div className="card" style={{ marginBottom: '1.5rem' }}>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>About Me</h3>
                         <p style={{ color: profile.about_me ? 'var(--text-primary)' : 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>
                             {profile.about_me || "This user hasn't written a bio yet."}
                         </p>
                     </div>
 
-                    <div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>Luma Activity</h3>
+                    <div className="card">
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>Luma Activity</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div style={{ backgroundColor: 'var(--card-bg)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-color)', marginBottom: '0.25rem' }}>
+                            <div style={{ padding: '1rem', borderRadius: '12px', textAlign: 'center', backgroundColor: 'var(--primary-light)' }}>
+                                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>
                                     {profile.stats.groups_created}
                                 </div>
-                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 500 }}>
+                                <div style={{ color: 'var(--primary-dark)', opacity: 0.8, fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     Groups Led
                                 </div>
                             </div>
-                            <div style={{ backgroundColor: 'var(--card-bg)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-color)', marginBottom: '0.25rem' }}>
+                            <div style={{ padding: '1rem', borderRadius: '12px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.03)' }}>
+                                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
                                     {profile.stats.posts_created}
                                 </div>
-                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 500 }}>
+                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     Posts Shared
                                 </div>
                             </div>

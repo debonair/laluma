@@ -44,48 +44,49 @@ const MyBookmarks: React.FC = () => {
             />
 
             {bookmarks.length === 0 ? (
-                <div className="empty-state">
-                    <p>You haven't bookmarked any content yet.</p>
-                    <button onClick={() => navigate('/my-luma')} className="browse-btn">
+                <div className="empty-state" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🔖</div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>No bookmarks yet</h3>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Save articles and videos you want to revisit later.</p>
+                    <button onClick={() => navigate('/my-luma')} className="btn-primary" style={{ width: 'auto', padding: '0.75rem 2rem' }}>
                         Browse Content
                     </button>
                 </div>
             ) : (
-                <main className="content-grid">
-                    {bookmarks.map((item) => (
-                        <div
-                            key={item.id}
-                            className="content-card"
-                            onClick={() => handleContentClick(item.id)}
-                        >
-                            <div className="card-image">
-                                {item.thumbnailUrl ? (
-                                    <img src={item.thumbnailUrl} alt={item.title} />
-                                ) : (
-                                    <div className="placeholder-image">
-                                        {item.category[0]}
-                                    </div>
-                                )}
-                                {item.isPremium && (
-                                    <span className={`premium-badge ${item.premiumTier}`}>
-                                        {item.premiumTier === 'premium_plus' ? 'Premium+' : 'Premium'}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="card-content">
-                                <span className="category-tag">{item.category}</span>
-                                <h3>{item.title}</h3>
-                                <p>{item.excerpt}</p>
-                                <div className="card-footer">
-                                    <span className="author">{item.authorName}</span>
-                                    <div className="stats">
-                                        <span>❤️ {item.likesCount}</span>
-                                        <span>💬 {item.commentsCount}</span>
+                <main style={{ padding: '0 1rem 2rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
+                        {bookmarks.map((item) => (
+                            <div
+                                key={item.id}
+                                className="card"
+                                onClick={() => handleContentClick(item.id)}
+                                style={{ cursor: 'pointer', overflow: 'hidden', padding: '0' }}
+                            >
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    {item.thumbnailUrl && (
+                                        <div style={{ height: '160px', overflow: 'hidden' }}>
+                                            <img src={item.thumbnailUrl} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                    )}
+                                    <div style={{ padding: '1.25rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                            <span className="badge badge-primary">{item.category}</span>
+                                            {item.isPremium && <span className="badge badge-success">★ Premium</span>}
+                                        </div>
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: 1.4 }}>{item.title}</h3>
+                                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.excerpt}</p>
+                                        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{item.authorName}</span>
+                                            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                                <span>❤️ {item.likesCount}</span>
+                                                <span>💬 {item.commentsCount}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </main>
             )}
             <BottomNav />

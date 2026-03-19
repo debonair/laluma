@@ -53,11 +53,11 @@ const LocationSettings: React.FC = () => {
             />
             <main className="page-content">
 
-                <div className="content-card" style={{ animation: 'slideUpFade 0.4s ease-out forwards' }}>
+                <div className="card" style={{ animation: 'slideUpFade 0.4s ease-out forwards' }}>
                     <div style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <label style={{ fontWeight: 600 }}>Distance Radius</label>
-                            <span style={{ color: 'var(--primary-color)', fontWeight: 700 }}>
+                            <label style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Distance Radius</label>
+                            <span style={{ color: 'var(--primary-color)', fontWeight: 700, fontSize: '1.1rem' }}>
                                 {anywhere ? 'Anywhere' : `${radius} km`}
                             </span>
                         </div>
@@ -69,14 +69,19 @@ const LocationSettings: React.FC = () => {
                             value={radius}
                             onChange={handleRadiusChange}
                             disabled={anywhere}
+                            className="input-field"
                             style={{
                                 width: '100%',
-                                accentColor: 'var(--primary-color)',
-                                opacity: anywhere ? 0.5 : 1,
+                                padding: '0',
+                                height: '6px',
+                                background: 'rgba(0,0,0,0.05)',
+                                borderRadius: '3px',
+                                appearance: 'none',
+                                opacity: anywhere ? 0.4 : 1,
                                 cursor: anywhere ? 'not-allowed' : 'pointer'
                             }}
                         />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-light)', marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.75rem', fontWeight: 500 }}>
                             <span>1km</span>
                             <span>100km</span>
                         </div>
@@ -84,14 +89,32 @@ const LocationSettings: React.FC = () => {
 
                     <div
                         onClick={handleAnywhereToggle}
-                        className={`toggle-card ${anywhere ? 'active' : ''}`}
+                        className={`card ${anywhere ? 'active' : ''}`}
+                        style={{ 
+                            cursor: 'pointer', 
+                            display: 'flex', 
+                            gap: '1rem', 
+                            padding: '1.25rem',
+                            border: anywhere ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                            backgroundColor: anywhere ? 'var(--primary-light)' : 'transparent',
+                            transition: 'all 0.2s ease'
+                        }}
                     >
-                        <div className="toggle-radio">
-                            {anywhere && <div className="toggle-radio-inner" />}
+                        <div style={{ 
+                            width: '24px', 
+                            height: '24px', 
+                            borderRadius: '50%', 
+                            border: '2px solid var(--primary-color)', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            backgroundColor: '#fff'
+                        }}>
+                            {anywhere && <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'var(--primary-color)' }} />}
                         </div>
-                        <div className="toggle-content">
-                            <span className="toggle-title">Connect with people from anywhere</span>
-                            <span className="toggle-subtitle">I'm open to long-distance connections</span>
+                        <div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Connect with people from anywhere</div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>I'm open to long-distance connections</div>
                         </div>
                     </div>
                 </div>

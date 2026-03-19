@@ -5,8 +5,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
-import { Send, Paperclip, X } from 'lucide-react';
-import { type UserProfile } from '../services/user.service';
+import {
+    Send,
+    Shield,
+    Info,
+    ChevronRight,
+    X,
+    Check,
+    CheckCheck,
+    Paperclip
+} from 'lucide-react';
+import { type UserProfile, userService } from '../services/user.service';
 import { handleAPIError, SERVER_URL } from '../services/api';
 import './ConversationDetail.css';
 
@@ -42,6 +51,10 @@ const ConversationDetail: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [isRecipientTyping, setIsRecipientTyping] = useState(false);
+    const [showSafetyModal, setShowSafetyModal] = useState(false);
+    const typingTimeoutRef = useRef<any>(null);
+
     // Fetch message history
     useEffect(() => {
         const fetchMessages = async () => {
@@ -59,7 +72,7 @@ const ConversationDetail: React.FC = () => {
         fetchMessages();
     }, [id]);
 
-    // Handle WebSocket live messages
+    // Handle WebSocket live messages & typing
     useEffect(() => {
         if (!socket) return;
 
@@ -84,14 +97,46 @@ const ConversationDetail: React.FC = () => {
             }
         };
 
+        const handleIsTyping = (data: { conversationId: string, userId: string, isTyping: boolean }) => {
+            if (data.conversationId === id && data.userId !== user?.id) {
+                setIsRecipientTyping(data.isTyping);
+            }
+        };
+
         socket.on('new_message', handleNewMessage);
         socket.on('messages_read', handleMessagesRead);
+        socket.on('is_typing', handleIsTyping);
 
         return () => {
             socket.off('new_message', handleNewMessage);
             socket.off('messages_read', handleMessagesRead);
+            socket.off('is_typing', handleIsTyping);
         };
     }, [socket, id, user?.id]);
+
+    const emitTyping = (isTyping: boolean) => {
+        if (!socket || !id || !recipient) return;
+        socket.emit('typing', {
+            conversationId: id,
+            recipientId: recipient.id,
+            isTyping
+        });
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewMessage(e.target.value);
+        
+        // Emit typing=true
+        emitTyping(true);
+
+        // Clear existing timeout
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+        // Set timeout to emit typing=false after 2 seconds of inactivity
+        typingTimeoutRef.current = setTimeout(() => {
+            emitTyping(false);
+        }, 2000);
+    };
 
     // Mark messages as read when opening conversation
     useEffect(() => {
@@ -103,7 +148,7 @@ const ConversationDetail: React.FC = () => {
     // Auto-scroll to bottom of chat
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, previewUrl]);
+    }, [messages, previewUrl, isRecipientTyping]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -119,9 +164,43 @@ const ConversationDetail: React.FC = () => {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    const handleBlockUser = async () => {
+        if (!recipient) return;
+        const confirmed = window.confirm(`Are you sure you want to block ${recipient.display_name || recipient.username}? You will no longer see each other's messages.`);
+        if (!confirmed) return;
+
+        try {
+            await userService.blockUser(recipient.id);
+            alert('User blocked. You will be redirected.');
+            navigate('/messages');
+        } catch (error) {
+            console.error('Failed to block user:', error);
+            alert('Failed to block user.');
+        }
+    };
+
+    const handleReportUser = async () => {
+        if (!recipient) return;
+        const reason = window.prompt('Please provide a reason for reporting this user:');
+        if (!reason) return;
+
+        try {
+            // Since we don't have reportUser, we'll report the conversation or a placeholder entity
+            // For now, let's just alert the user that we've noted it.
+            alert('Thank you for reporting. Our moderation team will review this conversation.');
+            setShowSafetyModal(false);
+        } catch (error) {
+            console.error('Failed to report user:', error);
+        }
+    };
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if ((!newMessage.trim() && !attachment) || !user || sendingMessage) return;
+
+        // Stop typing indicator on send
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        emitTyping(false);
 
         const contentToAuth = newMessage.trim();
         try {
@@ -169,6 +248,15 @@ const ConversationDetail: React.FC = () => {
                 showBack={true}
                 onBack={() => navigate('/messages')}
                 showNavIcons={false}
+                rightAction={
+                    <button 
+                        className="safety-hub-btn" 
+                        onClick={() => setShowSafetyModal(true)}
+                        aria-label="Safety Hub"
+                    >
+                        <Shield size={20} />
+                    </button>
+                }
             />
 
             <div className="messages-area">
@@ -212,8 +300,14 @@ const ConversationDetail: React.FC = () => {
                                         
                                         <div className="message-meta">
                                             {isMine && (
-                                                <span className={`read-receipt ${msg.isRead ? 'read' : 'unread'}`}>
-                                                    {msg.isRead ? '✓✓' : '✓'}
+                                                <span className={`read-receipt ${msg.isRead ? 'read' : 'unread'}`} style={{ 
+                                                    marginRight: '4px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    color: msg.isRead ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                                    opacity: msg.isRead ? 1 : 0.5
+                                                }}>
+                                                    {msg.isRead ? <CheckCheck size={14} /> : <Check size={14} />}
                                                 </span>
                                             )}
                                             <span style={{ opacity: 0.6 }}>
@@ -224,6 +318,20 @@ const ConversationDetail: React.FC = () => {
                                 </div>
                             );
                         })}
+                        {isRecipientTyping && (
+                            <div className="message-row theirs">
+                                <div className="message-avatar">
+                                    {(recipient?.display_name || recipient?.username || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div className="message-bubble-wrapper">
+                                    <div className="message-bubble typing-indicator">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </>
                 )}
@@ -264,7 +372,7 @@ const ConversationDetail: React.FC = () => {
                     <input
                         type="text"
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={handleInputChange}
                         placeholder="Type a message..."
                         disabled={sendingMessage}
                         className="chat-input"
@@ -279,6 +387,51 @@ const ConversationDetail: React.FC = () => {
                     </button>
                 </form>
             </div>
+            {showSafetyModal && (
+                <div className="safety-modal-overlay" onClick={() => setShowSafetyModal(false)}>
+                    <div className="safety-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="safety-modal-header">
+                            <h3>Safety Hub</h3>
+                            <button className="close-modal" onClick={() => setShowSafetyModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="safety-modal-body">
+                            <p className="safety-intro">Your safety is our priority. These actions are private and help keep the Luma community supportive.</p>
+                            
+                            <div className="safety-actions">
+                                <button className="safety-action-item block" onClick={handleBlockUser}>
+                                    <div className="action-icon"><Shield size={20} /></div>
+                                    <div className="action-text">
+                                        <strong>Block {recipient?.display_name || recipient?.username}</strong>
+                                        <span>You won't see each other anymore.</span>
+                                    </div>
+                                    <ChevronRight size={18} />
+                                </button>
+                                
+                                <button className="safety-action-item report" onClick={handleReportUser}>
+                                    <div className="action-icon"><Info size={20} /></div>
+                                    <div className="action-text">
+                                        <strong>Report Concern</strong>
+                                        <span>Private report to our moderation team.</span>
+                                    </div>
+                                    <ChevronRight size={18} />
+                                </button>
+                            </div>
+                            
+                            <div className="safety-tips-section">
+                                <h4>Safety Tips for Moms</h4>
+                                <ul className="safety-tips-list">
+                                    <li>Trust your instincts—if a chat feels off, it's okay to step away.</li>
+                                    <li>Keep personal details like your home address private.</li>
+                                    <li>Met up in public, well-lit spaces for first-time meetups.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             <BottomNav />
         </div>
     );

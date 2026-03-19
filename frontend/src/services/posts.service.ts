@@ -30,6 +30,7 @@ export interface Post {
     likes_count: number;
     comments_count: number;
     is_liked: boolean;
+    user_reaction_type?: string | null;
     created_at: string;
     is_anonymous?: boolean;
     poll?: Poll;
@@ -75,8 +76,8 @@ export const postsService = {
         return response.data;
     },
 
-    likePost: async (postId: string): Promise<{ success: boolean; likes_count: number }> => {
-        const response = await apiClient.post(`/posts/${postId}/like`);
+    likePost: async (postId: string, reactionType: string = 'like'): Promise<{ success: boolean; likes_count: number }> => {
+        const response = await apiClient.post(`/posts/${postId}/like`, { reactionType });
         return response.data;
     },
 
@@ -100,6 +101,15 @@ export const postsService = {
 
     deletePost: async (postId: string): Promise<{ success: boolean }> => {
         const response = await apiClient.delete(`/posts/${postId}`);
+        return response.data;
+    },
+
+    reportPost: async (postId: string, reason: string): Promise<{ success: boolean }> => {
+        const response = await apiClient.post(`/moderation/report`, {
+            contentId: postId,
+            contentType: 'post',
+            reason
+        });
         return response.data;
     }
 };

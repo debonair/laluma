@@ -5,7 +5,7 @@ const Welcome: React.FC = () => {
     const navigate = useNavigate();
 
     const handleNext = () => {
-        navigate('/onboarding');
+        navigate('/trust-ritual');
     };
 
     return (

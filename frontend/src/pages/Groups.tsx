@@ -110,32 +110,16 @@ const Groups: React.FC = () => {
                 </div>
 
                 {/* Tabs */}
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                <div className="tabs">
                     <button
                         onClick={() => setActiveTab('my-groups')}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderBottom: activeTab === 'my-groups' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                            color: activeTab === 'my-groups' ? 'var(--primary-color)' : 'var(--text-secondary)',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                        }}
+                        className={`tab-button ${activeTab === 'my-groups' ? 'active' : ''}`}
                     >
                         My Groups
                     </button>
                     <button
                         onClick={() => setActiveTab('discover')}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderBottom: activeTab === 'discover' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                            color: activeTab === 'discover' ? 'var(--primary-color)' : 'var(--text-secondary)',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                        }}
+                        className={`tab-button ${activeTab === 'discover' ? 'active' : ''}`}
                     >
                         Discover
                     </button>
@@ -143,24 +127,21 @@ const Groups: React.FC = () => {
 
                 {/* Geography Filters (Only on Discover) */}
                 {activeTab === 'discover' && (
-                    <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                    <div className="card" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                             <input
                                 type="text"
                                 placeholder="City (e.g. Austin)"
+                                className="input-field"
                                 value={cityFilter}
                                 onChange={(e) => setCityFilter(e.target.value)}
-                                style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                                style={{ flex: 1 }}
                             />
                             <button
                                 onClick={() => setNearMe(!nearMe)}
+                                className={nearMe ? 'btn-secondary' : 'btn-outline'}
                                 style={{
                                     padding: '0.5rem 0.75rem',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--border-color)',
-                                    backgroundColor: nearMe ? '#dcfce7' : 'var(--bg-color)',
-                                    color: nearMe ? '#15803d' : 'var(--text-primary)',
-                                    cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '0.25rem',
@@ -222,7 +203,7 @@ const Groups: React.FC = () => {
                                             {group.member_count} members
                                         </p>
                                         {(group.city) && (
-                                            <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-color)', padding: '0.1rem 0.4rem', borderRadius: '100px', border: '1px solid var(--border-color)' }}>
+                                            <span className="badge">
                                                 📍 {group.city}
                                             </span>
                                         )}

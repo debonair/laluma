@@ -1,7 +1,11 @@
 :root {
-  font-family: 'Space Grotesk', sans-serif;
+  /* Font Families */
+  --font-brand: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  font-family: var(--font-body);
   line-height: 1.5;
-  font-weight: 500;
+  font-weight: 400; /* Regular weight for Inter */
 
   color-scheme: light;
 
@@ -13,7 +17,7 @@
   --accent-color: #a3d9c9;
   --gold-color: #c98020;
   --text-primary: #1b3022;  /* Dark Moss */
-  --message-text: #2f3e33;  /* High contrast dark green */
+  --text-secondary: #64748B; /* Slate Grey for softer body text */
 
   /* Semantic Colors */
   --success-color: #22c55e;
@@ -21,32 +25,32 @@
   --warning-color: #f59e0b;
   --info-color: #3b82f6;
 
+  /* Trauma-Informed Semantic Extensions */
+  --plum-safety: #3E3B5B;
+  --amber-warm: #F59E0B;
+  --color-anon-bg: #FFFBEB;
+  --color-anon-gold: #D97706;
+
+  /* Glassmorphism System */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur: blur(14px);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+
   /* Gradients */
   --brand-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   --accent-gradient: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
 
-  /* --- Light Theme Variables --- */
+  /* Backgrounds */
   --bg-color: #F8FAFC;
-  /* Pearl / off-white background */
-  --bg-gradient: var(--bg-color);
   --bg-secondary: #F1F5F9;
-  /* Slightly more defined background */
   --card-bg: #FFFFFF;
-  --input-bg: #FFFFFF;
   --border-color: #E2E8F0;
-  /* Soft grey for subtle borders if needed */
 
-  /* Text Colors */
-  --text-primary: #1E293B;
-  /* Dark slate instead of pure black */
-  --text-secondary: #64748B;
-  --text-on-primary: #FFFFFF;
-
-  /* Shadows - Modern diffuse glass shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -86,6 +90,19 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Accessibility: Support users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
+
 #root {
   width: 100%;
   height: 100%;
@@ -96,59 +113,51 @@ body {
 }
 
 /* --- Typography --- */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0 0 0.25rem 0;
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5rem 0;
   color: var(--text-primary);
-  line-height: 1.25;
+  line-height: 1.2;
   font-family: 'Syne', sans-serif;
-  text-transform: none;
-  /* Remove brutalist all-caps */
+  font-weight: 800; /* Distinctive Syne Boldness */
+  letter-spacing: -0.03em;
 }
 
-h1 {
-  font-size: 1.25rem;
-  /* Reduced from 1.75rem */
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
 
-h2 {
-  font-size: 1.125rem;
-  /* Reduced from 1.5rem */
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-h3 {
-  font-size: 1rem;
-  /* Reduced from 1.125rem */
-  font-weight: 600;
+p, span, li, div {
+  font-family: var(--font-body); /* Inter */
 }
 
 p {
-  margin: 0 0 0.5rem 0;
-  /* Reduced from 0.75rem */
+  margin: 0 0 1rem 0;
   color: var(--text-secondary);
-  line-height: 1.5;
-  /* Improved from 1.4 for readability */
-  font-size: 0.875rem;
-  /* Reduced from 0.95rem */
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.text-brand {
+  font-family: var(--font-brand);
+  font-weight: 700;
+}
+
+.text-small {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 
 a {
   color: var(--primary-color);
   text-decoration: none;
-  transition: color 0.2s;
-  font-weight: 500;
+  transition: all 0.2s ease;
+  font-weight: 600;
 }
 
 a:hover {
   color: var(--primary-hover);
+  opacity: 0.8;
 }
 
 /* --- Layout Components --- */
@@ -217,51 +226,66 @@ a:hover {
   min-width: 0;
 }
 
-/* --- Auth & Card Components --- */
-.auth-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 1.5rem;
-  background: var(--bg-gradient);
+/* --- Cards & Containers --- */
+.card,
+.modern-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card,
-.auth-card,
-.content-card {
-  background-color: var(--card-bg);
-  padding: 0.875rem;
-  border-radius: 12px;
-  /* Slightly tighter rounding (from 16px) */
-  box-shadow: var(--shadow-sm);
-  /* Soft default shadow */
-  width: 100%;
-  border: 1px solid var(--border-color);
-  /* Soft boundary */
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: var(--glass-shadow);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .auth-card {
-  max-width: 24rem;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-md);
-  /* Slightly more elevated for focus */
-  padding: 1.5rem;
+  max-width: 400px;
+  width: 100%;
+  padding: 2.5rem;
+  background: white;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
 }
 
-.content-card:hover {
-  transform: translateY(-2px);
-  /* Soft float instead of brutalist translate */
-  box-shadow: var(--shadow-md);
+/* Celebrating Anonymity (Story 9.2) */
+.anon-card {
+  background-color: var(--color-anon-bg) !important;
+  border: 1px solid var(--color-anon-gold) !important;
+  position: relative;
+  overflow: hidden;
 }
 
-.content-card:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-sm);
-  transition-duration: 0.1s;
+.anon-card::before {
+  content: "✨";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1rem;
+  opacity: 0.6;
+}
+
+/* Optimistic Safety: Reporting State */
+.content-card.reporting {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 /* Touch Targets Ensure 44x44 minimum */
@@ -293,6 +317,43 @@ a:hover {
   background: var(--card-bg);
   padding: 0.5rem 1rem;
   border-radius: 9999px;
+  /* Tabs */
+.tabs {
+  display: flex;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 0.75rem 0.25rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  color: var(--primary-color);
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
   /* Pill shape */
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
@@ -327,14 +388,15 @@ a:hover {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-group label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  padding-left: 4px;
 }
 
 input[type="text"],
@@ -343,16 +405,14 @@ input[type="password"],
 textarea,
 select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  background-color: var(--card-bg);
+  padding: 0.875rem 1.25rem;
+  border: 1.5px solid var(--border-color);
+  background-color: white;
   color: var(--text-primary);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  font-weight: 500;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-family: var(--font-body);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: none;
 }
 
 input:focus,
@@ -360,103 +420,82 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.2);
-  /* Soft glow focus ring */
+  box-shadow: 0 0 0 4px rgba(82, 121, 111, 0.15); /* Sage Glow */
 }
 
-/* --- Buttons --- */
 .btn,
 .btn-primary,
 .btn-secondary,
-.btn-neutral,
-.btn-link,
+.btn-glass,
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.625rem 1.25rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 9999px;
-  /* Pill shaped buttons */
-  font-weight: 600;
-  font-family: inherit;
-  font-size: 0.95rem;
-  text-transform: none;
-  /* Removed uppercase */
-  letter-spacing: normal;
+  font-weight: 700;
+  font-family: var(--font-brand);
+  font-size: 1rem;
   cursor: pointer;
-  border: 1px solid transparent;
+  border: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  gap: 0.5rem;
+  gap: 0.625rem;
   white-space: nowrap;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
-  color: var(--text-on-primary);
-  box-shadow: 0 2px 4px rgba(45, 212, 191, 0.25);
+  background: var(--brand-gradient);
+  color: white;
+  box-shadow: 0 4px 12px rgba(82, 121, 111, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(45, 212, 191, 0.3);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(45, 212, 191, 0.2);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: none;
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px rgba(82, 121, 111, 0.35);
 }
 
 .btn-secondary {
-  background-color: var(--accent-color);
+  background: var(--primary-light);
   color: var(--primary-hover);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #CCFBF1;
+  background: #BCC5B7;
   transform: translateY(-1px);
 }
 
-.btn-neutral {
-  background-color: white;
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+.btn-glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
 }
 
-.btn-neutral:hover:not(:disabled) {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
+.btn-glass:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .btn-ghost {
-  background-color: transparent;
+  background: transparent;
   color: var(--text-secondary);
-  box-shadow: none;
 }
 
-.btn-ghost:hover:not(:disabled) {
-  background-color: rgba(0, 0, 0, 0.04);
+.btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.05);
   color: var(--text-primary);
 }
 
-.btn-link {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  padding: 0.5rem;
-  box-shadow: none;
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-.btn-link:hover {
-  color: var(--primary-hover);
-  text-decoration: underline;
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
 }
 
 /* --- Badges --- */

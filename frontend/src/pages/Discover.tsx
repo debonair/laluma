@@ -131,28 +131,17 @@ const Discover: React.FC = () => {
 
             <main className="page-content">
                 {!locationShared ? (
-                    <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)', marginTop: '2rem' }}>
+                    <div className="card" style={{ textAlign: 'center', padding: '3rem 2rem', marginTop: '2rem' }}>
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📍</div>
-                        <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 700 }}>Find Moms Locally</h3>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '2rem', lineHeight: 1.5 }}>
+                        <h2>Find Moms Locally</h2>
+                        <p>
                             Share your location securely to discover and connect with other mothers right in your area. We use this to show you relevant profiles nearby.
                         </p>
                         <button
                             onClick={handleShareLocation}
                             disabled={isLocating}
-                            style={{
-                                padding: '1rem 2rem',
-                                backgroundColor: 'var(--primary-color)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '100px',
-                                fontWeight: 700,
-                                fontSize: '1rem',
-                                cursor: isLocating ? 'not-allowed' : 'pointer',
-                                opacity: isLocating ? 0.7 : 1,
-                                width: '100%',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}
+                            className="btn-primary"
+                            style={{ width: '100%', marginTop: '1.5rem' }}
                         >
                             {isLocating ? 'Locating...' : 'Enable Location'}
                         </button>
@@ -177,13 +166,12 @@ const Discover: React.FC = () => {
                                 {/* Pending Connection Requests */}
                                 {pendingRequests.length > 0 && (
                                     <div style={{ marginBottom: '2rem' }}>
-                                        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 800 }}>Incoming Waves 👋</h2>
+                                        <h2>Incoming Waves 👋</h2>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                             {pendingRequests.map(req => (
-                                                <div key={req.id} style={{
+                                                <div key={req.id} className="card" style={{
                                                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                    padding: '1rem', backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)',
-                                                    boxShadow: 'var(--shadow-sm)', borderRadius: '16px'
+                                                    padding: '1rem'
                                                 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate(`/users/${req.requesterId}`)}>
                                                         <div style={{
@@ -199,7 +187,7 @@ const Discover: React.FC = () => {
                                                                 {req.requester.displayName || req.requester.username}
                                                                 {req.requester.isVerified && <BadgeCheck style={{ width: '1rem', height: '1rem', color: 'var(--info-color)' }} />}
                                                             </div>
-                                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>wants to connect</div>
+                                                            <div className="text-small">wants to connect</div>
                                                         </div>
                                                     </div>
                                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -354,18 +342,9 @@ const Discover: React.FC = () => {
                                             return (
                                                 <div
                                                     key={resultUser.id}
-                                                    style={{
-                                                        borderRadius: '24px',
-                                                        backgroundColor: 'var(--card-bg)',
-                                                        border: '1px solid var(--border-color)',
-                                                        overflow: 'hidden',
-                                                        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-                                                        transition: 'transform 0.2s',
-                                                        cursor: 'pointer'
-                                                    }}
+                                                    className="card"
+                                                    style={{ overflow: 'hidden', padding: 0 }}
                                                     onClick={() => navigate(`/users/${resultUser.id}`)}
-                                                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                                                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                                                 >
                                                     <div style={{
                                                         height: '240px',
@@ -396,9 +375,9 @@ const Discover: React.FC = () => {
                                                             display: 'flex',
                                                             flexDirection: 'column',
                                                             justifyContent: 'flex-end',
-                                                            padding: '1rem'
+                                                            padding: '1.25rem'
                                                         }}>
-                                                            <h3 style={{ margin: 0, color: 'white', fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <h3 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                                 {resultUser.display_name || resultUser.username}
                                                                 {resultUser.isVerified && <BadgeCheck style={{ width: '1.25rem', height: '1.25rem', color: 'var(--accent-color)' }} />}
                                                             </h3>
@@ -408,9 +387,9 @@ const Discover: React.FC = () => {
                                                         </div>
                                                     </div>
 
-                                                    <div style={{ padding: '1.25rem', backgroundColor: 'var(--card-bg)' }}>
+                                                    <div style={{ padding: '1.25rem' }}>
                                                         {resultUser.motherhood_stage && (
-                                                            <div style={{ display: 'inline-block', padding: '0.35rem 0.75rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1rem' }}>
+                                                            <div className="badge" style={{ marginBottom: '1rem' }}>
                                                                 {resultUser.motherhood_stage}
                                                             </div>
                                                         )}
@@ -420,30 +399,8 @@ const Discover: React.FC = () => {
                                                                 e.stopPropagation();
                                                                 initiateChat(resultUser.id);
                                                             }}
-                                                            style={{
-                                                                width: '100%',
-                                                                padding: '0.85rem',
-                                                                backgroundColor: 'var(--bg-color)',
-                                                                color: 'var(--primary-color)',
-                                                                border: '2px solid var(--primary-color)',
-                                                                borderRadius: '100px',
-                                                                fontWeight: 700,
-                                                                fontSize: '1rem',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '0.5rem',
-                                                                cursor: 'pointer',
-                                                                transition: 'background-color 0.2s, color 0.2s'
-                                                            }}
-                                                            onMouseOver={(e) => {
-                                                                e.currentTarget.style.backgroundColor = 'var(--primary-color)';
-                                                                e.currentTarget.style.color = 'white';
-                                                            }}
-                                                            onMouseOut={(e) => {
-                                                                e.currentTarget.style.backgroundColor = 'var(--bg-color)';
-                                                                e.currentTarget.style.color = 'var(--primary-color)';
-                                                            }}
+                                                            className="btn-secondary"
+                                                            style={{ width: '100%' }}
                                                         >
                                                             <MessageCircle size={20} />
                                                             View Profile & Message

@@ -136,7 +136,7 @@ const Profile: React.FC = () => {
             />
 
             <main className="page-content">
-                <div className="content-card profile-avatar-section">
+                <div className="card" style={{ marginBottom: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -147,17 +147,19 @@ const Profile: React.FC = () => {
                     <div
                         className="profile-avatar"
                         onClick={() => fileInputRef.current?.click()}
-                        style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                        style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden', width: '100px', height: '100px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary-color)' }}
                         title="Click to change avatar"
                     >
                         {profileImg ? (
                             <img
                                 src={profileImg.startsWith('/') ? `${SERVER_URL}${profileImg}` : profileImg}
                                 alt="Avatar"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                         ) : (
-                            (displayProfileName || 'U').charAt(0).toUpperCase()
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary-light)', color: 'var(--primary-dark)', fontSize: '2rem', fontWeight: 700 }}>
+                                {(displayProfileName || 'U').charAt(0).toUpperCase()}
+                            </div>
                         )}
                         <div style={{
                             position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -171,8 +173,8 @@ const Profile: React.FC = () => {
                                 type="text"
                                 value={editForm.displayName}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
-                                className="profile-name-input"
-                                style={{ textAlign: 'center', fontSize: '1.25rem', padding: '0.5rem', borderBottom: '2px solid var(--primary-color)' }}
+                                className="input-field"
+                                style={{ textAlign: 'center', fontSize: '1.25rem' }}
                             />
                         ) : (
                             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
@@ -180,7 +182,7 @@ const Profile: React.FC = () => {
                                 {user.isVerified && <BadgeCheck style={{ color: '#3b82f6', width: '1.25rem', height: '1.25rem' }} />}
                             </h2>
                         )}
-                    <p className="helper-text">@{user.username}</p>
+                    <p className="helper-text" style={{ marginBottom: '1rem' }}>@{user.username}</p>
 
                     {!user.isVerified && !isEditing && (
                         <button
@@ -193,35 +195,35 @@ const Profile: React.FC = () => {
                     )}
                 </div >
 
-                <div className="content-card">
-                    <h3 className="profile-section-title">About Me</h3>
+                <div className="card" style={{ marginBottom: '1.5rem' }}>
+                    <h3 className="profile-section-title" style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>About Me</h3>
                     {isEditing ? (
                         <textarea
                             value={editForm.aboutMe}
                             onChange={(e) => setEditForm(prev => ({ ...prev, aboutMe: e.target.value }))}
                             rows={4}
                             placeholder="Tell us a bit about yourself..."
-                            className="form-control"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                            className="input-field"
+                            style={{ width: '100%', resize: 'none' }}
                         />
                     ) : (
-                        <p style={{ fontStyle: displayAboutMe ? 'normal' : 'italic', color: displayAboutMe ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                        <p style={{ margin: 0, fontStyle: displayAboutMe ? 'normal' : 'italic', color: displayAboutMe ? 'var(--text-primary)' : 'var(--text-secondary)', lineHeight: 1.6 }}>
                             {displayAboutMe || "No bio yet."}
                         </p>
                     )}
                 </div>
 
-                <div className="content-card">
-                    <h3 className="profile-section-title">My Journey</h3>
+                <div className="card">
+                    <h3 className="profile-section-title" style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>My Journey</h3>
 
-                    <div className="form-group">
-                        <label>I am...</label>
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>I am...</label>
                         {isEditing ? (
                             <select
                                 value={editForm.motherhoodStage}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, motherhoodStage: e.target.value }))}
-                                className="form-control"
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                                className="input-field"
+                                style={{ width: '100%' }}
                             >
                                 <option value="">Select...</option>
                                 <option value="A new mom">A new mom</option>
@@ -232,7 +234,7 @@ const Profile: React.FC = () => {
                             </select>
                         ) : (
                             <div>
-                                <span className="status-badge">{displayMotherhoodStage || "Not specified"}</span>
+                                <span className="badge badge-primary" style={{ padding: '0.5rem 1rem' }}>{displayMotherhoodStage || "Not specified"}</span>
                             </div>
                         )}
                     </div>
@@ -271,11 +273,11 @@ const Profile: React.FC = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Looking For</label>
-                        <div className="tag-list">
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Looking For</label>
+                        <div className="tag-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                             {user.lookingFor && user.lookingFor.length > 0 ? (
                                 user.lookingFor.map(tag => (
-                                    <span key={tag} className="tag">
+                                    <span key={tag} className="badge">
                                         {tag}
                                     </span>
                                 ))

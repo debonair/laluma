@@ -74,7 +74,7 @@ const MyEvents: React.FC = () => {
             addToast(`Successfully ${status === 'waitlisted' ? 'left waitlist' : 'cancelled registration'}`, 'success');
             setModalConfig(prev => ({ ...prev, isOpen: false }));
             fetchMyEvents(); // Refresh list
-        } catch (error) {
+        } catch {
             addToast('Failed to update registration', 'error');
         }
     };
@@ -109,13 +109,13 @@ const MyEvents: React.FC = () => {
                 {isLoading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="skeleton" style={{ height: '160px', borderRadius: '24px' }}></div>
+                            <div key={i} className="card" style={{ height: '160px', opacity: 0.5 }}></div>
                         ))}
                     </div>
                 ) : events.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '5rem 1.5rem', animation: 'fadeIn 0.5s ease' }}>
                         <div style={{ 
-                            fontSize: '4.5rem', 
+                            fontSize: '4rem', 
                             marginBottom: '1.5rem', 
                             background: 'var(--primary-light)', 
                             width: '100px', 
@@ -128,14 +128,14 @@ const MyEvents: React.FC = () => {
                         }}>
                             📅
                         </div>
-                        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem', fontFamily: 'Syne, sans-serif' }}>No events yet</h2>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>No events yet</h2>
                         <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', fontSize: '1.1rem', maxWidth: '300px', margin: '0 auto 2.5rem' }}>
                             Your calendar looks empty. Let's find some amazing events for you!
                         </p>
                         <button 
                             onClick={() => navigate('/discover')}
                             className="btn-primary"
-                            style={{ padding: '1rem 2.5rem', borderRadius: '100px', fontSize: '1rem', boxShadow: '0 8px 20px rgba(37, 84, 40, 0.2)' }}
+                            style={{ width: 'auto', padding: '1rem 2.5rem' }}
                         >
                             Browse Events
                         </button>
@@ -146,68 +146,56 @@ const MyEvents: React.FC = () => {
                             <section>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem' }}>
                                     <Sparkles size={18} color="var(--primary-color)" />
-                                    <h2 style={{ fontSize: '0.9rem', fontWeight: 800, margin: 0, color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                    <h2 style={{ fontSize: '0.85rem', fontWeight: 800, margin: 0, color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         Confirmed Spots
                                     </h2>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     {registeredEvents.map((event: EventDetails) => (
                                         <div 
                                             key={event.id}
                                             onClick={() => navigate(`/event/${event.id}`)}
-                                            className="content-card"
+                                            className="card"
                                             style={{
                                                 padding: '1.5rem',
-                                                borderRadius: '24px',
-                                                position: 'relative',
+                                                cursor: 'pointer'
                                             }}
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                                <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, fontFamily: 'Syne, sans-serif' }}>{event.title}</h3>
+                                                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>{event.title}</h3>
                                                 <button 
                                                     onClick={(e: React.MouseEvent) => handleCancelClick(e, event.id, event.title, 'registered')}
                                                     style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', borderRadius: '50%', transition: 'all 0.2s' }}
                                                     className="icon-hover-effect"
                                                     title="Cancel Registration"
                                                 >
-                                                    <XCircle size={22} />
+                                                    <XCircle size={20} />
                                                 </button>
                                             </div>
                                             
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <Calendar size={16} className="icon-subtle" />
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <Calendar size={14} style={{ opacity: 0.7 }} />
                                                     <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatDate(event.startTime)}</span>
                                                 </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <Clock size={16} className="icon-subtle" />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <Clock size={14} style={{ opacity: 0.7 }} />
                                                     <span>{formatTime(event.startTime)}</span>
                                                 </div>
                                                 {event.location && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                        <MapPin size={16} className="icon-subtle" />
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <MapPin size={14} style={{ opacity: 0.7 }} />
                                                         <span>{event.location}</span>
                                                     </div>
                                                 )}
                                             </div>
                                             
-                                            <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <div style={{ 
-                                                    backgroundColor: 'rgba(34, 197, 94, 0.1)', 
-                                                    color: '#16a34a', 
-                                                    padding: '6px 16px', 
-                                                    borderRadius: '100px', 
-                                                    fontSize: '0.8rem', 
-                                                    fontWeight: 700,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px'
-                                                }}>
-                                                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#16a34a' }}></div>
+                                            <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div className="badge badge-success" style={{ padding: '6px 12px', fontWeight: 700 }}>
                                                     Confirmed
                                                 </div>
-                                                <div style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem' }}>
-                                                    View Details <ChevronRight size={16} />
+                                                <div style={{ color: 'var(--primary-color)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                                                    View Details <ChevronRight size={14} />
                                                 </div>
                                             </div>
                                         </div>
@@ -215,68 +203,60 @@ const MyEvents: React.FC = () => {
                                 </div>
                             </section>
                         )}
-
                         {waitlistedEvents.length > 0 && (
                             <section>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem' }}>
-                                    <Clock size={18} color="var(--gold-color)" />
-                                    <h2 style={{ fontSize: '0.9rem', fontWeight: 800, margin: 0, color: 'var(--gold-color)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                    <Clock size={18} color="var(--warning-color)" />
+                                    <h2 style={{ fontSize: '0.85rem', fontWeight: 800, margin: 0, color: 'var(--warning-color)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         Waitlist Queue
                                     </h2>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     {waitlistedEvents.map((event: EventDetails) => (
                                         <div 
                                             key={event.id}
                                             onClick={() => navigate(`/event/${event.id}`)}
-                                            className="content-card"
+                                            className="card"
                                             style={{
-                                                padding: '1.5rem',
-                                                borderRadius: '24px',
+                                                padding: '1.25rem',
                                                 borderStyle: 'dashed',
-                                                backgroundColor: 'rgba(255, 255, 255, 0.5)'
+                                                borderColor: 'var(--warning-color)',
+                                                opacity: 0.9,
+                                                cursor: 'pointer'
                                             }}
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                                <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-secondary)', fontFamily: 'Syne, sans-serif' }}>{event.title}</h3>
+                                                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{event.title}</h3>
                                                 <button 
                                                     onClick={(e: React.MouseEvent) => handleCancelClick(e, event.id, event.title, 'waitlisted')}
                                                     style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px' }}
+                                                    className="icon-hover-effect"
                                                     title="Leave Waitlist"
                                                 >
-                                                    <XCircle size={22} />
+                                                    <XCircle size={18} />
                                                 </button>
                                             </div>
                                             
-                                            <div style={{ display: 'flex', gap: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <Calendar size={16} />
+                                            <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <Calendar size={14} style={{ opacity: 0.7 }} />
                                                     <span>{formatDate(event.startTime)}</span>
                                                 </div>
                                             </div>
-
+ 
                                             <div style={{ 
-                                                marginTop: '1.5rem', 
-                                                padding: '1rem', 
-                                                backgroundColor: 'rgba(213, 145, 39, 0.08)', 
-                                                borderRadius: '16px',
+                                                padding: '0.85rem 1rem', 
+                                                backgroundColor: 'var(--warning-light)', 
+                                                borderRadius: '12px',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                border: '1px solid rgba(213, 145, 39, 0.2)'
+                                                justifyContent: 'space-between'
                                             }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <AlertCircle size={18} color="var(--gold-color)" />
-                                                    <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>Your Queue Position</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <AlertCircle size={16} color="var(--warning-color)" />
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--warning-dark)' }}>Queue Position</span>
                                                 </div>
-                                                <span style={{ 
-                                                    backgroundColor: 'var(--gold-color)', 
-                                                    color: 'white', 
-                                                    padding: '4px 12px', 
-                                                    borderRadius: '8px', 
-                                                    fontWeight: 800,
-                                                    fontSize: '1rem'
-                                                }}>
+                                                <span className="badge badge-warning" style={{ fontSize: '0.9rem', padding: '4px 10px' }}>
                                                     #{event.waitlistPosition || '-'}
                                                 </span>
                                             </div>

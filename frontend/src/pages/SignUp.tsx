@@ -69,8 +69,8 @@ const SignUp: React.FC = () => {
         setSubmitting(true);
         try {
             await signUp(username.trim(), email.trim(), password);
-            // New user → go to onboarding
-            navigate('/onboarding');
+            // New user -> go to welcome then trust ritual
+            navigate('/welcome');
         } catch {
             // Error set in AuthContext
         } finally {
@@ -84,10 +84,21 @@ const SignUp: React.FC = () => {
         <div className="auth-container">
             <div className="auth-card">
                 {/* Branding */}
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <div className="logo-text" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>luma</div>
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div className="glass-card" style={{
+                        width: 64,
+                        height: 64,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        margin: '0 auto 1.5rem',
+                        padding: 0
+                    }}>
+                        🌸
+                    </div>
                     <h1>Join Luma</h1>
-                    <p>Create an account to connect with the community</p>
+                    <p style={{ marginTop: '0.5rem' }}>Create an account to connect with the community</p>
                 </div>
 
                 {/* Error */}
@@ -226,8 +237,7 @@ const SignUp: React.FC = () => {
 
                     <button
                         type="submit"
-                        className="btn-primary"
-                        style={{ width: '100%', fontSize: '1.05rem', padding: '0.85rem', marginTop: '0.5rem' }}
+                        className="btn-primary auth-submit-button"
                         disabled={submitting || isLoading}
                     >
                         {submitting ? 'Creating account…' : 'Create Account'}

@@ -44,24 +44,21 @@ const SignIn: React.FC = () => {
         <div className="auth-container">
             <div className="auth-card">
                 {/* Logo / Branding */}
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <div style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '16px',
-                        background: 'linear-gradient(135deg, var(--bg-color) 0%, #FFF5EF 100%)',
-                        border: '2px solid rgba(232, 168, 124, 0.2)',
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div className="glass-card" style={{
+                        width: 64,
+                        height: 64,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '1.75rem',
-                        margin: '0 auto 1rem',
-                        boxShadow: 'var(--shadow-sm)'
+                        fontSize: '2rem',
+                        margin: '0 auto 1.5rem',
+                        padding: 0
                     }}>
                         🌸
                     </div>
-                    <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>Welcome back</h1>
-                    <p className="auth-subtitle" style={{ marginTop: '0.5rem' }}>
+                    <h1>Welcome back</h1>
+                    <p style={{ marginTop: '0.5rem' }}>
                         Sign in to your Luma account
                     </p>
                 </div>
@@ -140,7 +137,7 @@ const SignIn: React.FC = () => {
                     <button
                         type="submit"
                         className="btn-primary"
-                        style={{ width: '100%', fontSize: '1.05rem', padding: '0.85rem', marginTop: '0.5rem' }}
+                        style={{ width: '100%', marginTop: '0.5rem' }}
                         disabled={submitting || isLoading}
                     >
                         {submitting ? 'Signing in…' : 'Sign In'}

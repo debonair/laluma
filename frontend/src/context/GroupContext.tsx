@@ -18,7 +18,7 @@ interface GroupContextType {
     createGroup: (name: string, description: string, emoji?: string, location?: { latitude?: number; longitude?: number; city?: string; country?: string; is_private?: boolean }) => Promise<void>;
     createPost: (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }) => Promise<void>;
     addComment: (postId: string, content: string) => Promise<void>;
-    likePost: (postId: string) => Promise<void>;
+    likePost: (postId: string, reactionType?: string) => Promise<void>;
     unlikePost: (postId: string) => Promise<void>;
     getGroup: (groupId: string) => Promise<Group | null>;
     getGroupPosts: (groupId: string) => Promise<Post[]>;
@@ -194,14 +194,14 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
-    const likePost = async (postId: string) => {
+    const likePost = async (postId: string, reactionType: string = 'like') => {
         try {
             setError(null);
-            await postsService.likePost(postId);
+            await postsService.likePost(postId, reactionType);
             // Update feed locally to reflect like
             setFeed(prev => prev.map(post =>
                 post.id === postId
-                    ? { ...post, is_liked: true, likes_count: post.likes_count + 1 }
+                    ? { ...post, is_liked: true, likes_count: (post.likes_count || 0) + 1, user_reaction_type: reactionType }
                     : post
             ));
         } catch (err) {

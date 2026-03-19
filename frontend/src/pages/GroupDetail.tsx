@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactionPicker from '../components/ReactionPicker';
 import { useGroup } from '../context/GroupContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -25,10 +26,11 @@ interface GroupMember {
 const GroupDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { getGroup, getGroupPosts, joinGroup, leaveGroup, createPost, addComment, likePost, error, clearError } = useGroup();
+    const { getGroup, getGroupPosts, joinGroup, leaveGroup, createPost, addComment, likePost, unlikePost, error, clearError } = useGroup();
     const [group, setGroup] = useState<Group | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showPickerForPost, setShowPickerForPost] = useState<string | null>(null);
     const [newPostContent, setNewPostContent] = useState('');
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [showPoll, setShowPoll] = useState(false);
@@ -314,12 +316,21 @@ const GroupDetail: React.FC = () => {
         }
     };
 
-    const handleLike = async (postId: string) => {
-        await likePost(postId);
-        // Reload posts to get updated like count
-        if (id) {
-            const postsData = await getGroupPosts(id);
-            setPosts(postsData);
+    const handleLike = async (postId: string, reactionType: string = 'like') => {
+        try {
+            const post = posts.find(p => p.id === postId);
+            if (post?.is_liked && post.user_reaction_type === reactionType) {
+                await unlikePost(postId);
+            } else {
+                await likePost(postId, reactionType);
+            }
+            // Update local state to show change immediately
+            if (id) {
+                const postsData = await getGroupPosts(id);
+                setPosts(postsData);
+            }
+        } catch (err) {
+            console.error('Error handling like:', err);
         }
     };
 
@@ -334,6 +345,20 @@ const GroupDetail: React.FC = () => {
         } catch (err) {
             console.error("Failed to delete post:", err);
             addToast('Failed to delete post.', 'error');
+        }
+    };
+
+    const handleReportPost = async (postId: string) => {
+        // Optimistic Safety: Dismiss immediately (Story 9.2)
+        setPosts(prev => prev.filter(p => p.id !== postId));
+        addToast('Content reported and hidden. Maintaining a safe space together.', 'success');
+
+        try {
+            await postsService.reportPost(postId, 'User reported from feed');
+        } catch (err) {
+            console.error("Failed to report post:", err);
+            // We don't bring the post back; that would be jarring.
+            // In a trauma-informed UI, once "gone" it should stay gone.
         }
     };
 
@@ -389,16 +414,16 @@ const GroupDetail: React.FC = () => {
                 )}
 
                 {/* Group Header Info */}
-                <div className="content-card" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                <div className="card" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{group.image_emoji || '👥'}</div>
-                    <p style={{ color: 'var(--text-secondary)' }}>{group.description}</p>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-color)' }}>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>{group.description}</p>
+                    <div className="badge" style={{ fontSize: '0.85rem' }}>
                         {group.member_count} Members
-                    </p>
+                    </div>
                     <button
                         className={isMember ? 'btn-secondary' : 'btn-primary'}
                         onClick={handleJoinLeave}
-                        style={{ marginTop: '1rem' }}
+                        style={{ marginTop: '1.25rem', width: '100%' }}
                     >
                         {isMember ? 'Leave Group' : 'Join Group'}
                     </button>
@@ -438,11 +463,7 @@ const GroupDetail: React.FC = () => {
                                                     >
                                                         {m.displayName || m.username}
                                                     </span>
-                                                    <span style={{
-                                                        marginLeft: '0.5rem', fontSize: '0.7rem', padding: '1px 6px',
-                                                        borderRadius: '8px', backgroundColor: m.role === 'admin' ? 'var(--primary-color)20' : '#6B728020',
-                                                        color: m.role === 'admin' ? 'var(--primary-color)' : '#6B7280'
-                                                    }}>
+                                                    <span className={`badge ${m.role === 'admin' ? 'badge-primary' : ''}`} style={{ marginLeft: '0.5rem' }}>
                                                         {m.role}
                                                     </span>
                                                 </div>
@@ -500,7 +521,8 @@ const GroupDetail: React.FC = () => {
                                 onChange={(e) => setNewPostContent(e.target.value)}
                                 placeholder={showPoll ? "Add context to your poll (optional)..." : "Share something with the group..."}
                                 rows={showPoll ? 2 : 3}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', resize: 'none', marginBottom: '0.5rem' }}
+                                className="input-field"
+                                style={{ width: '100%', resize: 'none', marginBottom: '0.5rem' }}
                                 disabled={submittingPost}
                             />
 
@@ -574,19 +596,32 @@ const GroupDetail: React.FC = () => {
 
                 {/* Feed */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {posts.map(post => (
-                        <div key={post.id} className="content-card" style={{ padding: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span
-                                    onClick={(e) => { e.stopPropagation(); if (post.author?.id) navigate(`/users/${post.author.id}`); }}
-                                    style={{ fontWeight: 600, cursor: post.author?.id ? 'pointer' : 'default' }}
-                                >
-                                    {post.author?.username || 'Unknown'}
-                                </span>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                    {new Date(post.created_at).toLocaleDateString()}
-                                </span>
-                            </div>
+                    {posts.map(post => {
+                        const isPersonalAnonymous = post.is_anonymous && post.author?.id === user?.id;
+                        return (
+                            <div 
+                                key={post.id} 
+                                className={`content-card ${post.is_anonymous ? 'anon-card' : ''}`} 
+                                style={{ padding: '1rem' }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <span
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            if (post.author?.id && !post.is_anonymous) navigate(`/users/${post.author.id}`); 
+                                        }}
+                                        style={{ 
+                                            fontWeight: 600, 
+                                            cursor: (post.author?.id && !post.is_anonymous) ? 'pointer' : 'default',
+                                            color: post.is_anonymous ? 'var(--color-anon-gold)' : 'inherit'
+                                        }}
+                                    >
+                                        {post.is_anonymous ? (isPersonalAnonymous ? 'Anonymous (You)' : 'Anonymous Member') : (post.author?.username || 'Unknown')}
+                                    </span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                        {new Date(post.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
                             <p style={{ marginBottom: '1rem' }}>{post.content}</p>
                             {post.poll && (
                                 <PollUI 
@@ -600,13 +635,27 @@ const GroupDetail: React.FC = () => {
                             )}
 
                             <div style={{ display: 'flex', gap: '0.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginLeft: '-0.5rem' }}>
-                                <button
-                                    className="icon-btn"
-                                    onClick={() => handleLike(post.id)}
-                                    style={{ color: post.is_liked ? 'var(--primary-color)' : 'var(--text-secondary)' }}
-                                >
-                                    ❤️ <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>{post.likes_count}</span>
-                                </button>
+                                <div style={{ position: 'relative' }}>
+                                    <button
+                                        className="icon-btn"
+                                        onMouseEnter={() => setShowPickerForPost(post.id)}
+                                        onClick={() => handleLike(post.id, post.user_reaction_type || 'like')}
+                                        style={{ color: post.is_liked ? 'var(--primary-color)' : 'var(--text-secondary)' }}
+                                    >
+                                        {post.user_reaction_type === 'love' ? '😍' : 
+                                         post.user_reaction_type === 'haha' ? '😂' : 
+                                         post.user_reaction_type === 'wow' ? '😲' : 
+                                         post.user_reaction_type === 'sad' ? '😢' : 
+                                         post.user_reaction_type === 'angry' ? '😡' : '❤️'} 
+                                        <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>{post.likes_count}</span>
+                                    </button>
+                                    {showPickerForPost === post.id && (
+                                        <ReactionPicker 
+                                            onSelect={(type) => handleLike(post.id, type)}
+                                            onClose={() => setShowPickerForPost(null)}
+                                        />
+                                    )}
+                                </div>
                                 <button
                                     className="icon-btn"
                                     onClick={() => toggleComments(post.id)}
@@ -625,13 +674,22 @@ const GroupDetail: React.FC = () => {
                                 >
                                     📤 <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>Share</span>
                                 </button>
-                                {((post.author?.id === user?.id) || members.some(m => m.userId === user?.id && ['admin', 'moderator'].includes(m.role))) && (
+                                {((post.author?.id === user?.id) || members.some(m => m.userId === user?.id && ['admin', 'moderator'].includes(m.role))) ? (
                                     <button
                                         className="icon-btn"
                                         onClick={() => handleDeletePost(post.id)}
                                         style={{ color: '#EF4444', marginLeft: 'auto' }}
                                     >
                                         🗑️ <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>Delete</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="icon-btn"
+                                        onClick={() => handleReportPost(post.id)}
+                                        style={{ color: 'var(--amber-warm)', marginLeft: 'auto' }}
+                                        title="Report this post"
+                                    >
+                                        🚩 <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>Report</span>
                                     </button>
                                 )}
                             </div>
@@ -705,7 +763,8 @@ const GroupDetail: React.FC = () => {
                                                             handleCommentSubmit(post.id);
                                                         }
                                                     }}
-                                                    style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '1.5rem', border: '1px solid var(--border-color)', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
+                                                    className="input-field"
+                                                    style={{ flex: 1, borderRadius: '1.5rem' }}
                                                     disabled={submittingComment[post.id]}
                                                 />
                                                 <button
@@ -730,7 +789,8 @@ const GroupDetail: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    ))}
+                    );
+                })}
                     {posts.length === 0 && (
                         <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No posts yet. Be the first to share!</p>
                     )}

@@ -12,6 +12,7 @@ import LookingFor from './pages/LookingFor';
 import LocationSettings from './pages/LocationSettings';
 import Profile from './pages/Profile';
 import AdminRoute from './components/AdminRoute';
+import PartnerRoute from './components/PartnerRoute';
 
 import Groups from './pages/Groups';
 import CreateGroup from './pages/CreateGroup';
@@ -39,9 +40,12 @@ import LumaSpaces from './pages/LumaSpaces';
 import EventDetail from './pages/EventDetail';
 import MyEvents from './pages/MyEvents';
 import InquiryForm from './pages/partnerships/InquiryForm';
+import PartnerProfilePage from './pages/partnerships/PartnerProfilePage';
+import PartnerDashboard from './pages/partnerships/PartnerDashboard';
 import BrandInquiries from './pages/admin/BrandInquiries';
 import ExploreHub from './pages/ExploreHub';
 import SocialHub from './pages/SocialHub';
+import TrustRitual from './pages/TrustRitual';
 
 import { ToastProvider } from './context/ToastContext';
 import Skeleton from './components/Skeleton';
@@ -97,6 +101,14 @@ const App: React.FC = () => {
                   element={
                     <ProtectedRoute>
                       <LookingFor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trust-ritual"
+                  element={
+                    <ProtectedRoute>
+                      <TrustRitual />
                     </ProtectedRoute>
                   }
                 />
@@ -349,6 +361,18 @@ const App: React.FC = () => {
                     <ProtectedRoute>
                       <EventDetail />
                     </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/brand/:id"
+                  element={<PartnerProfilePage />}
+                />
+                <Route
+                  path="/partner/dashboard"
+                  element={
+                    <PartnerRoute>
+                      <PartnerDashboard />
+                    </PartnerRoute>
                   }
                 />
               </Routes>

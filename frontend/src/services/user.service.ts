@@ -101,5 +101,15 @@ export const userService = {
     verifyUser: async (verificationMethod: 'manual' | 'selfie' | 'phone'): Promise<{ success: boolean; isVerified: boolean }> => {
         const response = await apiClient.post('/users/me/verify', { verificationMethod });
         return response.data;
+    },
+
+    blockUser: async (id: string): Promise<{ success: boolean }> => {
+        const response = await apiClient.post(`/users/${id}/block`);
+        return response.data;
+    },
+
+    unblockUser: async (id: string): Promise<{ success: boolean }> => {
+        const response = await apiClient.delete(`/users/${id}/block`);
+        return response.data;
     }
 };
