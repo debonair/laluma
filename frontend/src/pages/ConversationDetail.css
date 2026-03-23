@@ -3,12 +3,14 @@
     flex-direction: column;
     height: 100%;
     background-color: var(--bg-color);
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
 }
 
 .messages-area {
     flex: 1;
     overflow-y: auto;
     padding: 1.25rem;
+    padding-bottom: 2rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -183,7 +185,6 @@
 /* Input Area */
 .chat-input-container {
     padding: 1rem;
-    padding-bottom: calc(1rem + 60px);
     background-color: white;
     border-top: 1px solid var(--border-color);
     display: flex;
@@ -240,8 +241,79 @@
     transition: border-color 0.2s;
 }
 
-.chat-input:focus {
+.chat-input-textarea {
+    flex: 1;
+    padding: 0.75rem 1.25rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    resize: none;
+    max-height: 120px;
+    line-height: 1.4;
+    background: var(--bg-secondary);
+}
+
+.chat-input-textarea:focus {
     border-color: var(--primary-color);
+    background: white;
+}
+
+/* Reactions */
+.message-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.reaction-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-bubble:hover .reaction-btn {
+    opacity: 1;
+}
+
+.reactions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.reaction-badge {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.reaction-badge:hover {
+    background: var(--bg-secondary);
+    transform: translateY(-1px);
+}
+
+.reaction-badge.mine {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
 }
 
 .send-btn {

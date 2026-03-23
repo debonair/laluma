@@ -56,6 +56,7 @@ model User {
   subscription           Subscription?
   blockedBy              UserBlock[]               @relation("BlockedBy")
   blockedUsers           UserBlock[]               @relation("BlockedUsers")
+  messageReactions       MessageReaction[]         @relation("UserMessageReactions")
   preferences            UserPreference?
   brandProfile           BrandProfile?             @relation("UserBrandProfile")
   surveyResponses        SurveyResponse[]
@@ -466,10 +467,24 @@ model Message {
   attachmentUrl  String?      @map("attachment_url")
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  reactions      MessageReaction[]
 
   @@index([conversationId])
   @@index([senderId])
   @@map("messages")
+}
+
+model MessageReaction {
+  id           String   @id @default(uuid())
+  messageId    String   @map("message_id")
+  userId       String   @map("user_id")
+  reactionType String   @map("reaction_type")
+  createdAt    DateTime @default(now()) @map("created_at")
+  message      Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user         User     @relation("UserMessageReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@map("message_reactions")
 }
 
 model Connection {

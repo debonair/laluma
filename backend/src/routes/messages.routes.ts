@@ -9,7 +9,9 @@ import {
     sendMessage,
     sendAttachmentMessage,
     markAsRead,
-    getPotentialParticipants
+    getPotentialParticipants,
+    addReaction,
+    removeReaction
 } from '../controllers/messages.controller';
 
 const router = express.Router();
@@ -32,5 +34,7 @@ const attachmentUpload = (req: express.Request, res: express.Response, next: exp
 
 router.post('/send/attachment', authenticate, attachmentUpload, sendAttachmentMessage as any);
 router.post('/read', authenticate, markAsRead as any);
+router.post('/:id/react', authenticate, addReaction as any);
+router.delete('/:id/react', authenticate, removeReaction as any);
 
 export default router;

@@ -801,10 +801,25 @@ export const moderateComment = async (
             return;
         }
 
-        await prisma.contentComment.update({
+        const updatedComment = await prisma.contentComment.update({
             where: { id },
             data: { status }
         });
+
+        // Update content count if status changed to/from hidden
+        if (comment.status !== status) {
+            if (status === 'hidden' && comment.status === 'visible') {
+                await prisma.content.update({
+                    where: { id: comment.contentId },
+                    data: { commentsCount: { decrement: 1 } }
+                });
+            } else if (status === 'visible' && comment.status !== 'visible') {
+                await prisma.content.update({
+                    where: { id: comment.contentId },
+                    data: { commentsCount: { increment: 1 } }
+                });
+            }
+        }
 
         res.json({ success: true, status });
     } catch (error) {

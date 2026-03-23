@@ -87,7 +87,7 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
             return resAny.status(403).json({ error: 'Not authorized to view this conversation' });
         }
 
-        const messages = await prisma.message.findMany({
+        const messages = await (prisma.message as any).findMany({
             where: { conversationId },
             include: {
                 sender: {
@@ -96,7 +96,8 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
                         username: true,
                         displayName: true
                     }
-                }
+                },
+                reactions: true
             },
             orderBy: { createdAt: 'asc' }
         });
@@ -480,3 +481,88 @@ export const getPotentialParticipants = async (req: AuthRequest, res: Response) 
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const addReaction = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user!.userId;
+        const messageId = req.params.id as string;
+        const { reactionType } = req.body;
+
+        if (!reactionType) {
+            return (res as any).status(400).json({ error: 'Reaction type is required' });
+        }
+
+        const reaction = await (prisma as any).messageReaction.upsert({
+            where: {
+                messageId_userId: {
+                    messageId,
+                    userId
+                }
+            },
+            update: { reactionType },
+            create: {
+                messageId,
+                userId,
+                reactionType
+            }
+        });
+
+        // Get the message to find the conversation and participants to notify
+        const message = await (prisma.message as any).findUnique({
+            where: { id: messageId },
+            include: { conversation: { include: { participants: true } } }
+        });
+
+        if (message && message.conversation) {
+            message.conversation.participants.forEach((p: any) => {
+                getIO().to(`user_${p.userId}`).emit('message_reaction_updated', {
+                    messageId,
+                    userId,
+                    reactionType,
+                    action: 'added'
+                });
+            });
+        }
+
+        res.json({ reaction });
+    } catch (error) {
+        console.error('Error adding reaction:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const removeReaction = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user!.userId;
+        const messageId = req.params.id as string;
+
+        await (prisma as any).messageReaction.delete({
+            where: {
+                messageId_userId: {
+                    messageId,
+                    userId
+                }
+            }
+        });
+
+        const message = await (prisma.message as any).findUnique({
+            where: { id: messageId },
+            include: { conversation: { include: { participants: true } } }
+        });
+
+        if (message && message.conversation) {
+            message.conversation.participants.forEach((p: any) => {
+                getIO().to(`user_${p.userId}`).emit('message_reaction_updated', {
+                    messageId,
+                    userId,
+                    action: 'removed'
+                });
+            });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        // If the reaction doesn't exist, we can treat it as a success for idempotency
+        res.json({ success: true });
+    }
+}

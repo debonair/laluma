@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
+import BottomNav from '../components/BottomNav';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
 import { useSocket } from '../context/SocketContext';
@@ -13,11 +13,17 @@ import {
     X,
     Check,
     CheckCheck,
-    Paperclip
+    Paperclip,
+    Smile
 } from 'lucide-react';
 import { type UserProfile, userService } from '../services/user.service';
 import { handleAPIError, SERVER_URL } from '../services/api';
 import './ConversationDetail.css';
+
+interface MessageReaction {
+    userId: string;
+    reactionType: string;
+}
 
 interface Message {
     id: string;
@@ -32,6 +38,7 @@ interface Message {
         username: string;
         displayName?: string;
     };
+    reactions?: MessageReaction[];
 }
 
 const ConversationDetail: React.FC = () => {
@@ -103,14 +110,36 @@ const ConversationDetail: React.FC = () => {
             }
         };
 
+        const handleReactionUpdated = (data: { messageId: string, userId: string, reactionType?: string, action: 'added' | 'removed' }) => {
+            setMessages(prev => prev.map(msg => {
+                if (msg.id === data.messageId) {
+                    let newReactions = [...(msg.reactions || [])];
+                    if (data.action === 'added') {
+                        const existingIdx = newReactions.findIndex(r => r.userId === data.userId);
+                        if (existingIdx > -1) {
+                            newReactions[existingIdx] = { userId: data.userId, reactionType: data.reactionType! };
+                        } else {
+                            newReactions.push({ userId: data.userId, reactionType: data.reactionType! });
+                        }
+                    } else {
+                        newReactions = newReactions.filter(r => r.userId !== data.userId);
+                    }
+                    return { ...msg, reactions: newReactions };
+                }
+                return msg;
+            }));
+        };
+
         socket.on('new_message', handleNewMessage);
         socket.on('messages_read', handleMessagesRead);
         socket.on('is_typing', handleIsTyping);
+        socket.on('message_reaction_updated', handleReactionUpdated);
 
         return () => {
             socket.off('new_message', handleNewMessage);
             socket.off('messages_read', handleMessagesRead);
             socket.off('is_typing', handleIsTyping);
+            socket.off('message_reaction_updated', handleReactionUpdated);
         };
     }, [socket, id, user?.id]);
 
@@ -123,9 +152,13 @@ const ConversationDetail: React.FC = () => {
         });
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNewMessage(e.target.value);
         
+        // Auto-resize textarea
+        e.target.style.height = 'auto';
+        e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+
         // Emit typing=true
         emitTyping(true);
 
@@ -136,6 +169,21 @@ const ConversationDetail: React.FC = () => {
         typingTimeoutRef.current = setTimeout(() => {
             emitTyping(false);
         }, 2000);
+    };
+
+    const handleReaction = async (messageId: string, emoji: string) => {
+        try {
+            const currentMessage = messages.find(m => m.id === messageId);
+            const myReaction = currentMessage?.reactions?.find(r => r.userId === user?.id);
+
+            if (myReaction?.reactionType === emoji) {
+                await apiClient.delete(`/messages/${messageId}/react`);
+            } else {
+                await apiClient.post(`/messages/${messageId}/react`, { reactionType: emoji });
+            }
+        } catch (error) {
+            console.error('Error handling reaction:', error);
+        }
     };
 
     // Mark messages as read when opening conversation
@@ -302,7 +350,42 @@ const ConversationDetail: React.FC = () => {
                                                 </div>
                                             )}
                                             {msg.content && <p style={{ margin: 0 }}>{msg.content}</p>}
+                                            
+                                            <div className="message-actions">
+                                                <button 
+                                                    className="reaction-btn"
+                                                    onClick={() => {
+                                                        const emoji = prompt('Choose reaction:', '❤️');
+                                                        if (emoji) handleReaction(msg.id, emoji);
+                                                    }}
+                                                >
+                                                    <Smile size={14} />
+                                                </button>
+                                            </div>
                                         </div>
+
+                                        {msg.reactions && msg.reactions.length > 0 && (
+                                            <div className="reactions-container">
+                                                {Object.entries(
+                                                    msg.reactions.reduce((acc: Record<string, string[]>, curr) => {
+                                                        if (!acc[curr.reactionType]) acc[curr.reactionType] = [];
+                                                        acc[curr.reactionType].push(curr.userId);
+                                                        return acc;
+                                                    }, {})
+                                                ).map(([emoji, userIds]) => {
+                                                    const isMine = userIds.includes(user?.id || '');
+                                                    return (
+                                                        <div 
+                                                            key={emoji} 
+                                                            className={`reaction-badge ${isMine ? 'mine' : ''}`}
+                                                            onClick={() => handleReaction(msg.id, emoji)}
+                                                        >
+                                                            {emoji} {userIds.length > 1 ? userIds.length : ''}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                         
                                         <div className="message-meta">
                                             {isMine && (
@@ -375,13 +458,19 @@ const ConversationDetail: React.FC = () => {
                         <Paperclip size={20} />
                     </button>
                     
-                    <input
-                        type="text"
+                    <textarea
                         value={newMessage}
                         onChange={handleInputChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage(e as any);
+                            }
+                        }}
                         placeholder="Type a message..."
                         disabled={sendingMessage}
-                        className="chat-input"
+                        className="chat-input-textarea"
+                        rows={1}
                     />
                     
                     <button
