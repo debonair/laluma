@@ -117,9 +117,9 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 0 0.5rem 0;
   color: var(--text-primary);
   line-height: 1.2;
-  font-family: 'Syne', sans-serif;
-  font-weight: 800; /* Distinctive Syne Boldness */
-  letter-spacing: -0.03em;
+  font-family: var(--font-brand); /* Space Grotesk */
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 h1 { font-size: 2.25rem; }
@@ -310,6 +310,15 @@ a:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
+/* --- Utility Classes --- */
+.loading-skeleton-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  gap: 1.25rem;
+}
+
 
 .search-pill {
   display: flex;
@@ -423,79 +432,207 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(82, 121, 111, 0.15); /* Sage Glow */
 }
 
+/* --- File Input Styling --- */
+input[type="file"] {
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border: 1.5px dashed var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input[type="file"]:hover {
+  border-color: var(--primary-color);
+  background: rgba(82, 121, 111, 0.05);
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: var(--text-primary);
+  color: var(--bg-color);
+  border-radius: 8px;
+  font-family: var(--font-brand);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--primary-color);
+}
+
+/* --- Premium Button System --- */
+
+/* Base reset for native buttons without classes */
+:where(button:not([class*="btn"]):not([class*="tab-button"]):not([class*="toggle-"]):not([class*="nav-item"]):not([class*="icon-btn"]):not([class*="slick-"])) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  font-family: var(--font-brand);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:where(button:not([class*="btn"]):not([class*="tab-button"]):not([class*="toggle-"]):not([class*="nav-item"]):not([class*="icon-btn"]):not([class*="slick-"])):hover {
+  background-color: #E2E8F0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+:where(button:not([class*="btn"]):not([class*="tab-button"]):not([class*="toggle-"]):not([class*="nav-item"]):not([class*="icon-btn"]):not([class*="slick-"])):active {
+  transform: scale(0.97);
+}
+
+/* Core Button Classes */
 .btn,
 .btn-primary,
 .btn-secondary,
 .btn-glass,
-.btn-ghost {
+.btn-ghost,
+.btn-danger {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.75rem;
-  border-radius: 9999px;
+  padding: 0.85rem 2rem;
+  border-radius: 100px; /* Fully rounded pill */
   font-weight: 700;
   font-family: var(--font-brand);
-  font-size: 1rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
   border: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy subtle spring */
   gap: 0.625rem;
   white-space: nowrap;
+  user-select: none;
+  z-index: 1;
 }
 
+/* Shine effect on hover */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-20deg);
+  z-index: -1;
+  transition: all 0.6s ease;
+}
+
+.btn:hover:not(:disabled)::after {
+  left: 200%;
+}
+
+/* Primary Button (Rich Gradient + Glow) */
 .btn-primary {
   background: var(--brand-gradient);
   color: white;
-  box-shadow: 0 4px 12px rgba(82, 121, 111, 0.25);
+  box-shadow: 0 8px 24px rgba(82, 121, 111, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-  box-shadow: 0 6px 16px rgba(82, 121, 111, 0.35);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(82, 121, 111, 0.4), inset 0 2px 0 rgba(255,255,255,0.3);
 }
 
+/* Secondary Button (Tactile + Soft) */
 .btn-secondary {
-  background: var(--primary-light);
-  color: var(--primary-hover);
+  background: var(--bg-card);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-light);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #BCC5B7;
-  transform: translateY(-1px);
+  background: var(--primary-light);
+  color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
 }
 
+/* Glass Button (Sleek Blur) */
 .btn-glass {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--text-primary);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
 }
 
 .btn-glass:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.6);
   transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
 }
 
+/* Danger Button (Vibrant Red) */
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.25);
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(239, 68, 68, 0.35);
+}
+
+/* Ghost Button (Minimalist) */
 .btn-ghost {
   background: transparent;
   color: var(--text-secondary);
+  padding: 0.75rem 1.5rem;
 }
 
-.btn-ghost:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
+.btn-ghost::after {
+  display: none; /* No shine for ghost */
 }
 
-.btn:active:not(:disabled) {
-  transform: scale(0.98);
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(82, 121, 111, 0.08); /* Soft primary tint */
+  color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
-.btn:disabled {
-  opacity: 0.5;
+/* Active State Micro-interaction */
+.btn:active:not(:disabled),
+:where(button:not([class*="btn"]):not([class*="tab-button"]):not([class*="toggle-"]):not([class*="nav-item"]):not([class*="icon-btn"]):not([class*="slick-"])):active:not(:disabled) {
+  transform: scale(0.95) translateY(1px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Disabled State */
+.btn:disabled, button:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  filter: grayscale(1);
+  filter: grayscale(0.5);
+  pointer-events: none;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 /* --- Badges --- */
@@ -658,6 +795,18 @@ select:focus {
   transition: all 0.2s;
   padding: 0.5rem;
   border-radius: 12px;
+  position: relative;
+  
+  /* Aggressive Button Resets for macOS/iOS Safari */
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none;
+  box-shadow: none !important;
+  font-family: inherit;
+  margin: 0;
 }
 
 .nav-item:active {
@@ -672,11 +821,38 @@ select:focus {
   color: var(--primary-color);
 }
 
+.nav-item.active .nav-icon,
+.nav-item:hover .nav-icon {
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
 .nav-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 2px;
+}
+
+.nav-icon svg {
   width: 24px;
   height: 24px;
-  background-color: currentColor;
-  /* Mask placeholder */
+}
+
+.nav-icon img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid transparent;
+}
+
+.nav-item.active .nav-icon img {
+  border-color: var(--primary-color);
 }
 
 /* --- Toggle Card Component --- */

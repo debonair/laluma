@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MessageCircle, Bell, ArrowLeft, User as UserIcon } from 'lucide-react';
+import { Send, Bell, ArrowLeft, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
+import { SERVER_URL } from '../services/api';
 import './Header.css';
 
 interface HeaderProps {
@@ -28,6 +30,7 @@ const Header: React.FC<HeaderProps> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+    const { unreadNotificationsCount, unreadMessagesCount } = useNotification();
 
     // Top-level routes that normally don't need a back button
     const topLevelRoutes = [
@@ -85,15 +88,20 @@ const Header: React.FC<HeaderProps> = ({
                                 className="icon-btn"
                                 title="Notifications"
                             >
-                                <Bell size={24} />
-                                {/* Optional: <span className="badge-dot" /> */}
+                                <Bell size={24} strokeWidth={1.5} />
+                                {unreadNotificationsCount > 0 && (
+                                    <span className="header-badge">{unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}</span>
+                                )}
                             </button>
                             <button 
                                 onClick={() => navigate('/messages')} 
                                 className="icon-btn"
                                 title="Messages"
                             >
-                                <MessageCircle size={22} />
+                                <Send size={24} strokeWidth={1.5} />
+                                {unreadMessagesCount > 0 && (
+                                    <span className="header-badge">{unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}</span>
+                                )}
                             </button>
                             <button 
                                 onClick={() => navigate('/profile')} 
@@ -101,10 +109,14 @@ const Header: React.FC<HeaderProps> = ({
                                 title="Profile"
                             >
                                 {user?.profileImageUrl ? (
-                                    <img src={user.profileImageUrl} alt="Profile" className="header-avatar" />
+                                    <img 
+                                        src={user.profileImageUrl.startsWith('/') ? `${SERVER_URL}${user.profileImageUrl}` : user.profileImageUrl} 
+                                        alt="Profile" 
+                                        className="header-avatar" 
+                                    />
                                 ) : (
                                     <div className="header-avatar-placeholder">
-                                        <UserIcon size={18} />
+                                        <UserIcon size={18} strokeWidth={1.5} />
                                     </div>
                                 )}
                             </button>
