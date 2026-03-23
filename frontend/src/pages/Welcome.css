@@ -1,0 +1,108 @@
+/* Onboarding / Welcome Flow */
+
+.welcome-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    min-height: calc(100vh - 80px); /* Adjust for potential bottom nav/header */
+}
+
+.welcome-hero-text {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-family: var(--font-header);
+    letter-spacing: -0.04em;
+}
+
+.welcome-subtext {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    max-width: 320px;
+    line-height: 1.5;
+}
+
+/* Trust Ritual */
+.trust-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 12px rgba(82, 121, 111, 0.2));
+}
+
+.trust-sections {
+    max-width: 400px;
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    text-align: left;
+}
+
+.trust-section {
+    margin-bottom: 0.5rem;
+}
+
+.trust-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.trust-section p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.trust-commitment-box {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    padding: 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 400px;
+}
+
+.trust-commitment-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.trust-footer-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Onboarding Stage Selection */
+.onboarding-options {
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 2rem;
+}
+
+.onboarding-footer {
+    width: 100%;
+    max-width: 500px;
+    margin-top: auto;
+    padding-top: 2rem;
+}
+
+.onboarding-footer .btn-primary {
+    width: 100%;
+}

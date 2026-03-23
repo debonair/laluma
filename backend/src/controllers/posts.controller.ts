@@ -441,19 +441,37 @@ export const unlikePost = async (
             return;
         }
 
+        // Check if like exists before trying to delete and decrement
+        const existingLike = await prisma.postLike.findUnique({
+            where: {
+                postId_userId: {
+                    postId: post.id,
+                    userId: req.user!.userId
+                }
+            }
+        });
+
+        if (!existingLike) {
+            res.json({
+                success: true,
+                likes_count: post.likesCount,
+                message: 'Already unliked'
+            });
+            return;
+        }
+
         // Delete like and decrement count
         await prisma.$transaction([
             prisma.postLike.delete({
-                where: {
-                    postId_userId: {
-                        postId: post.id,
-                        userId: req.user!.userId
-                    }
-                }
+                where: { id: existingLike.id }
             }),
             prisma.post.update({
                 where: { id: post.id },
-                data: { likesCount: { decrement: 1 } }
+                data: { 
+                    likesCount: { 
+                        decrement: 1 
+                    } 
+                }
             })
         ]);
 
@@ -510,7 +528,7 @@ export const getPostComments = async (
                 },
                 take: limit,
                 skip: offset,
-                orderBy: { createdAt: 'asc' },
+                orderBy: { createdAt: 'desc' },
                 include: {
                     author: true,
                     likes: {

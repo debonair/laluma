@@ -483,7 +483,7 @@ const ContentForm: React.FC = () => {
                     <div className="form-actions">
                         <button
                             type="button"
-                            className="btn-cancel"
+                            className="btn-secondary"
                             onClick={() => navigate('/admin/content')}
                             disabled={saving}
                         >
@@ -491,7 +491,7 @@ const ContentForm: React.FC = () => {
                         </button>
                         <button
                             type="submit"
-                            className="btn-save"
+                            className="btn-primary"
                             disabled={saving}
                         >
                             {saving ? 'Saving...' : (id ? 'Update Content' : 'Create Content')}

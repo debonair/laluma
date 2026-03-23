@@ -121,7 +121,7 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
             .find(u => u.id !== userId);
 
         // Mark messages as read
-        await prisma.message.updateMany({
+        const updateResult = await prisma.message.updateMany({
             where: {
                 conversationId,
                 senderId: { not: userId },
@@ -129,6 +129,10 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
             },
             data: { isRead: true }
         });
+
+        if (updateResult.count > 0 && recipient) {
+            getIO().to(`user_${recipient.id}`).emit('messages_read', { conversationId, readBy: userId, timestamp: new Date() });
+        }
 
         res.json({ messages, recipient });
     } catch (error) {
@@ -299,6 +303,10 @@ export const sendAttachmentMessage = async (req: AuthRequest, res: Response) => 
             return resAny.status(400).json({ error: 'Either content or an attachment is required' });
         }
 
+        if (senderId === recipientId) {
+            return resAny.status(400).json({ error: 'Cannot start a conversation with yourself' });
+        }
+
         const isBlocked = await prisma.userBlock.findFirst({
             where: {
                 OR: [
@@ -430,6 +438,45 @@ export const markAsRead = async (req: AuthRequest, res: Response) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error marking conversation as read:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const getPotentialParticipants = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user!.userId;
+        const search = (req.query.search as string || '').toLowerCase();
+        const limit = parseInt((typeof req.query.limit === 'string' ? req.query.limit : '20')) || 20;
+        const offset = parseInt((typeof req.query.offset === 'string' ? req.query.offset : '0')) || 0;
+
+        const users = await prisma.user.findMany({
+            where: {
+                id: { not: userId },
+                role: { not: 'admin' }, // Optionally exclude admins from general discovery
+                OR: [
+                    { username: { contains: search, mode: 'insensitive' } },
+                    { displayName: { contains: search, mode: 'insensitive' } }
+                ],
+                // Exclude users who blocked the current user or are blocked by the current user
+                NOT: [
+                    { blockedBy: { some: { blockerId: userId } } },
+                    { blockedUsers: { some: { blockedId: userId } } }
+                ]
+            },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                profileImageUrl: true,
+                motherhoodStage: true
+            },
+            take: limit,
+            skip: offset
+        });
+
+        res.json({ users });
+    } catch (error) {
+        console.error('Error fetching potential participants:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

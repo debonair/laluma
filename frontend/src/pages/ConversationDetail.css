@@ -356,7 +356,7 @@
     margin-bottom: 32px;
 }
 
-.safety-action-item {
+.safety-action-btn {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -370,17 +370,17 @@
     width: 100%;
 }
 
-.safety-action-item:hover {
+.safety-action-btn:hover {
     background: var(--bg-secondary);
     border-color: var(--primary-color);
 }
 
-.safety-action-item.block .action-icon {
+.safety-action-btn.block .action-icon {
     color: var(--error-color);
     background: #FFEBEE;
 }
 
-.safety-action-item.report .action-icon {
+.safety-action-btn.report .action-icon {
     color: var(--warning-color);
     background: #FFF8E1;
 }

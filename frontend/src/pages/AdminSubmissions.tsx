@@ -116,7 +116,7 @@ const AdminSubmissions: React.FC = () => {
                                     <button className="btn-primary" onClick={() => handleApprove(s.id)} style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
                                         ✅ Approve
                                     </button>
-                                    <button className="btn-secondary" onClick={() => setRejectId(s.id)} style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', color: '#EF4444' }}>
+                                    <button className="btn-danger" onClick={() => setRejectId(s.id)} style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>
                                         ❌ Reject
                                     </button>
                                 </div>
@@ -142,7 +142,7 @@ const AdminSubmissions: React.FC = () => {
                                 style={{ width: '100%', marginBottom: '1rem' }}
                             />
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button className="btn-primary" onClick={handleReject} style={{ flex: 1, backgroundColor: '#EF4444' }}>
+                                <button className="btn-danger" onClick={handleReject} style={{ flex: 1 }}>
                                     Confirm Reject
                                 </button>
                                 <button className="btn-ghost" onClick={() => { setRejectId(null); setRejectReason(''); }} style={{ flex: 1 }}>

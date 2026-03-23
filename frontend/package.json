@@ -17,6 +17,7 @@
     "@hookform/resolvers": "^5.2.2",
     "axios": "^1.13.5",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
     "keycloak-js": "^26.2.3",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",

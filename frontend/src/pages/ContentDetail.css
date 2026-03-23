@@ -194,7 +194,7 @@
     border-top: 2px solid #E5E7EB;
 }
 
-.action-button {
+.btn-action-button {
     background: white;
     border: 2px solid #E5E7EB;
     padding: 0.75rem 1.5rem;
@@ -206,12 +206,12 @@
     transition: all 0.2s;
 }
 
-.action-button:hover {
+.btn-action-button:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
 }
 
-.action-button.active {
+.btn-action-button.active {
     background: var(--primary-color);
     border-color: var(--primary-color);
     color: white;
@@ -386,17 +386,6 @@
     margin-bottom: 1rem;
 }
 
-.content-detail-error button {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .content-detail {
@@ -419,7 +408,7 @@
         flex-direction: column;
     }
 
-    .action-button {
+    .btn-action-button {
         width: 100%;
     }
 

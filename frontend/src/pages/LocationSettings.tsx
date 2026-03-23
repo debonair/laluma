@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 
+import './LocationSettings.css';
+
 const LocationSettings: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -53,11 +55,11 @@ const LocationSettings: React.FC = () => {
             />
             <main className="page-content">
 
-                <div className="card" style={{ animation: 'slideUpFade 0.4s ease-out forwards' }}>
-                    <div style={{ marginBottom: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <label style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Distance Radius</label>
-                            <span style={{ color: 'var(--primary-color)', fontWeight: 700, fontSize: '1.1rem' }}>
+                <div className="card location-settings-card">
+                    <div className="location-radius-section">
+                        <div className="location-radius-header">
+                            <label className="location-radius-label">Distance Radius</label>
+                            <span className="location-radius-value">
                                 {anywhere ? 'Anywhere' : `${radius} km`}
                             </span>
                         </div>
@@ -69,19 +71,9 @@ const LocationSettings: React.FC = () => {
                             value={radius}
                             onChange={handleRadiusChange}
                             disabled={anywhere}
-                            className="input-field"
-                            style={{
-                                width: '100%',
-                                padding: '0',
-                                height: '6px',
-                                background: 'rgba(0,0,0,0.05)',
-                                borderRadius: '3px',
-                                appearance: 'none',
-                                opacity: anywhere ? 0.4 : 1,
-                                cursor: anywhere ? 'not-allowed' : 'pointer'
-                            }}
+                            className="location-radius-slider"
                         />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.75rem', fontWeight: 500 }}>
+                        <div className="location-radius-footer">
                             <span>1km</span>
                             <span>100km</span>
                         </div>
@@ -89,39 +81,21 @@ const LocationSettings: React.FC = () => {
 
                     <div
                         onClick={handleAnywhereToggle}
-                        className={`card ${anywhere ? 'active' : ''}`}
-                        style={{ 
-                            cursor: 'pointer', 
-                            display: 'flex', 
-                            gap: '1rem', 
-                            padding: '1.25rem',
-                            border: anywhere ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-                            backgroundColor: anywhere ? 'var(--primary-light)' : 'transparent',
-                            transition: 'all 0.2s ease'
-                        }}
+                        className={`location-anywhere-toggle ${anywhere ? 'active' : ''}`}
                     >
-                        <div style={{ 
-                            width: '24px', 
-                            height: '24px', 
-                            borderRadius: '50%', 
-                            border: '2px solid var(--primary-color)', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            backgroundColor: '#fff'
-                        }}>
-                            {anywhere && <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'var(--primary-color)' }} />}
+                        <div className="location-toggle-radio">
+                            {anywhere && <div className="location-toggle-radio-inner" />}
                         </div>
                         <div>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Connect with people from anywhere</div>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>I'm open to long-distance connections</div>
+                            <div className="location-anywhere-title">Connect with people from anywhere</div>
+                            <div className="location-anywhere-desc">I'm open to long-distance connections</div>
                         </div>
                     </div>
                 </div>
 
-                <div style={{ marginTop: 'auto', width: '100%', paddingTop: '2rem' }}>
+                <div className="location-footer">
                     <button
-                        className="btn-primary"
+                        className="btn-primary w-full"
                         onClick={handleContinue}
                     >
                         Continue

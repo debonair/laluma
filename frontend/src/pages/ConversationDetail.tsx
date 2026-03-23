@@ -222,13 +222,19 @@ const ConversationDetail: React.FC = () => {
                 const response = await apiClient.post<{ message: Message }>('/messages/send/attachment', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                setMessages(prev => [...prev, response.data.message]);
+                setMessages(prev => {
+                    if (prev.some(m => m.id === response.data.message.id)) return prev;
+                    return [...prev, response.data.message];
+                });
             } else {
                 const response = await apiClient.post<{ message: Message }>('/messages/send', {
                     recipientId,
                     content: contentToAuth
                 });
-                setMessages(prev => [...prev, response.data.message]);
+                setMessages(prev => {
+                    if (prev.some(m => m.id === response.data.message.id)) return prev;
+                    return [...prev, response.data.message];
+                });
             }
 
             setNewMessage('');
@@ -341,7 +347,7 @@ const ConversationDetail: React.FC = () => {
                 {previewUrl && (
                     <div className="attachment-preview">
                         <img src={previewUrl} alt="Preview" />
-                        <button type="button" onClick={clearAttachment} className="remove-attachment">
+                        <button type="button" onClick={clearAttachment} className="remove-attachment icon-btn">
                             <X size={14} />
                         </button>
                     </div>
@@ -392,7 +398,7 @@ const ConversationDetail: React.FC = () => {
                     <div className="safety-modal-content" onClick={e => e.stopPropagation()}>
                         <div className="safety-modal-header">
                             <h3>Safety Hub</h3>
-                            <button className="close-modal" onClick={() => setShowSafetyModal(false)}>
+                            <button className="close-modal icon-btn" onClick={() => setShowSafetyModal(false)}>
                                 <X size={20} />
                             </button>
                         </div>
@@ -401,7 +407,7 @@ const ConversationDetail: React.FC = () => {
                             <p className="safety-intro">Your safety is our priority. These actions are private and help keep the Luma community supportive.</p>
                             
                             <div className="safety-actions">
-                                <button className="safety-action-item block" onClick={handleBlockUser}>
+                                <button className="safety-action-btn block" onClick={handleBlockUser}>
                                     <div className="action-icon"><Shield size={20} /></div>
                                     <div className="action-text">
                                         <strong>Block {recipient?.display_name || recipient?.username}</strong>
@@ -410,7 +416,7 @@ const ConversationDetail: React.FC = () => {
                                     <ChevronRight size={18} />
                                 </button>
                                 
-                                <button className="safety-action-item report" onClick={handleReportUser}>
+                                <button className="safety-action-btn report" onClick={handleReportUser}>
                                     <div className="action-icon"><Info size={20} /></div>
                                     <div className="action-text">
                                         <strong>Report Concern</strong>

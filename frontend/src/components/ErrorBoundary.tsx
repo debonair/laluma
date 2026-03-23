@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import './ErrorBoundary.css';
 
 interface Props {
     children: ReactNode;
@@ -36,30 +37,30 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="page-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
-                    <div className="content-card" style={{ maxWidth: '500px', width: '100%', padding: '2.5rem', textAlign: 'center' }}>
-                        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚧</div>
-                        <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+                <div className="error-page">
+                    <div className="content-card error-card">
+                        <div className="error-icon">🚧</div>
+                        <h1 className="error-title">
                             Oops, something went wrong.
                         </h1>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.5' }}>
+                        <p className="error-message">
                             We encountered an unexpected error. You can try reloading the page, or return to the home screen.
                         </p>
 
                         {/* Optional: Show error message in development */}
                         {this.state.error && (
-                            <div style={{ textAlign: 'left', background: '#f871711a', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #f871714d', overflowX: 'auto' }}>
-                                <p style={{ color: '#ef4444', fontFamily: 'monospace', fontSize: '0.8rem', margin: 0 }}>
+                            <div className="error-details">
+                                <p className="error-stack">
                                     {this.state.error.toString()}
                                 </p>
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button className="btn-primary" onClick={this.handleReload} style={{ width: 'auto', padding: '0.75rem 1.5rem' }}>
+                        <div className="error-actions">
+                            <button className="btn-primary" onClick={this.handleReload}>
                                 Reload Page
                             </button>
-                            <button className="btn-secondary" onClick={this.handleGoHome} style={{ width: 'auto', padding: '0.75rem 1.5rem' }}>
+                            <button className="btn-secondary" onClick={this.handleGoHome}>
                                 Go to Home
                             </button>
                         </div>

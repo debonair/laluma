@@ -41,22 +41,22 @@ describe('Auth Controller', () => {
             };
 
             // Mock getAdminToken
-            mockedAxios.post.mockResolvedValueOnce({ data: { access_token: 'admin-token' } });
+            (mockedAxios.post as any).mockResolvedValueOnce({ data: { access_token: 'admin-token' } });
 
             // Mock Keycloak user check (doesn't exist)
-            mockedAxios.get.mockResolvedValueOnce({ data: [] }); // Check username
-            mockedAxios.get.mockResolvedValueOnce({ data: [] }); // Check email
+            (mockedAxios.get as any).mockResolvedValueOnce({ data: [] }); // Check username
+            (mockedAxios.get as any).mockResolvedValueOnce({ data: [] }); // Check email
 
             // Mock Keycloak user creation
-            mockedAxios.post.mockResolvedValueOnce({ headers: { location: 'http://localhost/users/kc-id-123' } });
+            (mockedAxios.post as any).mockResolvedValueOnce({ headers: { location: 'http://localhost/users/kc-id-123' } });
 
             // Mock role assignment and actions patch
-            mockedAxios.put.mockResolvedValueOnce({});
-            mockedAxios.get.mockResolvedValueOnce({ data: [{ name: 'member' }] });
-            mockedAxios.post.mockResolvedValueOnce({});
+            (mockedAxios.put as any).mockResolvedValueOnce({});
+            (mockedAxios.get as any).mockResolvedValueOnce({ data: [{ name: 'app-user' }] });
+            (mockedAxios.post as any).mockResolvedValueOnce({});
 
             // Mock user sign-in token retrieval
-            mockedAxios.post.mockResolvedValueOnce({
+            (mockedAxios.post as any).mockResolvedValueOnce({
                 data: {
                     access_token: 'test-access',
                     refresh_token: 'test-refresh',
@@ -84,9 +84,9 @@ describe('Auth Controller', () => {
                 password: 'password123'
             };
 
-            mockedAxios.post.mockResolvedValueOnce({ data: { access_token: 'admin-token' } });
+            (mockedAxios.post as any).mockResolvedValueOnce({ data: { access_token: 'admin-token' } });
             // Mock user check returns existing user
-            mockedAxios.get.mockResolvedValueOnce({ data: [{ id: 'some-id' }] });
+            (mockedAxios.get as any).mockResolvedValueOnce({ data: [{ id: 'some-id' }] });
 
             await signUp(mockReq, mockRes);
 
@@ -112,7 +112,7 @@ describe('Auth Controller', () => {
         it('returns tokens on successful auth', async () => {
             mockReq.body = { username: 'testuser', password: 'password123' };
 
-            mockedAxios.post.mockResolvedValueOnce({
+            (mockedAxios.post as any).mockResolvedValueOnce({
                 data: {
                     access_token: 'test-access',
                     refresh_token: 'test-refresh',
@@ -136,7 +136,7 @@ describe('Auth Controller', () => {
 
             const error = new Error('Request failed') as any;
             error.response = { data: { error: 'invalid_grant' } };
-            mockedAxios.post.mockRejectedValueOnce(error);
+            (mockedAxios.post as any).mockRejectedValueOnce(error);
 
             await signIn(mockReq, mockRes);
 
@@ -160,7 +160,7 @@ describe('Auth Controller', () => {
         it('returns new tokens on successful refresh', async () => {
             mockReq.body = { refreshToken: 'valid-refresh-token' };
 
-            mockedAxios.post.mockResolvedValueOnce({
+            (mockedAxios.post as any).mockResolvedValueOnce({
                 data: {
                     access_token: 'new-access',
                     refresh_token: 'new-refresh',
@@ -180,7 +180,7 @@ describe('Auth Controller', () => {
             mockReq.body = { refreshToken: 'invalid-token' };
             const error = new Error('Request failed') as any;
             error.response = { data: { error: 'invalid_grant' } };
-            mockedAxios.post.mockRejectedValueOnce(error);
+            (mockedAxios.post as any).mockRejectedValueOnce(error);
 
             await refreshToken(mockReq, mockRes);
             expect(mockRes.status).toHaveBeenCalledWith(401);
@@ -190,3 +190,4 @@ describe('Auth Controller', () => {
         });
     });
 });
+

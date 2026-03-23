@@ -12,8 +12,8 @@ const PartnerRoute: React.FC<PartnerRouteProps> = ({ children }) => {
 
     if (isLoading) {
         return (
-            <div style={{ padding: '2rem' }}>
-                <Skeleton height={200} borderRadius="12px" style={{ marginBottom: '1rem' }} />
+            <div className="loading-skeleton-container">
+                <Skeleton height={200} borderRadius="12px" />
                 <Skeleton height={200} borderRadius="12px" />
             </div>
         );

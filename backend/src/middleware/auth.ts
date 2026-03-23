@@ -14,7 +14,7 @@ export interface AuthRequest extends Request {
 }
 
 // Keycloak Configuration
-const KEYCLOAK_REALM = 'luma-realm';
+const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM || 'luma';
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:8080';
 const JWKS_URI = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs`;
 

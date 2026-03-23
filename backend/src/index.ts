@@ -28,6 +28,9 @@ import moderationRoutes from './routes/moderation.routes';
 import communityGuidelinesRoutes from './routes/communityGuidelines.routes';
 import eventRoutes from './routes/event.routes';
 import brandPartnersRoutes from './routes/brandPartners.routes';
+import editorialRoutes from './routes/editorial.routes';
+import privacyRoutes from './routes/privacy.routes';
+import surveyRoutes from './routes/survey.routes';
 
 // Initialize background workers
 import { stopModerationWorker } from './workers/moderationWorker';
@@ -82,6 +85,9 @@ app.use('/api/moderation', moderationRoutes);
 app.use('/api/community-guidelines', communityGuidelinesRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/brand-partners', brandPartnersRoutes);
+app.use('/api/editorial', editorialRoutes);
+app.use('/api/privacy', privacyRoutes);
+app.use('/api/surveys', surveyRoutes);
 
 // 404 handler
 app.use((req, res) => {

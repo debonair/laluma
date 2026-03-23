@@ -1,0 +1,111 @@
+.location-settings-card {
+    animation: slideUpFade 0.4s ease-out forwards;
+}
+
+.location-radius-section {
+    margin-bottom: 2rem;
+}
+
+.location-radius-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.location-radius-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.location-radius-value {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.location-radius-slider {
+    width: 100%;
+    padding: 0;
+    height: 6px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 3px;
+    appearance: none;
+    cursor: pointer;
+}
+
+.location-radius-slider:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Custom range thumb (standard) */
+.location-radius-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.location-radius-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    font-weight: 500;
+}
+
+.location-anywhere-toggle {
+    cursor: pointer;
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem !important;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+.location-anywhere-toggle.active {
+    border: 2px solid var(--primary-color) !important;
+    background-color: var(--primary-light) !important;
+}
+
+.location-toggle-radio {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    flex-shrink: 0;
+}
+
+.location-toggle-radio-inner {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+}
+
+.location-anywhere-title {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.location-anywhere-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.location-footer {
+    margin-top: auto;
+    width: 100%;
+    padding-top: 2rem;
+}

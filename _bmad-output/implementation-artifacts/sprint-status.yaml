@@ -101,13 +101,13 @@ development_status:
   7-6-my-events-dashboard: done
   epic-7-retrospective: optional
 
-  epic-8: backlog
-  8-1-brand-partner-inquiry-form: backlog
-  8-2-brand-admin-review-approval: backlog
-  8-3-partner-dashboard-content-submission: backlog
+  epic-8: in-progress
+  8-1-brand-partner-inquiry-form: done
+  8-2-brand-admin-review-approval: done
+  8-3-partner-dashboard-content-submission: in-progress
   8-4-editorial-review-workflow: backlog
   8-5-sponsoring-luma-spaces: backlog
-  8-6-partner-performance-analytics: backlog
+  8-6-partner-performance-analytics: in-progress
   epic-8-retrospective: optional
 
   epic-9: backlog
@@ -118,3 +118,14 @@ development_status:
   9-5-day-7-aha-moment-survey-engine: backlog
   9-6-universal-crisis-resource-signposting: backlog
   epic-9-retrospective: optional
+
+sprint-14:
+  goal: "The Editorial Bridge & Compliance Foundation"
+  stories:
+    - 8-3-partner-dashboard-content-submission: in-progress
+    - 8-4-editorial-review-workflow: todo
+    - 8-6-partner-performance-analytics: todo
+    - 9-3-gdpr-account-data-deletion: todo
+    - 9-4-gdpr-data-export-request: todo
+    - 9-5-day-7-aha-moment-survey: todo
+  status: in-progress

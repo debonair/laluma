@@ -5,7 +5,7 @@ import BottomNav from '../components/BottomNav';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { ArrowLeft, BadgeCheck } from 'lucide-react';
-import apiClient from '../services/api';
+import apiClient, { SERVER_URL } from '../services/api';
 import { connectionService } from '../services/connection.service';
 
 const PublicProfile: React.FC = () => {
@@ -105,6 +105,10 @@ const PublicProfile: React.FC = () => {
     }
 
     const isOwnProfile = profile.id === currentUser?.id;
+    const profileImageUrl = profile.profile_image_url;
+    const fullProfileImageUrl = profileImageUrl 
+        ? (profileImageUrl.startsWith('/') ? `${SERVER_URL}${profileImageUrl}` : profileImageUrl)
+        : null;
 
     return (
         <div className="page-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', backgroundColor: 'var(--bg-color)' }}>
@@ -134,7 +138,7 @@ const PublicProfile: React.FC = () => {
                             fontSize: '2.5rem',
                             marginBottom: '1rem',
                             border: '3px solid var(--primary-color)',
-                            backgroundImage: profile.profile_image_url ? `url(${profile.profile_image_url})` : 'none',
+                            backgroundImage: fullProfileImageUrl ? `url(${fullProfileImageUrl})` : 'none',
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}

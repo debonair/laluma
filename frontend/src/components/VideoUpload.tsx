@@ -103,10 +103,12 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onVideoUploaded, currentVideo
                             </div>
                         ) : (
                             <div className="upload-prompt">
-                                <span className="upload-icon">📹</span>
-                                <span className="upload-text">Click to upload video</span>
-                                <span className="upload-hint">MP4, MOV, AVI, WEBM (max 100MB)</span>
-                            </div>
+                            <span className="upload-icon">📤</span>
+                            <span className="btn-secondary" style={{ marginBottom: '0.5rem', pointerEvents: 'none' }}>
+                                Click to upload video
+                            </span>
+                            <span className="upload-hint">MP4, WebM or Ogg (Max 50MB)</span>
+                        </div>
                         )}
                     </label>
 
@@ -125,7 +127,7 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onVideoUploaded, currentVideo
                     <button
                         type="button"
                         onClick={handleRemove}
-                        className="remove-button"
+                        className="btn-danger"
                     >
                         Remove Video
                     </button>

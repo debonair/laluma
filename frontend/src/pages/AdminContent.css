@@ -16,6 +16,29 @@
     margin: 0;
 }
 
+.admin-header-container {
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.skeleton-container {
+    padding: 2rem;
+}
+
+.skeleton-item {
+    margin-bottom: 1rem;
+}
+
+.btn-action {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
 /* Filters */
 .filters {
     display: flex;
@@ -27,7 +50,7 @@
     /* Allow scrolling on mobile */
 }
 
-.filters button {
+.filters .filter-btn {
     background: transparent;
     border: none;
     padding: 0.5rem 1rem;
@@ -39,12 +62,12 @@
     font-weight: 500;
 }
 
-.filters button:hover {
+.filters .filter-btn:hover {
     background: var(--input-bg);
     color: var(--text-primary);
 }
 
-.filters button.active {
+.filters .filter-btn.active {
     background: var(--primary-color);
     color: white;
     box-shadow: var(--shadow-sm);

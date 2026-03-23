@@ -82,15 +82,15 @@ const MyLuma: React.FC = () => {
             <main className="page-content">
                 {/* Quick Actions Row */}
                 <div className="quick-actions-row" style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem', marginBottom: '1.5rem' }}>
-                    <button className="card" onClick={() => navigate('/my-luma/events')} style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none', backgroundColor: 'var(--card-bg)' }}>
+                    <button className="card card-btn" onClick={() => navigate('/my-luma/events')} style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none', backgroundColor: 'var(--card-bg)' }}>
                         <span style={{ fontSize: '1.2rem' }}>📅</span>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>My Events</span>
                     </button>
-                    <button className="card" onClick={() => navigate('/my-luma/bookmarks')} style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none', backgroundColor: 'var(--card-bg)' }}>
+                    <button className="card card-btn" onClick={() => navigate('/my-luma/bookmarks')} style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none', backgroundColor: 'var(--card-bg)' }}>
                         <span style={{ fontSize: '1.2rem' }}>🔖</span>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Bookmarks</span>
                     </button>
-                    <button className="card" onClick={() => navigate('/my-luma/drafts')} style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none', backgroundColor: 'var(--card-bg)' }}>
+                    <button className="card card-btn" onClick={() => navigate('/my-luma/drafts')} style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none', backgroundColor: 'var(--card-bg)' }}>
                         <span style={{ fontSize: '1.2rem' }}>📝</span>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Drafts</span>
                     </button>

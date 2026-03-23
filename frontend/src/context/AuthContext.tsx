@@ -37,6 +37,7 @@ interface AuthContextType {
     signUp: (username: string, email: string, password: string) => Promise<void>;
     signOut: () => Promise<void>;
     updateProfile: (data: Partial<User>) => Promise<void>;
+    updateAvatar: (formData: FormData) => Promise<void>;
     clearError: () => void;
 }
 
@@ -220,6 +221,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const updateAvatar = async (formData: FormData) => {
+        try {
+            setError(null);
+            setIsLoading(true);
+            const res = await userService.updateAvatar(formData);
+            setUser(prev => {
+                if (!prev) return null;
+                return { ...prev, profileImageUrl: res.profileImageUrl };
+            });
+        } catch (err) {
+            const errorMessage = handleAPIError(err);
+            setError(errorMessage);
+            throw new Error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const clearError = () => setError(null);
 
     return (
@@ -232,6 +251,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             signUp,
             signOut,
             updateProfile,
+            updateAvatar,
             clearError
         }}>
             {children}

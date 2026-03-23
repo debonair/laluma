@@ -166,7 +166,7 @@ const MyEvents: React.FC = () => {
                                                 <button 
                                                     onClick={(e: React.MouseEvent) => handleCancelClick(e, event.id, event.title, 'registered')}
                                                     style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', borderRadius: '50%', transition: 'all 0.2s' }}
-                                                    className="icon-hover-effect"
+                                                    className="icon-btn icon-hover-effect"
                                                     title="Cancel Registration"
                                                 >
                                                     <XCircle size={20} />
@@ -230,7 +230,7 @@ const MyEvents: React.FC = () => {
                                                 <button 
                                                     onClick={(e: React.MouseEvent) => handleCancelClick(e, event.id, event.title, 'waitlisted')}
                                                     style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px' }}
-                                                    className="icon-hover-effect"
+                                                    className="icon-btn icon-hover-effect"
                                                     title="Leave Waitlist"
                                                 >
                                                     <XCircle size={18} />

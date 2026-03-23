@@ -5,6 +5,8 @@ import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { SERVER_URL } from '../services/api';
+import './Search.css';
 
 const Search: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'search' | 'nearby'>('search');
@@ -291,23 +293,12 @@ const renderUserCard = (resultUser: UserSearchResult | UserNearbyResult, navigat
             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-            <div
-                style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary-color)',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 'bold',
-                    fontSize: '1.2rem',
-                    marginRight: '1rem',
-                    flexShrink: 0,
-                    backgroundImage: resultUser.profile_image_url ? `url(${resultUser.profile_image_url})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+            <div 
+                className="search-user-avatar" 
+                style={{ 
+                    backgroundImage: resultUser.profile_image_url 
+                        ? `url(${resultUser.profile_image_url.startsWith('/') ? SERVER_URL + resultUser.profile_image_url : resultUser.profile_image_url})` 
+                        : 'none' 
                 }}
             >
                 {!resultUser.profile_image_url && (resultUser.display_name || resultUser.username).charAt(0).toUpperCase()}

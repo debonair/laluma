@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { tokenStorage } from '../../services/auth.service';
+import SubmitContent from './SubmitContent';
+import PartnerAnalytics from './PartnerAnalytics';
 import './PartnerDashboard.css';
 
 interface BrandProfile {
@@ -14,6 +16,7 @@ interface BrandProfile {
 }
 
 const PartnerDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'content' | 'analytics'>('profile');
   const [profile, setProfile] = useState<BrandProfile>({
     companyName: '',
     logoUrl: '',
@@ -76,103 +79,132 @@ const PartnerDashboard: React.FC = () => {
     <div className="partner-dashboard">
       <header className="dashboard-header">
         <h1>Partner Dashboard</h1>
-        <p>Update your brand's presence on La Luma.</p>
-      </header>
-
-      {message && (
-        <div className={`message ${message.type}`}>
-          {message.text}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="profile-form">
-        <section className="form-section">
-          <h3>Basic Information</h3>
-          <div className="form-group">
-            <label>Company Name</label>
-            <input 
-              type="text" 
-              name="companyName" 
-              value={profile.companyName} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Category (e.g., Baby Gear, Wellness)</label>
-            <input 
-              type="text" 
-              name="category" 
-              value={profile.category || ''} 
-              onChange={handleChange} 
-            />
-          </div>
-          <div className="form-group">
-            <label>Biography</label>
-            <textarea 
-              name="bio" 
-              value={profile.bio || ''} 
-              onChange={handleChange} 
-              placeholder="Tell our community about your brand..."
-              rows={5}
-            />
-          </div>
-        </section>
-
-        <section className="form-section">
-          <h3>Assets & Links</h3>
-          <div className="form-group">
-            <label>Logo URL</label>
-            <input 
-              type="url" 
-              name="logoUrl" 
-              value={profile.logoUrl || ''} 
-              onChange={handleChange} 
-              placeholder="https://example.com/logo.png"
-            />
-          </div>
-          <div className="form-group">
-            <label>Website</label>
-            <input 
-              type="url" 
-              name="website" 
-              value={profile.website || ''} 
-              onChange={handleChange} 
-              placeholder="https://yourbrand.com"
-            />
-          </div>
-        </section>
-
-        <section className="form-section">
-          <h3>Social Media</h3>
-          <div className="form-group">
-            <label>Instagram Handle</label>
-            <input 
-              type="text" 
-              name="instagramHandle" 
-              value={profile.instagramHandle || ''} 
-              onChange={handleChange} 
-              placeholder="@yourbrand"
-            />
-          </div>
-          <div className="form-group">
-            <label>Facebook Page URL</label>
-            <input 
-              type="url" 
-              name="facebookUrl" 
-              value={profile.facebookUrl || ''} 
-              onChange={handleChange} 
-              placeholder="https://facebook.com/yourbrand"
-            />
-          </div>
-        </section>
-
-        <div className="form-actions">
-          <button type="submit" disabled={saving} className="save-button">
-            {saving ? 'Saving...' : 'Save Profile Changes'}
+        <p>Manage your brand presence and editorial submissions.</p>
+        
+        <div className="dashboard-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            Brand Profile
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'content' ? 'active' : ''}`}
+            onClick={() => setActiveTab('content')}
+          >
+            Content Submissions
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            Performance
           </button>
         </div>
-      </form>
+      </header>
+
+      {activeTab === 'profile' ? (
+        <>
+          {message && (
+            <div className={`message ${message.type}`}>
+              {message.text}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="profile-form">
+            <section className="form-section">
+              <h3>Basic Information</h3>
+              <div className="form-group">
+                <label>Company Name</label>
+                <input 
+                  type="text" 
+                  name="companyName" 
+                  value={profile.companyName} 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+              <div className="form-group">
+                <label>Category (e.g., Baby Gear, Wellness)</label>
+                <input 
+                  type="text" 
+                  name="category" 
+                  value={profile.category || ''} 
+                  onChange={handleChange} 
+                />
+              </div>
+              <div className="form-group">
+                <label>Biography</label>
+                <textarea 
+                  name="bio" 
+                  value={profile.bio || ''} 
+                  onChange={handleChange} 
+                  placeholder="Tell our community about your brand..."
+                  rows={5}
+                />
+              </div>
+            </section>
+
+            <section className="form-section">
+              <h3>Assets & Links</h3>
+              <div className="form-group">
+                <label>Logo URL</label>
+                <input 
+                  type="url" 
+                  name="logoUrl" 
+                  value={profile.logoUrl || ''} 
+                  onChange={handleChange} 
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+              <div className="form-group">
+                <label>Website</label>
+                <input 
+                  type="url" 
+                  name="website" 
+                  value={profile.website || ''} 
+                  onChange={handleChange} 
+                  placeholder="https://yourbrand.com"
+                />
+              </div>
+            </section>
+
+            <section className="form-section">
+              <h3>Social Media</h3>
+              <div className="form-group">
+                <label>Instagram Handle</label>
+                <input 
+                  type="text" 
+                  name="instagramHandle" 
+                  value={profile.instagramHandle || ''} 
+                  onChange={handleChange} 
+                  placeholder="@yourbrand"
+                />
+              </div>
+              <div className="form-group">
+                <label>Facebook Page URL</label>
+                <input 
+                  type="url" 
+                  name="facebookUrl" 
+                  value={profile.facebookUrl || ''} 
+                  onChange={handleChange} 
+                  placeholder="https://facebook.com/yourbrand"
+                />
+              </div>
+            </section>
+
+            <div className="form-actions">
+              <button type="submit" disabled={saving} className="save-button">
+                {saving ? 'Saving...' : 'Save Profile Changes'}
+              </button>
+            </div>
+          </form>
+        </>
+      ) : activeTab === 'content' ? (
+        <SubmitContent />
+      ) : (
+        <PartnerAnalytics />
+      )}
     </div>
   );
 };

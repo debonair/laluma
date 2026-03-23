@@ -17,22 +17,20 @@ const REACTIONS = [
 
 const ReactionPicker: React.FC<ReactionPickerProps> = ({ onSelect, onClose }) => {
     return (
-        <div className="reaction-picker-overlay" onClick={onClose}>
-            <div className="reaction-picker-container" onClick={(e) => e.stopPropagation()}>
-                {REACTIONS.map((reaction) => (
-                    <button
-                        key={reaction.type}
-                        className="reaction-option"
-                        onClick={() => {
-                            onSelect(reaction.type);
-                            onClose();
-                        }}
-                        title={reaction.label}
-                    >
-                        <span className="reaction-emoji">{reaction.emoji}</span>
-                    </button>
-                ))}
-            </div>
+        <div className="reaction-picker-container" onClick={(e) => e.stopPropagation()}>
+            {REACTIONS.map((reaction) => (
+                <button
+                    key={reaction.type}
+                    className="reaction-option"
+                    onClick={() => {
+                        onSelect(reaction.type);
+                        onClose();
+                    }}
+                    title={reaction.label}
+                >
+                    <span className="reaction-emoji">{reaction.emoji}</span>
+                </button>
+            ))}
         </div>
     );
 };

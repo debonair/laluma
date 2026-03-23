@@ -20,8 +20,8 @@ describe('Crypto Utility Service', () => {
         const encrypted = encryptIdentity(originalText);
 
         const parts = encrypted.split(':');
-        // Modify the payload slightly
-        parts[2] = parts[2].replace(/[0-9a-f]/, 'f');
+        // Modify the payload slightly, ensuring it definitely changes
+        parts[2] = parts[2].substring(0, parts[2].length - 1) + (parts[2].endsWith('a') ? 'b' : 'a');
         const tampered = parts.join(':');
 
         expect(() => {

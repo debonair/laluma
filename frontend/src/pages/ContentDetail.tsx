@@ -8,8 +8,8 @@ import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
 import Skeleton from '../components/Skeleton';
 import { shareContent } from '../utils/share';
-import './ContentDetail.css';
 import { SERVER_URL } from '../services/api';
+import './ContentDetail.css';
 
 interface Content {
     id: string;
@@ -107,48 +107,62 @@ const ContentDetail: React.FC = () => {
     }, [id, fetchContent, trackView]);
 
     const handleLike = async () => {
-        if (!user) {
-            navigate('/signin');
+        if (!user || !content) {
+            if (!user) navigate('/signin');
             return;
         }
 
-        try {
-            const token = localStorage.getItem('token');
-            const method = content?.userInteractions?.liked ? 'DELETE' : 'POST';
-
-            await fetch(`${SERVER_URL}/api/content/${id}/like`, {
-                method,
-                headers: {
-                    'Authorization': `Bearer ${token}`
+        const wasLiked = !!content.userInteractions?.liked;
+        
+        // Optimistic update
+        setContent(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                likesCount: wasLiked ? prev.likesCount - 1 : prev.likesCount + 1,
+                userInteractions: {
+                    ...prev.userInteractions!,
+                    liked: !wasLiked
                 }
-            });
+            };
+        });
 
-            fetchContent();
+        try {
+            await contentService.toggleLike(id!, wasLiked);
         } catch (error) {
             console.error('Error liking content:', error);
+            // Rollback
+            fetchContent();
         }
     };
 
     const handleBookmark = async () => {
-        if (!user) {
-            navigate('/signin');
+        if (!user || !content) {
+            if (!user) navigate('/signin');
             return;
         }
 
-        try {
-            const token = localStorage.getItem('token');
-            const method = content?.userInteractions?.bookmarked ? 'DELETE' : 'POST';
-
-            await fetch(`${SERVER_URL}/api/content/${id}/bookmark`, {
-                method,
-                headers: {
-                    'Authorization': `Bearer ${token}`
+        const wasBookmarked = !!content.userInteractions?.bookmarked;
+        
+        // Optimistic update
+        setContent(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                userInteractions: {
+                    ...prev.userInteractions!,
+                    bookmarked: !wasBookmarked
                 }
-            });
+            };
+        });
 
-            fetchContent();
+        try {
+            await contentService.toggleBookmark(id!, wasBookmarked);
+            addToast(!wasBookmarked ? 'Saved to bookmarks' : 'Removed from bookmarks', 'success');
         } catch (error) {
             console.error('Error bookmarking content:', error);
+            // Rollback
+            fetchContent();
         }
     };
 
@@ -223,7 +237,7 @@ const ContentDetail: React.FC = () => {
         return (
             <div className="content-detail-error">
                 <h2>Content not found</h2>
-                <button onClick={() => navigate('/my-luma')}>Back to My Luma</button>
+                <button className="btn-primary" onClick={() => navigate('/my-luma')}>Back to My Luma</button>
             </div>
         );
     }
@@ -375,19 +389,19 @@ const ContentDetail: React.FC = () => {
                         {/* Action Buttons */}
                         <div className="article-actions">
                             <button
-                                className={`action-button ${content.userInteractions?.liked ? 'active' : ''}`}
+                                className={`btn-action-button ${content.userInteractions?.liked ? 'active' : ''}`}
                                 onClick={handleLike}
                             >
                                 ❤️ {content.userInteractions?.liked ? 'Liked' : 'Like'}
                             </button>
                             <button
-                                className={`action-button ${content.userInteractions?.bookmarked ? 'active' : ''}`}
+                                className={`btn-action-button ${content.userInteractions?.bookmarked ? 'active' : ''}`}
                                 onClick={handleBookmark}
                             >
                                 🔖 {content.userInteractions?.bookmarked ? 'Saved' : 'Save'}
                             </button>
                             <button
-                                className="action-button"
+                                className="btn-action-button"
                                 onClick={() => shareContent(
                                     content.title,
                                     content.excerpt,
@@ -409,7 +423,7 @@ const ContentDetail: React.FC = () => {
                                     <div className="comment-header">
                                         <div className="comment-author">
                                             {comment.author.profileImageUrl && (
-                                                <img src={comment.author.profileImageUrl} alt={comment.author.displayName} />
+                                                <img src={comment.author.profileImageUrl.startsWith('/') ? `${SERVER_URL}${comment.author.profileImageUrl}` : comment.author.profileImageUrl} alt={comment.author.displayName} />
                                             )}
                                             <span
                                                 className="author-name"

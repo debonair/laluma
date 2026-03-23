@@ -2,20 +2,21 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { BadgeCheck } from 'lucide-react';
+import { BadgeCheck, Download, Trash2, ShieldCheck, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import apiClient from '../services/api';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import { SERVER_URL } from '../services/api';
 
+import './Profile.css';
+
 const Profile: React.FC = () => {
-    const { user, updateProfile, signOut } = useAuth();
+    const { user, updateProfile, updateAvatar, signOut } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     // Form state initialized only when editing
     const [editForm, setEditForm] = useState({
@@ -25,6 +26,11 @@ const Profile: React.FC = () => {
         anywhere: false,
         motherhoodStage: ''
     });
+    
+    // Privacy / Danger Zone state
+    const [isDangerZoneOpen, setIsDangerZoneOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
     const handleEditClick = () => {
         setEditForm({
@@ -55,10 +61,8 @@ const Profile: React.FC = () => {
         formData.append('avatar', file);
 
         try {
-            const res = await apiClient.post<{ profileImageUrl: string }>('/users/me/avatar', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setAvatarUrl(res.data.profileImageUrl);
+            await updateAvatar(formData);
+            addToast('Profile picture updated!', 'success');
         } catch (err) {
             console.error('Avatar upload failed:', err);
             addToast('Failed to upload image', 'error');
@@ -80,29 +84,69 @@ const Profile: React.FC = () => {
         navigate('/signin');
     };
 
+    const handleExportData = async () => {
+        setIsExporting(true);
+        try {
+            const response = await apiClient.get('/privacy/export', {
+                responseType: 'blob'
+            });
+            
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `luma-data-export-${user?.id}.json`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            
+            addToast('Data export started successfully', 'success');
+        } catch (err) {
+            console.error('Export failed:', err);
+            addToast('Failed to export data', 'error');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== 'DELETE') {
+            addToast('Please type DELETE to confirm', 'error');
+            return;
+        }
+
+        try {
+            await apiClient.delete('/privacy/account');
+            addToast('Your account has been permanently deleted', 'success');
+            signOut();
+            navigate('/signin');
+        } catch (err) {
+            console.error('Deletion failed:', err);
+            addToast('Failed to delete account', 'error');
+        }
+    };
+
     if (!user) {
         return (
-            <div className="page-container" style={{ padding: '2rem' }}>
-                <Skeleton height={200} borderRadius="12px" style={{ marginBottom: '2rem' }} />
-                <Skeleton height={40} width="60%" style={{ marginBottom: '1rem' }} />
-                <Skeleton height={20} width="40%" style={{ marginBottom: '2rem' }} />
+            <div className="page-container page-loading-padding">
+                <Skeleton height={200} borderRadius="12px" className="mb-2" />
+                <Skeleton height={40} width="60%" className="mb-1" />
+                <Skeleton height={20} width="40%" className="mb-2" />
                 <Skeleton height={150} borderRadius="8px" />
             </div>
         );
     }
 
-    const profileImg = avatarUrl || user.profileImageUrl;
+    const profileImg = user.profileImageUrl;
     const displayProfileName = isEditing ? editForm.displayName : (user.displayName || user.username);
     const displayAboutMe = isEditing ? editForm.aboutMe : (user.aboutMe || '');
     const displayMotherhoodStage = isEditing ? editForm.motherhoodStage : (user.motherhoodStage || '');
 
     const RightActions = (
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="profile-header-actions">
             {user?.roles?.includes('app-admin') && (
                 <button
                     onClick={() => navigate('/admin/content')}
-                    className="btn-secondary"
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    className="btn-secondary profile-admin-btn"
                 >
                     Admin
                 </button>
@@ -110,16 +154,14 @@ const Profile: React.FC = () => {
             {!isEditing ? (
                 <button
                     onClick={handleEditClick}
-                    className="btn-ghost"
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                    className="btn-ghost profile-edit-btn"
                 >
                     Edit
                 </button>
             ) : (
                 <button
                     onClick={handleSave}
-                    className="btn-primary"
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                    className="btn-primary profile-save-btn"
                 >
                     Save
                 </button>
@@ -128,7 +170,7 @@ const Profile: React.FC = () => {
     );
 
     return (
-        <div className="page-container">
+        <div className="page-container profile-page-wrapper">
             <Header 
                 title="My Profile" 
                 subtitle={`@${user.username}`}
@@ -136,185 +178,212 @@ const Profile: React.FC = () => {
             />
 
             <main className="page-content">
-                <div className="card" style={{ marginBottom: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        style={{ display: 'none' }}
-                    />
-                    <div
-                        className="profile-avatar"
-                        onClick={() => fileInputRef.current?.click()}
-                        style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden', width: '100px', height: '100px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary-color)' }}
-                        title="Click to change avatar"
-                    >
-                        {profileImg ? (
-                            <img
-                                src={profileImg.startsWith('/') ? `${SERVER_URL}${profileImg}` : profileImg}
-                                alt="Avatar"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                        ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary-light)', color: 'var(--primary-dark)', fontSize: '2rem', fontWeight: 700 }}>
-                                {(displayProfileName || 'U').charAt(0).toUpperCase()}
-                            </div>
-                        )}
-                        <div style={{
-                            position: 'absolute', bottom: 0, left: 0, right: 0,
-                            background: 'rgba(0,0,0,0.5)', color: '#fff',
-                            fontSize: '0.6rem', textAlign: 'center', padding: '2px 0'
-                        }}>📷</div>
-                    </div >
-                    {
-                        isEditing ? (
+                {/* Hero Banner Section */}
+                <div className="profile-hero">
+                    <div className="profile-hero-content">
+                        {isEditing ? (
                             <input
                                 type="text"
                                 value={editForm.displayName}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
-                                className="input-field"
-                                style={{ textAlign: 'center', fontSize: '1.25rem' }}
+                                className="input-field profile-name-input"
                             />
                         ) : (
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                            <h2 className="profile-display-name">
                                 {displayProfileName}
-                                {user.isVerified && <BadgeCheck style={{ color: '#3b82f6', width: '1.25rem', height: '1.25rem' }} />}
+                                {user.isVerified && <BadgeCheck className="verified-badge-icon" size={24} />}
                             </h2>
                         )}
-                    <p className="helper-text" style={{ marginBottom: '1rem' }}>@{user.username}</p>
+                        <p className="profile-username-text">@{user.username}</p>
+                    </div>
 
-                    {!user.isVerified && !isEditing && (
-                        <button
-                            onClick={handleRequestVerification}
-                            className="btn-secondary"
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginTop: '0.5rem', borderRadius: '4px' }}
-                        >
-                            Get Verified Shield
-                        </button>
-                    )}
-                </div >
-
-                <div className="card" style={{ marginBottom: '1.5rem' }}>
-                    <h3 className="profile-section-title" style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>About Me</h3>
-                    {isEditing ? (
-                        <textarea
-                            value={editForm.aboutMe}
-                            onChange={(e) => setEditForm(prev => ({ ...prev, aboutMe: e.target.value }))}
-                            rows={4}
-                            placeholder="Tell us a bit about yourself..."
-                            className="input-field"
-                            style={{ width: '100%', resize: 'none' }}
+                    <div className="profile-avatar-wrapper">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                            className="hidden"
                         />
-                    ) : (
-                        <p style={{ margin: 0, fontStyle: displayAboutMe ? 'normal' : 'italic', color: displayAboutMe ? 'var(--text-primary)' : 'var(--text-secondary)', lineHeight: 1.6 }}>
-                            {displayAboutMe || "No bio yet."}
-                        </p>
-                    )}
+                        <div
+                            className="profile-avatar-container"
+                            onClick={() => fileInputRef.current?.click()}
+                            title="Click to change avatar"
+                        >
+                            {profileImg ? (
+                                <img
+                                    src={profileImg.startsWith('/') ? `${SERVER_URL}${profileImg}` : profileImg}
+                                    alt="Avatar"
+                                    className="profile-avatar-img"
+                                />
+                            ) : (
+                                <div className="profile-avatar-placeholder">
+                                    {(displayProfileName || 'U').charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <div className="profile-avatar-overlay">📷</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="card">
-                    <h3 className="profile-section-title" style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>My Journey</h3>
-
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>I am...</label>
-                        {isEditing ? (
-                            <select
-                                value={editForm.motherhoodStage}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, motherhoodStage: e.target.value }))}
-                                className="input-field"
-                                style={{ width: '100%' }}
+                <div className="profile-content-body">
+                    {!user.isVerified && !isEditing && (
+                        <div className="verification-prompt">
+                            <ShieldCheck className="verification-icon" size={20} />
+                            <div className="verification-text">
+                                <h4>Verify Your Identity</h4>
+                                <p>Build trust in the community.</p>
+                            </div>
+                            <button
+                                onClick={handleRequestVerification}
+                                className="btn-secondary profile-verify-btn"
                             >
-                                <option value="">Select...</option>
-                                <option value="A new mom">A new mom</option>
-                                <option value="A mom of young children">A mom of young children</option>
-                                <option value="Parenting through the ages">Parenting through the ages</option>
-                                <option value="Empty nest mom">Empty nest mom</option>
-                                <option value="Its a mixed bag">Its a mixed bag</option>
-                            </select>
-                        ) : (
-                            <div>
-                                <span className="badge badge-primary" style={{ padding: '0.5rem 1rem' }}>{displayMotherhoodStage || "Not specified"}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="form-group">
-                        <label>Location Settings</label>
-                        {isEditing ? (
-                            <div className="edit-panel">
-                                <div style={{ marginBottom: '0.5rem' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                                        <input type="checkbox" checked={editForm.anywhere} onChange={(e) => setEditForm(prev => ({ ...prev, anywhere: e.target.checked }))} />
-                                        Connect with anyone (Anywhere)
-                                    </label>
-                                </div>
-                                <div style={{ opacity: editForm.anywhere ? 0.5 : 1 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                                        <span>Max Distance</span>
-                                        <span>{editForm.radius} km</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="1"
-                                        max="100"
-                                        value={editForm.radius}
-                                        onChange={(e) => setEditForm(prev => ({ ...prev, radius: Number(e.target.value) }))}
-                                        disabled={editForm.anywhere}
-                                        style={{ width: '100%' }}
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={{ fontWeight: 500 }}>
-                                {user.location?.anywhere ? "Anywhere" : `Within ${user.location?.radius} km`}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="form-group">
-                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Looking For</label>
-                        <div className="tag-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {user.lookingFor && user.lookingFor.length > 0 ? (
-                                user.lookingFor.map(tag => (
-                                    <span key={tag} className="badge">
-                                        {tag}
-                                    </span>
-                                ))
-                            ) : (
-                                <span className="helper-text">Nothing selected</span>
-                            )}
+                                Get Verified
+                            </button>
                         </div>
-                        {isEditing && (
-                            <p className="helper-text">
-                                *To edit 'Looking For' tags, please go through the onboarding flow again.
+                    )}
+
+                    <div className="card profile-info-card">
+                        <h3 className="profile-section-title">About Me</h3>
+                        {isEditing ? (
+                            <textarea
+                                value={editForm.aboutMe}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, aboutMe: e.target.value }))}
+                                rows={4}
+                                placeholder="Tell us a bit about yourself..."
+                                className="input-field profile-bio-textarea"
+                            />
+                        ) : (
+                            <p className={`profile-bio-text ${!displayAboutMe ? 'profile-bio-empty' : ''}`}>
+                                {displayAboutMe || "No bio yet. Tap Edit to introduce yourself!"}
                             </p>
                         )}
                     </div>
-                </div>
 
-                {!isEditing && (
-                    <div style={{ marginTop: '2rem', padding: '0 1rem', display: 'flex', justifyContent: 'center' }}>
-                        <button 
-                            onClick={handleSignOut} 
-                            className="btn-ghost" 
-                            style={{ 
-                                color: '#EF4444', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '0.5rem',
-                                padding: '0.75rem 1.5rem',
-                                borderRadius: '12px',
-                                border: '1px solid #FEE2E2'
-                            }}
-                        >
-                            Sign Out
-                        </button>
+                    <div className="card profile-info-card">
+                        <h3 className="profile-section-title">My Journey</h3>
+                        
+                        <div className="profile-info-group">
+                            <label className="profile-info-label">Current Stage</label>
+                            {isEditing ? (
+                                <select 
+                                    value={editForm.motherhoodStage}
+                                    onChange={(e) => setEditForm(prev => ({ ...prev, motherhoodStage: e.target.value }))}
+                                    className="input-field"
+                                >
+                                    <option value="">Select Stage...</option>
+                                    <option value="expecting">Expecting</option>
+                                    <option value="new_mom">New Mom (0-12m)</option>
+                                    <option value="toddler_years">Toddler Years (1-3y)</option>
+                                    <option value="school_age">School Age</option>
+                                    <option value="teens">Teens & Up</option>
+                                    <option value="empty_nester">Empty Nester</option>
+                                </select>
+                            ) : (
+                                <div className="profile-info-value">
+                                    {displayMotherhoodStage ? (
+                                        <span className="stage-badge">{displayMotherhoodStage.replace('_', ' ')}</span>
+                                    ) : (
+                                        <span className="not-provided">Not specified</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {isEditing && (
+                            <div className="profile-info-group location-group mt-4">
+                                <label className="profile-info-label">Discover Radius (miles)</label>
+                                <div className="radius-control">
+                                    <input 
+                                        type="range" 
+                                        min="1" 
+                                        max="50" 
+                                        value={editForm.radius}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, radius: parseInt(e.target.value) }))}
+                                        disabled={editForm.anywhere}
+                                        className="range-slider flex-1"
+                                    />
+                                    <span className="radius-value">{editForm.radius} mi</span>
+                                </div>
+                                
+                                <label className="checkbox-label mt-2">
+                                    <input 
+                                        type="checkbox"
+                                        checked={editForm.anywhere}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, anywhere: e.target.checked }))}
+                                    />
+                                    <span>Match with moms anywhere (Global)</span>
+                                </label>
+                            </div>
+                        )}
                     </div>
-                )}
-            </main >
+
+                    {/* Danger Zone Accordion */}
+                    <div className="danger-zone-wrapper">
+                        <button 
+                            className="danger-zone-toggle"
+                            onClick={() => setIsDangerZoneOpen(!isDangerZoneOpen)}
+                        >
+                            <div className="danger-zone-title">
+                                <AlertTriangle size={18} />
+                                <span>Privacy & Account Actions</span>
+                            </div>
+                            {isDangerZoneOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </button>
+                        
+                        {isDangerZoneOpen && (
+                            <div className="danger-zone-content">
+                                <div className="danger-action-row">
+                                    <div className="danger-action-info">
+                                        <h4>Export Personal Data</h4>
+                                        <p>Download a copy of your messages, posts, and profile data.</p>
+                                    </div>
+                                    <button 
+                                        onClick={handleExportData} 
+                                        className="btn-secondary profile-export-btn"
+                                        disabled={isExporting}
+                                    >
+                                        <Download size={16} className="mr-2" />
+                                        {isExporting ? 'Exporting...' : 'Export'}
+                                    </button>
+                                </div>
+
+                                <div className="danger-action-row delete-row">
+                                    <div className="danger-action-info">
+                                        <h4>Delete Account</h4>
+                                        <p>Permanently remove your account and all associated data.</p>
+                                    </div>
+                                    <div className="delete-controls">
+                                        <input
+                                            type="text"
+                                            value={deleteConfirmText}
+                                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                            placeholder="Type DELETE"
+                                            className="input-field delete-input"
+                                        />
+                                        <button 
+                                            onClick={handleDeleteAccount} 
+                                            className="btn-danger profile-delete-btn"
+                                            disabled={deleteConfirmText !== 'DELETE'}
+                                        >
+                                            <Trash2 size={16} className="mr-2" />
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div className="danger-action-row signout-row">
+                                    <button onClick={handleSignOut} className="btn-outline profile-signout-btn full-width">
+                                        Sign Out
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </main>
             <BottomNav />
-        </div >
+        </div>
     );
 };
 

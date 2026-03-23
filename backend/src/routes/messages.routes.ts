@@ -8,13 +8,15 @@ import {
     initConversation,
     sendMessage,
     sendAttachmentMessage,
-    markAsRead
+    markAsRead,
+    getPotentialParticipants
 } from '../controllers/messages.controller';
 
 const router = express.Router();
 
 router.get('/conversations', authenticate, getConversations as any);
 router.get('/unread-count', authenticate, getUnreadCount as any);
+router.get('/potential-participants', authenticate, getPotentialParticipants as any);
 router.get('/conversations/:id', authenticate, getMessages as any);
 router.post('/init', authenticate, initConversation as any);
 router.post('/send', authenticate, sendMessage as any);

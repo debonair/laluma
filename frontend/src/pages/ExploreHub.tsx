@@ -4,6 +4,8 @@ import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
 import { Compass, MapPin, Users, BookOpen } from 'lucide-react';
 
+import './ExploreHub.css';
+
 const ExploreHub: React.FC = () => {
     const navigate = useNavigate();
 
@@ -43,54 +45,31 @@ const ExploreHub: React.FC = () => {
     ];
 
     return (
-        <div className="page-container" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh' }}>
+        <div className="explore-hub-container page-container">
             <Header 
                 title="Explore" 
                 subtitle="Find your tribe and local resources"
             />
 
-            <main className="page-content" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
+            <main className="explore-hub-content page-content">
+                <div className="hub-grid">
                     {hubItems.map((item) => (
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
-                            style={{
-                                padding: '1.25rem',
-                                background: 'var(--card-bg)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '24px',
-                                boxShadow: 'var(--shadow-soft)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '1.5rem',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                width: '100%',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}
+                            className="hub-item-btn"
                         >
-                            <div style={{ 
-                                width: '56px', 
-                                height: '56px', 
-                                borderRadius: '16px', 
-                                background: item.color,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                flexShrink: 0,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}>
+                            <div 
+                                className="hub-icon-container"
+                                style={{ background: item.color }}
+                            >
                                 <item.lucideIcon size={28} />
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Syne, sans-serif' }}>{item.title}</h3>
-                                <p style={{ margin: '0.25rem 0 0', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>{item.subtitle}</p>
+                            <div className="hub-text-container">
+                                <h3 className="hub-item-title">{item.title}</h3>
+                                <p className="hub-item-subtitle">{item.subtitle}</p>
                             </div>
-                            <div style={{ color: 'var(--border-color)', transition: 'transform 0.2s' }} className="hub-arrow">
+                            <div className="hub-arrow-indicator">
                                 <Compass size={20} />
                             </div>
                         </button>

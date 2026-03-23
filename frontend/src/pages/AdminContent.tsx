@@ -96,43 +96,44 @@ const AdminContent: React.FC = () => {
     return (
 
         <div className="page-container">
-            <div className="page-header" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--card-bg)' }}>
+            <header className="admin-header-container">
                 <h1>Content Management</h1>
-            </div>    <button
-                className="btn-primary"
-                onClick={() => navigate('/admin/content/new')}
-            >
-                + New Content
-            </button>
+                <button
+                    className="btn-primary"
+                    onClick={() => navigate('/admin/content/new')}
+                >
+                    + New Content
+                </button>
+            </header>
 
             <main className="page-content">
                 <div className="filters">
                     <button
-                        className={filter === 'all' ? 'active' : ''}
+                        className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
                         onClick={() => setFilter('all')}
                     >
                         All
                     </button>
                     <button
-                        className={filter === 'draft' ? 'active' : ''}
+                        className={`filter-btn ${filter === 'draft' ? 'active' : ''}`}
                         onClick={() => setFilter('draft')}
                     >
                         Drafts
                     </button>
                     <button
-                        className={filter === 'pending' ? 'active' : ''}
+                        className={`filter-btn ${filter === 'pending' ? 'active' : ''}`}
                         onClick={() => setFilter('pending')}
                     >
                         Pending
                     </button>
                     <button
-                        className={filter === 'approved' ? 'active' : ''}
+                        className={`filter-btn ${filter === 'approved' ? 'active' : ''}`}
                         onClick={() => setFilter('approved')}
                     >
                         Approved
                     </button>
                     <button
-                        className={filter === 'rejected' ? 'active' : ''}
+                        className={`filter-btn ${filter === 'rejected' ? 'active' : ''}`}
                         onClick={() => setFilter('rejected')}
                     >
                         Rejected
@@ -140,10 +141,10 @@ const AdminContent: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div style={{ padding: '2rem' }}>
-                        <Skeleton height={60} style={{ marginBottom: '1rem' }} />
-                        <Skeleton height={60} style={{ marginBottom: '1rem' }} />
-                        <Skeleton height={60} style={{ marginBottom: '1rem' }} />
+                    <div className="skeleton-container">
+                        <Skeleton height={60} className="skeleton-item" />
+                        <Skeleton height={60} className="skeleton-item" />
+                        <Skeleton height={60} className="skeleton-item" />
                     </div>
                 ) : (
                     <div className="content-table">
@@ -211,16 +212,14 @@ const AdminContent: React.FC = () => {
                                         <td>
                                             <div className="actions">
                                                 <button
-                                                    className="btn-neutral"
+                                                    className="btn-secondary btn-action"
                                                     onClick={() => navigate(`/admin/content/edit/${item.id}`)}
-                                                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
-                                                    className="btn-danger"
+                                                    className="btn-danger btn-action"
                                                     onClick={() => handleDelete(item.id)}
-                                                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                                                 >
                                                     Delete
                                                 </button>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { GroupProvider } from './context/GroupContext';
+import { NotificationProvider } from './context/NotificationContext';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Home from './pages/Home';
@@ -43,19 +44,21 @@ import InquiryForm from './pages/partnerships/InquiryForm';
 import PartnerProfilePage from './pages/partnerships/PartnerProfilePage';
 import PartnerDashboard from './pages/partnerships/PartnerDashboard';
 import BrandInquiries from './pages/admin/BrandInquiries';
+import EditorialReview from './pages/admin/EditorialReview';
 import ExploreHub from './pages/ExploreHub';
 import SocialHub from './pages/SocialHub';
 import TrustRitual from './pages/TrustRitual';
 
 import { ToastProvider } from './context/ToastContext';
 import Skeleton from './components/Skeleton';
+import SurveyTrigger from './components/SurveyTrigger';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem', gap: '1rem' }}>
+      <div className="loading-skeleton-container">
         <Skeleton height={60} borderRadius="8px" />
         <Skeleton height={200} borderRadius="12px" />
         <Skeleton height={200} borderRadius="12px" />
@@ -75,7 +78,9 @@ const App: React.FC = () => {
       <ToastProvider>
         <AuthProvider>
           <SocketProvider>
-            <GroupProvider>
+            <NotificationProvider>
+              <GroupProvider>
+              <SurveyTrigger />
               <Routes>
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
@@ -347,6 +352,14 @@ const App: React.FC = () => {
                   }
                 />
                 <Route
+                  path="/admin/editorial-review"
+                  element={
+                    <AdminRoute>
+                      <EditorialReview />
+                    </AdminRoute>
+                  }
+                />
+                <Route
                   path="/spaces"
                   element={
                     <ProtectedRoute>
@@ -377,7 +390,8 @@ const App: React.FC = () => {
                 />
               </Routes>
             </GroupProvider>
-          </SocketProvider>
+          </NotificationProvider>
+        </SocketProvider>
         </AuthProvider>
       </ToastProvider>
     </Router>

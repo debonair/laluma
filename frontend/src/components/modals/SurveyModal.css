@@ -1,0 +1,203 @@
+.survey-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.survey-glass-card {
+    width: 100%;
+    max-width: 500px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+}
+
+.survey-close-btn {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.survey-header {
+    margin-bottom: 2rem;
+}
+
+.survey-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-family: var(--font-header);
+    letter-spacing: -0.02em;
+}
+
+.survey-header p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.survey-question-container {
+    margin-bottom: 2.5rem;
+}
+
+.survey-question-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.survey-required-star {
+    color: var(--error-color);
+    margin-left: 4px;
+}
+
+/* Rating Questions */
+.survey-rating-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.survey-rating-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.survey-rating-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.survey-rating-btn.selected {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(82, 121, 111, 0.1);
+}
+
+/* Choice Questions */
+.choice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.choice-item {
+    width: 100%;
+    text-align: left;
+    padding: 1rem 1.25rem;
+    background-color: white;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.choice-item:hover:not(.selected) {
+    background-color: var(--bg-hover);
+    border-color: var(--primary-color-light);
+}
+
+.choice-item.selected {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Text Questions */
+.survey-textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: none;
+    transition: border-color 0.2s;
+}
+
+.survey-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(82, 121, 111, 0.1);
+}
+
+/* Footer & Progress */
+.survey-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.survey-progress-container {
+    display: flex;
+    gap: 6px;
+}
+
+.survey-progress-dot {
+    width: 28px;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.survey-progress-dot.active {
+    background-color: var(--primary-color);
+    width: 40px;
+}
+
+/* Success State */
+.survey-success-container {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.survey-success-icon {
+    margin-bottom: 1.5rem;
+    color: var(--success-color);
+    display: flex;
+    justify-content: center;
+}
+
+.survey-success-container h2 {
+    font-family: var(--font-header);
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}

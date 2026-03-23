@@ -1,0 +1,225 @@
+.luma-spaces-page {
+    background-color: var(--bg-color);
+    min-height: 100vh;
+}
+
+.luma-spaces-main {
+    padding-bottom: 80px;
+}
+
+.my-events-btn {
+    width: auto !important;
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.85rem !important;
+}
+
+.filters-container {
+    padding: 0 1rem 1rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filter-group {
+    margin-bottom: 1rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.filter-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: none;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.location-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.radius-select-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.radius-select {
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    font-weight: 500;
+}
+
+.events-list-container {
+    padding: 1rem;
+}
+
+.events-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.events-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.event-card {
+    padding: 1.25rem;
+    background-color: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.event-card.registered {
+    box-shadow: 0 0 0 2px var(--success-color);
+}
+
+.registered-badge {
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    background-color: var(--success-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 10;
+}
+
+.event-card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+}
+
+.event-time {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.event-location {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.event-stats {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.event-arrow {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.loading-container, .error-container, .empty-container {
+    text-align: center;
+    padding: 3rem;
+}
+
+.empty-container {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.pagination-btn:disabled {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}

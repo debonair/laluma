@@ -111,5 +111,10 @@ export const userService = {
     unblockUser: async (id: string): Promise<{ success: boolean }> => {
         const response = await apiClient.delete(`/users/${id}/block`);
         return response.data;
+    },
+
+    updateAvatar: async (formData: FormData): Promise<{ profileImageUrl: string }> => {
+        const response = await apiClient.post<{ profileImageUrl: string }>('/users/me/avatar', formData);
+        return response.data;
     }
 };

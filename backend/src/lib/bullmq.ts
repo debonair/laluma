@@ -28,6 +28,7 @@ export const redisClient = new Redis(REDIS_URL, {
 
 export const MODERATION_QUEUE_NAME = 'moderation-queue';
 export const EVENT_MAINTENANCE_QUEUE_NAME = 'event-maintenance-queue';
+export const SURVEY_QUEUE_NAME = 'survey-queue';
 
 export const moderationQueue = new Queue(MODERATION_QUEUE_NAME, {
     connection: redisConnection,
@@ -43,6 +44,19 @@ export const moderationQueue = new Queue(MODERATION_QUEUE_NAME, {
 });
 
 export const eventMaintenanceQueue = new Queue(EVENT_MAINTENANCE_QUEUE_NAME, {
+    connection: redisConnection,
+    defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+            type: 'exponential',
+            delay: 1000
+        },
+        removeOnComplete: true,
+        removeOnFail: 100
+    }
+});
+
+export const surveyQueue = new Queue(SURVEY_QUEUE_NAME, {
     connection: redisConnection,
     defaultJobOptions: {
         attempts: 3,

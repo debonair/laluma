@@ -3,15 +3,32 @@ import { useAuth } from '../context/AuthContext';
 import { useGroup } from '../context/GroupContext';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { Users, Compass, BadgeCheck, Shield, MapPin, Baby } from 'lucide-react';
+import { Users, Compass, BadgeCheck, Shield, MapPin, Baby, MessageSquare } from 'lucide-react';
 import PollUI from '../components/PollUI';
+import ReactionButton from '../components/ReactionButton';
 import Header from '../components/Header';
 import './Home.css';
 
 const Home: React.FC = () => {
     const { user } = useAuth();
-    const { feed, isLoading, updatePollInFeed } = useGroup();
+    const { feed, isLoading, updatePollInFeed, likePost, unlikePost } = useGroup();
     const navigate = useNavigate();
+
+    const handleLike = async (postId: string, reactionType: string = 'like') => {
+        try {
+            const post = feed.find(p => p.id === postId);
+            if (!post) return;
+            
+            const isTogglingOff = post.is_liked && post.user_reaction_type === reactionType;
+            if (isTogglingOff) {
+                await unlikePost(postId);
+            } else {
+                await likePost(postId, reactionType);
+            }
+        } catch (error) {
+            console.error('Failed to toggle like:', error);
+        }
+    };
 
     return (
         <div className="home-container page-container">
@@ -77,7 +94,7 @@ const Home: React.FC = () => {
                                             className="author-info"
                                             onClick={(e) => { e.stopPropagation(); if (post.author?.id) navigate(`/users/${post.author.id}`); }}
                                         >
-                                            {post.author?.username || 'Unknown User'}
+                                            <span className="author-name">{post.author?.display_name || post.author?.username || 'Unknown User'}</span>
                                             {post.author?.isVerified && (
                                                 <span className="verified-badge"><BadgeCheck size={16} /></span>
                                             )}
@@ -101,6 +118,21 @@ const Home: React.FC = () => {
                                     <div className="post-group-context">
                                         in {post.group?.name || 'Community Hub'}
                                     </div>
+
+                                    <div className="activity-card-footer">
+                                        <ReactionButton 
+                                            postId={post.id} 
+                                            isLiked={!!post.is_liked} 
+                                            likesCount={post.likes_count || 0} 
+                                            userReactionType={post.user_reaction_type || null}
+                                            onReact={(postId, reactionType) => handleLike(postId, reactionType)}
+                                            onToggleDefault={(postId) => handleLike(postId, post.user_reaction_type || 'like')}
+                                        />
+                                        <div className="interaction-stat">
+                                            <MessageSquare size={18} />
+                                            <span>{post.comments_count || 0}</span>
+                                        </div>
+                                    </div>
                                 </article>
                             ))
                         ) : (
@@ -112,8 +144,7 @@ const Home: React.FC = () => {
                                 <p>Join local groups to see what other mothers are sharing in your area!</p>
                                 <button
                                     onClick={() => navigate('/groups')}
-                                    className="btn-primary"
-                                    style={{ margin: '0 auto' }}
+                                    className="btn-primary center-btn"
                                 >
                                     <Compass size={18} />
                                     Discover Communities

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { formatDistanceToNow } from 'date-fns';
 import { notificationService } from '../services/notification.service';
+import { SERVER_URL } from '../services/api';
 import type { Notification } from '../types/notification';
 import { Heart, MessageCircle, CornerDownRight, Bell } from 'lucide-react';
 import './Notifications.css';
@@ -123,7 +124,7 @@ const Notifications: React.FC = () => {
                 subtitle="Stay updated with your community"
                 rightAction={
                     notifications.some(n => !n.isRead) && (
-                        <button onClick={handleMarkAllRead} className="btn-link" style={{ fontSize: '0.85rem' }}>
+                        <button onClick={handleMarkAllRead} className="btn-secondary text-small">
                             Mark all as read
                         </button>
                     )
@@ -150,8 +151,8 @@ const Notifications: React.FC = () => {
                                 <div className="avatar">
                                     {notification.actor?.profileImageUrl ? (
                                         <div 
-                                            className="avatar-img" 
-                                            style={{ backgroundImage: `url(${notification.actor.profileImageUrl})` }} 
+                                            className="actor-avatar" 
+                                            style={{ backgroundImage: `url(${notification.actor.profileImageUrl.startsWith('/') ? `${SERVER_URL}${notification.actor.profileImageUrl}` : notification.actor.profileImageUrl})` }} 
                                         />
                                     ) : (
                                         <div className="avatar-placeholder">

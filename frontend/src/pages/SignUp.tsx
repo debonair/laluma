@@ -15,6 +15,8 @@ const passwordStrength = (pw: string): { label: string; color: string; pct: numb
     return { label: 'Strong', color: '#00cc66', pct: 100 };
 };
 
+import './Auth.css';
+
 const SignUp: React.FC = () => {
     const { signUp, isAuthenticated, isLoading, error, clearError, user } = useAuth();
     const navigate = useNavigate();
@@ -84,43 +86,24 @@ const SignUp: React.FC = () => {
         <div className="auth-container">
             <div className="auth-card">
                 {/* Branding */}
-                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                    <div className="glass-card" style={{
-                        width: 64,
-                        height: 64,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '2rem',
-                        margin: '0 auto 1.5rem',
-                        padding: 0
-                    }}>
+                <div className="auth-header">
+                    <div className="auth-logo">
                         🌸
                     </div>
                     <h1>Join Luma</h1>
-                    <p style={{ marginTop: '0.5rem' }}>Create an account to connect with the community</p>
+                    <p>Create an account to connect with the community</p>
                 </div>
 
                 {/* Error */}
                 {displayError && (
-                    <div style={{
-                        background: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        borderRadius: '0.75rem',
-                        padding: '0.75rem 1rem',
-                        color: '#ef4444',
-                        fontSize: '0.9rem',
-                        marginBottom: '1.25rem',
-                        textAlign: 'center',
-                        boxShadow: 'var(--shadow-sm)'
-                    }}>
+                    <div className="auth-error">
                         {displayError}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} noValidate>
                     {/* Username */}
-                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <div className="form-group">
                         <label htmlFor="signup-username">Username</label>
                         <input
                             id="signup-username"
@@ -132,13 +115,13 @@ const SignUp: React.FC = () => {
                             autoFocus
                             disabled={submitting || isLoading}
                         />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', display: 'block' }}>
+                        <span className="field-hint">
                             Letters, numbers, _ and - only
                         </span>
                     </div>
 
                     {/* Email */}
-                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <div className="form-group">
                         <label htmlFor="signup-email">Email</label>
                         <input
                             id="signup-email"
@@ -152,9 +135,9 @@ const SignUp: React.FC = () => {
                     </div>
 
                     {/* Password */}
-                    <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <div className="form-group">
                         <label htmlFor="signup-password">Password</label>
-                        <div style={{ position: 'relative' }}>
+                        <div className="password-input-wrapper">
                             <input
                                 id="signup-password"
                                 type={showPassword ? 'text' : 'password'}
@@ -163,25 +146,12 @@ const SignUp: React.FC = () => {
                                 placeholder="Min. 8 characters"
                                 autoComplete="new-password"
                                 disabled={submitting || isLoading}
-                                style={{ paddingRight: '3rem' }}
+                                className="password-input"
                             />
                             <button
                                 type="button"
+                                className="password-toggle"
                                 onClick={() => setShowPassword(v => !v)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '0.75rem',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    color: 'var(--text-secondary)',
-                                    fontSize: '1.1rem',
-                                    padding: '0.25rem',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
                                 tabIndex={-1}
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                             >
@@ -190,22 +160,17 @@ const SignUp: React.FC = () => {
                         </div>
                         {/* Strength meter */}
                         {strength && (
-                            <div style={{ marginTop: '0.5rem' }}>
-                                <div style={{
-                                    height: 4,
-                                    borderRadius: 2,
-                                    background: 'var(--border-color)',
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${strength.pct}%`,
-                                        background: strength.color,
-                                        transition: 'width 0.3s ease, background 0.3s ease',
-                                        borderRadius: 2
-                                    }} />
+                            <div className="strength-meter">
+                                <div className="strength-bar-container">
+                                    <div
+                                        className="strength-bar"
+                                        style={{
+                                            width: `${strength.pct}%`,
+                                            background: strength.color
+                                        }}
+                                    />
                                 </div>
-                                <span style={{ fontSize: '0.75rem', color: strength.color, fontWeight: 500 }}>
+                                <span className="strength-label" style={{ color: strength.color }}>
                                     {strength.label}
                                 </span>
                             </div>
@@ -213,7 +178,7 @@ const SignUp: React.FC = () => {
                     </div>
 
                     {/* Confirm Password */}
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                    <div className="form-group">
                         <label htmlFor="signup-confirm">Confirm Password</label>
                         <input
                             id="signup-confirm"
@@ -223,13 +188,10 @@ const SignUp: React.FC = () => {
                             placeholder="Repeat your password"
                             autoComplete="new-password"
                             disabled={submitting || isLoading}
-                            style={{
-                                borderColor: confirmPassword && confirmPassword !== password
-                                    ? '#ff4444' : undefined
-                            }}
+                            className={confirmPassword && confirmPassword !== password ? 'input-error' : ''}
                         />
                         {confirmPassword && confirmPassword !== password && (
-                            <span style={{ fontSize: '0.75rem', color: '#ff4444', marginTop: '0.25rem', display: 'block' }}>
+                            <span className="field-error">
                                 Passwords don't match
                             </span>
                         )}
@@ -237,14 +199,14 @@ const SignUp: React.FC = () => {
 
                     <button
                         type="submit"
-                        className="btn-primary auth-submit-button"
+                        className="btn-primary auth-submit-btn"
                         disabled={submitting || isLoading}
                     >
                         {submitting ? 'Creating account…' : 'Create Account'}
                     </button>
                 </form>
 
-                <p className="auth-footer" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <p className="auth-footer">
                     Already have an account? <Link to="/signin">Sign In</Link>
                 </p>
             </div>

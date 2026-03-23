@@ -1,0 +1,238 @@
+.editorial-review-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fdfefe;
+  min-height: 100vh;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.header-title h1 {
+  margin: 0;
+  color: #2d3436;
+}
+
+.admin-header p {
+  color: #636e72;
+  margin: 0;
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.queue-sidebar {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.queue-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  color: #ff7675;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.queue-item {
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid #f1f2f6;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.queue-item:hover {
+  background: #fffafa;
+  border-color: #fab1a0;
+}
+
+.queue-item.active {
+  background: #fff5f5;
+  border-color: #ff7675;
+  box-shadow: 0 4px 10px rgba(255, 118, 117, 0.1);
+}
+
+.item-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.brand-name {
+  font-weight: 700;
+  color: #2d3436;
+}
+
+.date {
+  color: #b2bec3;
+}
+
+.item-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0.4rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-pill.pending { background: #ffeaa7; color: #d6a01b; }
+.status-pill.in_review { background: #81ecec; color: #00cec9; }
+
+.review-workspace {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eee;
+}
+
+.workspace-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #2d3436;
+}
+
+.brand-context {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  width: fit-content;
+  font-size: 0.9rem;
+  color: #636e72;
+}
+
+.brand-logo-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.content-preview {
+  margin-top: 2.5rem;
+}
+
+.preview-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #b2bec3;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.content-box {
+  background: #fafafa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  color: #2d3436;
+  white-space: pre-wrap;
+  border: 1px solid #eee;
+}
+
+.preview-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.meta-box code {
+  background: #ebfbee;
+  color: #40c057;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.review-actions-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+.editorial-textarea {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #dfe6e9;
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: flex-end;
+}
+
+.revise-btn, .reject-btn, .approve-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.8rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.revise-btn { background: #dfe6e9; color: #2d3436; }
+.reject-btn { background: #fab1a0; color: #d63031; }
+.approve-btn { background: #ff7675; color: white; }
+
+.revise-btn:hover { background: #b2bec3; }
+.reject-btn:hover { background: #ff7675; }
+.approve-btn:hover { background: #e17055; transform: scale(1.02); }
+
+.empty-workspace {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #b2bec3;
+  gap: 1.5rem;
+}

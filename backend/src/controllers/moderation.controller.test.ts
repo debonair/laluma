@@ -45,7 +45,7 @@ describe('Moderation Controller', () => {
                 entityId: '123e4567-e89b-12d3-a456-426614174000',
                 reason: 'Offensive content'
             },
-            user: { userId: 'user-1', roles: ['admin'] },
+            user: { userId: 'user-1', roles: ['app-admin'] },
             query: {},
             params: {}
         };

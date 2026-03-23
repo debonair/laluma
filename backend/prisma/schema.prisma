@@ -35,7 +35,7 @@ model User {
   contentBookmarks       ContentBookmark[]         @relation("ContentBookmarks")
   contentComments        ContentComment[]          @relation("ContentCommentAuthor")
   contentLikes           ContentLike[]             @relation("ContentLikes")
-  contentSubmissions     ContentSubmission[]       @relation("ContentSubmissions")
+  contentSubmissions     ContentSubmission[]       @relation("UserContentSubmissions")
   conversations          ConversationParticipant[]
   directoryReviews       DirectoryReview[]
   eventRegistrations     EventRegistration[]
@@ -58,6 +58,8 @@ model User {
   blockedUsers           UserBlock[]               @relation("BlockedUsers")
   preferences            UserPreference?
   brandProfile           BrandProfile?             @relation("UserBrandProfile")
+  surveyResponses        SurveyResponse[]
+  surveyTracking         UserSurveyTracking[]
 
   @@index([username])
   @@index([email])
@@ -142,7 +144,7 @@ model Post {
   moderationItem ModerationItem?
   poll           Poll?
   likes          PostLike[]
-  author         User?           @relation(fields: [authorId], references: [id])
+  author         User?           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@index([groupId])
@@ -163,7 +165,7 @@ model Comment {
   mediaUrls      String[]        @map("media_urls")
   parentId       String?         @map("parent_id")
   likes          CommentLike[]
-  author         User?           @relation(fields: [authorId], references: [id])
+  author         User?           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parent         Comment?        @relation("ParentComments", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies        Comment[]       @relation("ParentComments")
   post           Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -282,7 +284,7 @@ model Content {
   eventLocation  String?           @map("event_location")
   latitude       Float?
   longitude      Float?
-  author         User?             @relation("ContentAuthor", fields: [authorId], references: [id])
+  author         User?             @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   bookmarks      ContentBookmark[]
   comments       ContentComment[]
   likes          ContentLike[]
@@ -306,7 +308,7 @@ model ContentComment {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   isAnonymous Boolean  @default(false) @map("is_anonymous")
-  author      User?    @relation("ContentCommentAuthor", fields: [authorId], references: [id])
+  author      User?    @relation("ContentCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   content     Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
   @@index([contentId])
@@ -380,11 +382,36 @@ model ContentSubmission {
   approvedContentId String?  @map("approved_content_id")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
-  user              User     @relation("ContentSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  user              User     @relation("UserContentSubmissions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@map("content_submissions")
+}
+
+model BrandContent {
+  id             String             @id @default(uuid())
+  partnerId      String             @map("partner_id")
+  title          String
+  content        String
+  imageUrl       String?            @map("image_url")
+  discountCode   String?            @map("discount_code")
+  status         BrandContentStatus @default(DRAFT)
+  editorialNotes String?            @map("editorial_notes")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  partner        BrandProfile       @relation("BrandProfileContent", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("brand_content")
+}
+
+enum BrandContentStatus {
+  DRAFT
+  PENDING
+  IN_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+  REJECTED
 }
 
 model Notification {
@@ -728,7 +755,50 @@ model BrandProfile {
   isVerified      Boolean  @default(false) @map("is_verified")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-  user            User     @relation("UserBrandProfile", fields: [userId], references: [id], onDelete: Cascade)
+  brandContent    BrandContent[] @relation("BrandProfileContent")
+  user            User           @relation("UserBrandProfile", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("brand_profiles")
+}
+
+model Survey {
+  id          String         @id @default(uuid())
+  slug        String         @unique
+  title       String
+  description String?
+  questions   Json           // Array of question objects: { id, type, label, options?, required }
+  isActive    Boolean        @default(true) @map("is_active")
+  triggerDays Int            @default(7) @map("trigger_days")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  responses   SurveyResponse[]
+  userTracking UserSurveyTracking[]
+
+  @@map("surveys")
+}
+
+model SurveyResponse {
+  id        String   @id @default(uuid())
+  surveyId  String   @map("survey_id")
+  userId    String   @map("user_id")
+  responses Json     // Dictionary of { questionId: answer }
+  createdAt DateTime @default(now()) @map("created_at")
+  survey    Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("survey_responses")
+}
+
+model UserSurveyTracking {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  surveyId    String    @map("survey_id")
+  status      String    @default("sent") // sent, completed, dismissed
+  sentAt      DateTime  @default(now()) @map("sent_at")
+  completedAt DateTime? @map("completed_at")
+  survey      Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, surveyId])
+  @@map("user_survey_tracking")
 }

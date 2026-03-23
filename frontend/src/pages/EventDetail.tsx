@@ -10,6 +10,8 @@ import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
 import { getEventDetails, registerForEvent, type EventDetails } from '../services/event.service';
 
+import './EventDetail.css';
+
 const EventDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -56,7 +58,7 @@ const EventDetail: React.FC = () => {
         return (
             <div className="event-detail-page">
                 <Header title="Loading..." showBack={true} />
-                <main style={{ padding: '2rem', textAlign: 'center' }}>
+                <main className="loading-container">
                     <p>Loading event...</p>
                 </main>
                 <BottomNav />
@@ -68,8 +70,8 @@ const EventDetail: React.FC = () => {
         return (
             <div className="event-detail-page">
                 <Header title="Error" showBack={true} onBack={() => navigate('/spaces')} />
-                <main style={{ padding: '2rem', textAlign: 'center' }}>
-                    <p style={{ color: '#ef4444' }}>{error || 'Event not found'}</p>
+                <main className="error-container">
+                    <p className="error-text">{error || 'Event not found'}</p>
                     <button
                         onClick={() => navigate('/spaces')}
                         className="btn-primary"
@@ -95,16 +97,7 @@ const EventDetail: React.FC = () => {
             >
                 {/* Registration Status Badge */}
                 {event.isRegistered && (
-                    <div style={{
-                        margin: '0 1.5rem 1rem',
-                        display: 'inline-block',
-                        backgroundColor: event.registrationStatus === 'waitlisted' ? 'var(--warning-color, #f59e0b)' : 'var(--success-color)',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '20px',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                    }}>
+                    <div className={`registration-status ${event.registrationStatus === 'waitlisted' ? 'waitlisted' : 'registered'}`}>
                         {event.registrationStatus === 'waitlisted' 
                             ? `⏳ Waitlisted${event.waitlistPosition ? ` (Pos: ${event.waitlistPosition})` : ''}` 
                             : '✓ You\'re Registered'}
@@ -112,25 +105,19 @@ const EventDetail: React.FC = () => {
                 )}
             </Header>
 
-            <main style={{ paddingBottom: '80px' }}>
-
+            <main className="event-detail-main">
                 {/* Event Details */}
-                <div style={{ padding: '1.5rem' }}>
+                <div className="event-detail-container">
                     {/* Date & Time */}
-                    <div style={{
-                        marginBottom: '1.5rem',
-                        padding: '1.25rem',
-                        backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-                        borderRadius: '12px',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                            <span style={{ fontSize: '1.5rem' }}>🕒</span>
+                    <div className="detail-section">
+                        <div className="detail-item with-margin">
+                            <span className="detail-icon">🕒</span>
                             <div>
-                                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                                <div className="detail-title">
                                     {formatDateTime(event.startTime)}
                                 </div>
                                 {event.endTime && (
-                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                    <div className="detail-subtitle">
                                         Ends: {formatDateTime(event.endTime)}
                                     </div>
                                 )}
@@ -140,27 +127,22 @@ const EventDetail: React.FC = () => {
 
                     {/* Location */}
                     {(event.location || event.address || event.city) && (
-                        <div style={{
-                            marginBottom: '1.5rem',
-                            padding: '1.25rem',
-                            backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-                            borderRadius: '12px',
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <span style={{ fontSize: '1.5rem' }}>📍</span>
+                        <div className="detail-section">
+                            <div className="detail-item">
+                                <span className="detail-icon">📍</span>
                                 <div>
                                     {event.location && (
-                                        <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                                        <div className="detail-title">
                                             {event.location}
                                         </div>
                                     )}
                                     {event.address && (
-                                        <div style={{ color: 'var(--text-secondary)' }}>
+                                        <div className="detail-subtitle">
                                             {event.address}
                                         </div>
                                     )}
                                     {(event.city || event.country) && (
-                                        <div style={{ color: 'var(--text-secondary)' }}>
+                                        <div className="detail-subtitle">
                                             {[event.city, event.country].filter(Boolean).join(', ')}
                                         </div>
                                     )}
@@ -170,23 +152,14 @@ const EventDetail: React.FC = () => {
                     )}
 
                     {/* Capacity Info */}
-                    <div style={{
-                        marginBottom: '1.5rem',
-                        padding: '1.25rem',
-                        backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-                        borderRadius: '12px',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <span style={{ fontSize: '1.5rem' }}>👥</span>
+                    <div className="detail-section">
+                        <div className="detail-item">
+                            <span className="detail-icon">👥</span>
                             <div>
-                                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                                <div className="detail-title">
                                     {event.registeredCount} / {event.capacity} Registered
                                 </div>
-                                <div style={{
-                                    color: event.spotsLeft <= 5 ? 'var(--error-color)' : 'var(--success-color)',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                }}>
+                                <div className={`capacity-status ${event.spotsLeft <= 5 ? 'low' : 'available'}`}>
                                     {isFull
                                         ? 'Event is full'
                                         : `${event.spotsLeft} spots left`}
@@ -197,16 +170,10 @@ const EventDetail: React.FC = () => {
 
                     {/* Registration Deadline */}
                     {event.registrationDeadline && (
-                        <div style={{
-                            marginBottom: '1.5rem',
-                            padding: '1rem',
-                            backgroundColor: '#fff7ed',
-                            border: '1px solid #fed7aa',
-                            borderRadius: '12px',
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <span style={{ fontSize: '1.25rem' }}>⏰</span>
-                                <div style={{ color: '#c2410c', fontWeight: 600 }}>
+                        <div className="deadline-box">
+                            <div className="deadline-content">
+                                <span className="deadline-icon">⏰</span>
+                                <div>
                                     Registration deadline: {formatDateTime(event.registrationDeadline)}
                                 </div>
                             </div>
@@ -214,59 +181,23 @@ const EventDetail: React.FC = () => {
                     )}
 
                     {/* Description */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>
-                            About this event
-                        </h2>
-                        <div style={{
-                            whiteSpace: 'pre-wrap',
-                            lineHeight: 1.6,
-                            color: 'var(--text-primary)',
-                        }}>
+                    <div className="about-section">
+                        <h2>About this event</h2>
+                        <div className="about-text">
                             {event.description}
                         </div>
                     </div>
 
                     {/* Action Button */}
                     {!isPast && (
-                        <div style={{
-                            position: 'sticky',
-                            bottom: '80px',
-                            padding: '1rem',
-                            backgroundColor: 'white',
-                            borderTop: '1px solid var(--border-color)',
-                        }}>
+                        <div className="sticky-action-bar">
                             {event.isRegistered ? (
-                                <button
-                                    disabled
-                                    style={{
-                                        width: '100%',
-                                        padding: '1rem',
-                                        backgroundColor: 'var(--success-color)',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        fontWeight: 700,
-                                        fontSize: '1.1rem',
-                                        cursor: 'not-allowed',
-                                    }}
-                                >
+                                <button className="register-btn success" disabled>
                                     ✓ You're Registered!
                                 </button>
                             ) : (
                                 <button
-                                    style={{
-                                        width: '100%',
-                                        padding: '1rem',
-                                        backgroundColor: isFull ? 'var(--text-secondary)' : 'var(--primary-color)',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        fontWeight: 700,
-                                        fontSize: '1.1rem',
-                                        cursor: registering ? 'not-allowed' : 'pointer',
-                                        opacity: registering ? 0.7 : 1,
-                                    }}
+                                    className={`register-btn ${registering || (isFull && !event.isRegistered) ? 'disabled' : 'primary'}`}
                                     disabled={registering}
                                     onClick={async () => {
                                         if (!id) return;

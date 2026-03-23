@@ -50,6 +50,8 @@ export const getPoll = async (
             postId: poll.postId,
             contentId: poll.contentId,
             question: poll.question,
+            expiresAt: poll.expiresAt,
+            isExpired: poll.expiresAt ? new Date() > poll.expiresAt : false,
             totalVotes,
             hasVoted: req.user ? (poll as any).votes.length > 0 : false,
             userVoteOptionId: req.user && (poll as any).votes.length > 0 ? (poll as any).votes[0].optionId : null,
@@ -88,14 +90,32 @@ export const votePoll = async (
         });
 
         if (!poll) {
-            res.status(404).json({ error: 'Not Found', message: 'Poll not found', code: 'POLL_NOT_FOUND' });
+            res.status(404).json({ 
+                error: 'Not Found', 
+                message: 'Poll not found', 
+                code: 'POLL_NOT_FOUND' 
+            });
+            return;
+        }
+
+        // Check if poll has expired
+        if (poll.expiresAt && new Date() > poll.expiresAt) {
+            res.status(400).json({
+                error: 'Bad Request',
+                message: 'This poll has expired',
+                code: 'POLL_EXPIRED'
+            });
             return;
         }
 
         // Verify option belongs to poll
         const options = (poll as any).options;
         if (!options.some((opt: any) => opt.id === data.optionId)) {
-            res.status(400).json({ error: 'Bad Request', message: 'Invalid option for this poll', code: 'INVALID_OPTION' });
+            res.status(400).json({ 
+                error: 'Bad Request', 
+                message: 'Invalid option for this poll', 
+                code: 'INVALID_OPTION' 
+            });
             return;
         }
 
@@ -121,10 +141,21 @@ export const votePoll = async (
 
     } catch (error) {
         if (error instanceof z.ZodError) {
-            res.status(400).json({ error: 'Validation Error', message: 'Invalid data', details: error.errors });
+            res.status(400).json({ 
+                error: 'Validation Error', 
+                message: 'Invalid data', 
+                code: 'VALIDATION_ERROR',
+                details: error.errors 
+            });
             return;
         }
         console.error('Vote poll error:', error);
-        res.status(500).json({ error: 'Internal Error' });
+        res.status(500).json({ 
+            error: 'Internal Server Error',
+            message: 'An error occurred while voting',
+            code: 'INTERNAL_ERROR'
+        });
     }
 };
+
+

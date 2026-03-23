@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 
+import './Welcome.css';
+
 const Onboarding: React.FC = () => {
     const navigate = useNavigate();
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -35,7 +37,7 @@ const Onboarding: React.FC = () => {
             />
             <main className="page-content">
 
-                <div className="choice-list">
+                <div className="choice-list onboarding-options">
                     {options.map((option) => (
                         <div
                             key={option}
@@ -47,7 +49,7 @@ const Onboarding: React.FC = () => {
                     ))}
                 </div>
 
-                <div style={{ marginTop: 'auto' }}>
+                <div className="onboarding-footer">
                     <button
                         className="btn-primary"
                         onClick={handleContinue}
