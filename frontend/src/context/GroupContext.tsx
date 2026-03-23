@@ -117,7 +117,7 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
     }, [socket, refreshFeed]);
 
-    const joinGroup = async (groupId: string) => {
+    const joinGroup = useCallback(async (groupId: string) => {
         try {
             setError(null);
             await groupsService.joinGroup(groupId);
@@ -128,9 +128,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             throw new Error(errorMessage);
         }
-    };
+    }, [refreshGroups, refreshUserGroups, refreshFeed]);
 
-    const leaveGroup = async (groupId: string) => {
+    const leaveGroup = useCallback(async (groupId: string) => {
         try {
             setError(null);
             await groupsService.leaveGroup(groupId);
@@ -141,9 +141,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             throw new Error(errorMessage);
         }
-    };
+    }, [refreshGroups, refreshUserGroups, refreshFeed]);
 
-    const createGroup = async (name: string, description: string, emoji?: string, location?: { latitude?: number; longitude?: number; city?: string; country?: string; is_private?: boolean }) => {
+    const createGroup = useCallback(async (name: string, description: string, emoji?: string, location?: { latitude?: number; longitude?: number; city?: string; country?: string; is_private?: boolean }) => {
         try {
             setError(null);
             setIsLoading(true);
@@ -166,9 +166,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [refreshGroups, refreshUserGroups]);
 
-    const createPost = async (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }) => {
+    const createPost = useCallback(async (groupId: string, data: { content: string; isAnonymous?: boolean; poll?: { question: string, options: string[] } }) => {
         try {
             setError(null);
             await postsService.createPost(groupId, data);
@@ -179,9 +179,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             throw new Error(errorMessage);
         }
-    };
+    }, [refreshFeed]);
 
-    const addComment = async (postId: string, content: string) => {
+    const addComment = useCallback(async (postId: string, content: string) => {
         try {
             setError(null);
             await postsService.createComment(postId, content);
@@ -192,33 +192,40 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             throw new Error(errorMessage);
         }
-    };
+    }, [refreshFeed]);
 
-    const likePost = async (postId: string, reactionType: string = 'like') => {
+    const likePost = useCallback(async (postId: string, reactionType: string = 'like') => {
         try {
             setError(null);
             await postsService.likePost(postId, reactionType);
             // Update feed locally to reflect like
-            setFeed(prev => prev.map(post =>
-                post.id === postId
-                    ? { ...post, is_liked: true, likes_count: (post.likes_count || 0) + 1, user_reaction_type: reactionType }
-                    : post
-            ));
+            setFeed(prev => prev.map(post => {
+                if (post.id === postId) {
+                    const wasLiked = post.is_liked;
+                    return {
+                        ...post,
+                        is_liked: true,
+                        likes_count: wasLiked ? post.likes_count : (post.likes_count || 0) + 1,
+                        user_reaction_type: reactionType
+                    };
+                }
+                return post;
+            }));
         } catch (err) {
             const errorMessage = handleAPIError(err);
             setError(errorMessage);
             throw new Error(errorMessage);
         }
-    };
+    }, []);
 
-    const unlikePost = async (postId: string) => {
+    const unlikePost = useCallback(async (postId: string) => {
         try {
             setError(null);
             await postsService.unlikePost(postId);
             // Update feed locally to reflect unlike
             setFeed(prev => prev.map(post =>
                 post.id === postId
-                    ? { ...post, is_liked: false, likes_count: post.likes_count - 1 }
+                    ? { ...post, is_liked: false, likes_count: Math.max(0, (post.likes_count || 0) - 1) }
                     : post
             ));
         } catch (err) {
@@ -226,9 +233,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             throw new Error(errorMessage);
         }
-    };
+    }, []);
 
-    const getGroup = async (groupId: string): Promise<Group | null> => {
+    const getGroup = useCallback(async (groupId: string): Promise<Group | null> => {
         try {
             setError(null);
             const group = await groupsService.getGroup(groupId);
@@ -238,9 +245,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             return null;
         }
-    };
+    }, []);
 
-    const getGroupPosts = async (groupId: string): Promise<Post[]> => {
+    const getGroupPosts = useCallback(async (groupId: string): Promise<Post[]> => {
         try {
             setError(null);
             const response = await postsService.getGroupPosts(groupId, { limit: 100 });
@@ -250,9 +257,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             return [];
         }
-    };
+    }, []);
 
-    const getPostComments = async (postId: string): Promise<Comment[]> => {
+    const getPostComments = useCallback(async (postId: string): Promise<Comment[]> => {
         try {
             setError(null);
             const response = await postsService.getComments(postId, { limit: 100 });
@@ -262,9 +269,9 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setError(errorMessage);
             return [];
         }
-    };
+    }, []);
 
-    const clearError = () => setError(null);
+    const clearError = useCallback(() => setError(null), []);
 
     const updatePollInFeed = useCallback((postId: string, updatedPoll: any) => {
         setFeed(prev => prev.map(post =>

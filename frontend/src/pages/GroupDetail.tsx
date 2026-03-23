@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReactionPicker from '../components/ReactionPicker';
+import ReactionButton from '../components/ReactionButton';
 import { useGroup } from '../context/GroupContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -30,7 +30,6 @@ const GroupDetail: React.FC = () => {
     const [group, setGroup] = useState<Group | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showPickerForPost, setShowPickerForPost] = useState<string | null>(null);
     const [newPostContent, setNewPostContent] = useState('');
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [showPoll, setShowPoll] = useState(false);
@@ -193,9 +192,14 @@ const GroupDetail: React.FC = () => {
             const groupData = await getGroup(id);
             setGroup(groupData);
             
-            // Reload members if newly joined
             if (!isMember) {
+                // If they just joined, reload members and posts
                 loadMembers();
+                const postsData = await getGroupPosts(id);
+                setPosts(postsData);
+            } else {
+                // If they just left, clear posts to prevent interactive UI errors or 403s
+                setPosts([]);
             }
         } catch (err) {
             console.error('Join/Leave error:', err);
@@ -317,20 +321,51 @@ const GroupDetail: React.FC = () => {
     };
 
     const handleLike = async (postId: string, reactionType: string = 'like') => {
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+
+        const isTogglingOff = post.is_liked && post.user_reaction_type === reactionType;
+        
+        // Optimistic update
+        setPosts(prevPosts => prevPosts.map(p => {
+            if (p.id !== postId) return p;
+            
+            if (isTogglingOff) {
+                return {
+                    ...p,
+                    is_liked: false,
+                    likes_count: Math.max(0, p.likes_count - 1),
+                    user_reaction_type: null
+                };
+            } else {
+                // If changing reaction, count stays same but type changes
+                // If adding new, count increases
+                const wasLiked = p.is_liked;
+                return {
+                    ...p,
+                    is_liked: true,
+                    likes_count: wasLiked ? p.likes_count : p.likes_count + 1,
+                    user_reaction_type: reactionType
+                };
+            }
+        }));
+
         try {
-            const post = posts.find(p => p.id === postId);
-            if (post?.is_liked && post.user_reaction_type === reactionType) {
+            if (isTogglingOff) {
                 await unlikePost(postId);
             } else {
                 await likePost(postId, reactionType);
             }
-            // Update local state to show change immediately
-            if (id) {
-                const postsData = await getGroupPosts(id);
-                setPosts(postsData);
-            }
-        } catch (err) {
-            console.error('Error handling like:', err);
+            
+            // Re-fetch only if needed for synchronization, but we can trust our optimistic update
+            // if the server response is consistent.
+        } catch (error) {
+            console.error('Failed to update reaction:', error);
+            addToast('Failed to update reaction.', 'error');
+            
+            // Rollback on error
+            const freshPosts = await getGroupPosts(id!);
+            setPosts(freshPosts);
         }
     };
 
@@ -389,7 +424,8 @@ const GroupDetail: React.FC = () => {
                         <span>{error}</span>
                         <button 
                             onClick={clearError}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#991b1b' }}
+                            className="icon-btn"
+                            style={{ color: '#991b1b' }}
                         >
                             ×
                         </button>
@@ -480,8 +516,8 @@ const GroupDetail: React.FC = () => {
                                                         </select>
                                                         <button
                                                             onClick={() => handleRemoveMember(m.userId)}
+                                                            className="icon-btn"
                                                             style={{
-                                                                background: 'none', border: 'none', cursor: 'pointer',
                                                                 color: '#EF4444', fontSize: '0.85rem'
                                                             }}
                                                         >
@@ -573,8 +609,8 @@ const GroupDetail: React.FC = () => {
                                     </label>
                                     <button
                                         type="button"
-                                        className="btn-link"
-                                        style={{ fontSize: '0.85rem' }}
+                                        className="btn-ghost"
+                                        style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem' }}
                                         onClick={() => setShowPoll(!showPoll)}
                                         disabled={submittingPost}
                                     >
@@ -635,27 +671,14 @@ const GroupDetail: React.FC = () => {
                             )}
 
                             <div style={{ display: 'flex', gap: '0.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginLeft: '-0.5rem' }}>
-                                <div style={{ position: 'relative' }}>
-                                    <button
-                                        className="icon-btn"
-                                        onMouseEnter={() => setShowPickerForPost(post.id)}
-                                        onClick={() => handleLike(post.id, post.user_reaction_type || 'like')}
-                                        style={{ color: post.is_liked ? 'var(--primary-color)' : 'var(--text-secondary)' }}
-                                    >
-                                        {post.user_reaction_type === 'love' ? '😍' : 
-                                         post.user_reaction_type === 'haha' ? '😂' : 
-                                         post.user_reaction_type === 'wow' ? '😲' : 
-                                         post.user_reaction_type === 'sad' ? '😢' : 
-                                         post.user_reaction_type === 'angry' ? '😡' : '❤️'} 
-                                        <span style={{ marginLeft: '0.25rem', fontSize: '0.9rem' }}>{post.likes_count}</span>
-                                    </button>
-                                    {showPickerForPost === post.id && (
-                                        <ReactionPicker 
-                                            onSelect={(type) => handleLike(post.id, type)}
-                                            onClose={() => setShowPickerForPost(null)}
-                                        />
-                                    )}
-                                </div>
+                                <ReactionButton 
+                                    postId={post.id} 
+                                    isLiked={!!post.is_liked} 
+                                    likesCount={post.likes_count || 0} 
+                                    userReactionType={post.user_reaction_type || null}
+                                    onReact={(postId, reactionType) => handleLike(postId, reactionType)}
+                                    onToggleDefault={(postId) => handleLike(postId, post.user_reaction_type || 'like')}
+                                />
                                 <button
                                     className="icon-btn"
                                     onClick={() => toggleComments(post.id)}
@@ -770,9 +793,8 @@ const GroupDetail: React.FC = () => {
                                                 <button
                                                     onClick={() => handleCommentSubmit(post.id)}
                                                     disabled={!commentContent[post.id]?.trim() || submittingComment[post.id]}
+                                                    className="icon-btn"
                                                     style={{
-                                                        background: 'none',
-                                                        border: 'none',
                                                         color: commentContent[post.id]?.trim() ? 'var(--primary-color)' : 'var(--text-secondary)',
                                                         fontWeight: 600,
                                                         cursor: commentContent[post.id]?.trim() ? 'pointer' : 'not-allowed',
